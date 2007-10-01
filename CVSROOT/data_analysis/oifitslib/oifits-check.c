@@ -73,9 +73,6 @@ int main(int argc, char *argv[])
   if(result.level == OI_BREACH_NONE)
     printf("All checks passed\n");
 
-  //
-  write_oi_fits("!junk.oifits", oi, &status);
-
   free_check_result(&result);
 
   exit(EXIT_SUCCESS);
