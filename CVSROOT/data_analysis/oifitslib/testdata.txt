@@ -1,0 +1,129 @@
+OI_ARRAY
+
+arrname COAST
+frame GEOCENTRIC
+arrayx 3920635.0
+arrayy 2889.0
+arrayz 5013987.0
+nelement 4
+
+tel_name TEL2
+sta_name C
+staxyz 0.000 0.000 0.000
+diameter 0.400
+
+tel_name TEL4
+sta_name W4
+staxyz 4.474 -9.605 -3.481
+diameter 0.400
+
+tel_name TEL3
+sta_name E3
+staxyz 3.632 +8.434 -2.816
+diameter 0.400
+
+tel_name TEL1
+sta_name N3
+staxyz -11.24 +0.307 8.727
+diameter 0.400
+
+
+OI_TARGET
+
+ntarget 1
+
+target_id 1
+target alp_aur
+raep0 79.172
+decep0 45.998
+equinox 2000.0
+ra_err 0.0001
+dec_err 0.0001
+sysvel 30200
+veltyp HELIOCEN
+veldef OPTICAL
+pmra 0.00002098
+pmdec -0.00011861
+pmra_err 0.00000022
+pmdec_err 0.00000014
+parallax 0.00002147
+para_err 0.00000025
+spectyp G5III+G8III
+
+
+OI_WAVELENGTH
+
+insname COAST_NICMOS
+nwave 1
+eff_wave 1667.0e-9
+eff_band 250.0e-9
+
+
+OI_VIS
+
+date-obs 2000-10-19
+arrname COAST
+insname COAST_NICMOS
+numrec 1
+
+target_id 1
+time 82978.0
+mjd 51836.960394
+int_time 60.0
+visamp 0.0445
+visamperr 0.0091
+visphi 17.03
+visphierr 15.15
+ucoord  0.95628
+vcoord -9.15497
+sta_index 1 3
+
+
+OI_VIS2
+
+date-obs 2000-10-19
+arrname COAST
+insname COAST_NICMOS
+numrec 2
+
+target_id 1
+time 82810.0
+mjd 51836.958449
+int_time 60.0
+vis2data 0.677
+vis2err 0.064
+ucoord -8.52302
+vcoord  3.29268
+sta_index 1 2
+
+target_id 1
+time 82978.0
+mjd 51836.960394
+int_time 60.0
+vis2data 0.510
+vis2err 0.071
+ucoord  0.95628
+vcoord -9.15497
+sta_index 1 3
+
+
+OI_T3
+
+date-obs 2000-10-19
+arrname COAST
+insname COAST_NICMOS
+numrec 1
+
+target_id 1
+time 84000.0
+mjd 51836.972222
+int_time 100.0
+t3amp 0.00345
+t3amperr 0.00012
+t3phi 3.533
+t3phierr 2.561
+u1coord -8.52302
+v1coord  3.29268
+u2coord  9.89310
+v2coord -12.18141
+sta_index 1 2 3
