@@ -41,7 +41,7 @@
 
 /** Make deep copy of array of n strings, substituting value for any
     initial '?' */
-char **make_tform(char **template, int n, int value)
+char **make_tform(const char **template, int n, int value)
 {
   char **tform;
   int i, size, needed;
@@ -49,12 +49,12 @@ char **make_tform(char **template, int n, int value)
   tform = malloc(n*sizeof(char *));
   for(i=0; i<n; i++) {
     if (template[i][0] == '?') {
-      size = strlen(template[i]) + 3; /* allow for extra digits */
+      size = strlen(template[i]) + 4; /* allow for extra digits + \0 */
       tform[i] = malloc(size*sizeof(char));
       needed = snprintf(tform[i], size, "%d%s", value, &template[i][1]);
       assert(needed < size); /* fails if string was truncated */
     } else {
-      tform[i] = malloc(strlen(template[i])*sizeof(char));
+      tform[i] = malloc((strlen(template[i])+1)*sizeof(char)); /* \0 */
       strcpy(tform[i], template[i]);
     }
   }
