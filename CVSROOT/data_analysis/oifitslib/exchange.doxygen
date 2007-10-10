@@ -462,6 +462,7 @@ WARN_LOGFILE           =
 INPUT                  = exchange.h \
                          write_fits.c \
                          read_fits.c \
+			 free_fits.c \
                          oifile.h \
                          oifile.c \
                          oicheck.h \

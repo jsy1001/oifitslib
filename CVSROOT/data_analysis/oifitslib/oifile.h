@@ -32,10 +32,16 @@
  *
  * This module provides routines for reading and writing entire OIFITS
  * files. Use read_oi_fits() to read a file. free_oi_fits() will free
- * the storage allocated by read_oi_fits(). Use write_oi_fits() to
- * write data from a oi_fits struct to a file.
+ * the storage allocated by read_oi_fits(). Use init_oi_fits() to
+ * initialise an empty dataset, then after filling in the contents
+ * call write_oi_fits() to write the dataset to a file.
  *
- * A set of functions oi_fits_lookup_*() are provided, to facilitate
+ * Functions to format and display strings summarising the file
+ * contents are provided: format_oi_fits_summary() and
+ * print_oi_fits_summary()
+
+ * A set of functions oi_fits_lookup_*()
+ * (e.g. oi_fits_lookup_array())) are also provided, to facilitate
  * following cross-references between OI_FITS tables.
  *
  * @{
@@ -53,7 +59,7 @@
  */
 
 /** Data for OIFITS file */
-typedef struct _oi_fits {
+typedef struct {
   int numArray;              /**< Length of arrayList */
   int numWavelength;         /**< Length of wavelengthList */
   int numVis;                /**< Length of visList */
@@ -74,6 +80,7 @@ typedef struct _oi_fits {
 /*
  * Function prototypes, for functions from oifile.c
  */
+void init_oi_fits(oi_fits *);
 int write_oi_fits(const char *, oi_fits, int *);
 int read_oi_fits(const char *, oi_fits *, int *);
 void free_oi_fits(oi_fits *);
@@ -81,8 +88,8 @@ oi_array *oi_fits_lookup_array(const oi_fits *, const char *);
 element *oi_fits_lookup_element(const oi_fits *, const char *, int);
 oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *, const char *);
 target *oi_fits_lookup_target(const oi_fits *, int);
-char *oi_fits_format_summary(const oi_fits *);
-void oi_fits_print_summary(const oi_fits *);
+const char *format_oi_fits_summary(const oi_fits *);
+void print_oi_fits_summary(const oi_fits *);
 
 #endif /* #ifndef OIFILE_H */
 

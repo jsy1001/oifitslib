@@ -37,7 +37,7 @@
 /**
  * Free dynamically-allocated storage within oi_array struct.
  *
- *   @param array   array data struct, see exchange.h
+ *   @param pArray  pointer to array data struct, see exchange.h
  */
 void free_oi_array(oi_array *pArray)
 {
@@ -47,7 +47,7 @@ void free_oi_array(oi_array *pArray)
 /**
  * Free dynamically-allocated storage within oi_target struct.
  *
- *   @param target   targets data struct, see exchange.h
+ *   @param pTargets  pointer to targets data struct, see exchange.h
  */
 void free_oi_target(oi_target *pTargets)
 {
@@ -57,7 +57,7 @@ void free_oi_target(oi_target *pTargets)
 /**
  * Free dynamically-allocated storage within oi_wavelength struct.
  *
- *   @param wave   wavelength data struct, see exchange.h
+ *   @param pWave  pointer to wavelength data struct, see exchange.h
  */
 void free_oi_wavelength(oi_wavelength *pWave)
 {
@@ -68,7 +68,7 @@ void free_oi_wavelength(oi_wavelength *pWave)
 /**
  * Free dynamically-allocated storage within oi_vis struct.
  *
- *   @param vis   data struct, see exchange.h
+ *   @param pVis  pointer to data struct, see exchange.h
  */
 void free_oi_vis(oi_vis *pVis)
 {
@@ -87,7 +87,7 @@ void free_oi_vis(oi_vis *pVis)
 /**
  * Free dynamically-allocated storage within oi_vis struct.
  *
- *   @param vis2   data struct, see exchange.h
+ *   @param pVis2  pointer to data struct, see exchange.h
  */
 void free_oi_vis2(oi_vis2 *pVis2)
 {
@@ -104,7 +104,7 @@ void free_oi_vis2(oi_vis2 *pVis2)
 /**
  * Free dynamically-allocated storage within oi_vis struct.
  *
- *   @param t3   data struct, see exchange.h
+ *   @param pT3  pointer to data struct, see exchange.h
  */
 void free_oi_t3(oi_t3 *pT3)
 {

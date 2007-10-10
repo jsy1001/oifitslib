@@ -33,10 +33,21 @@
  */
 int main(int argc, char *argv[]) 
 {
+  /** Checking functions to call */
+  check_func checks[] = {
+    check_unique_targets,
+    check_targets_present,
+    check_elements_present,
+    check_flagging,
+    check_t3amp,
+    check_waveorder,
+    NULL
+  };
   oi_fits oi;
   oi_check_result result;
+  oi_breach_level worst;
   char filename[FLEN_FILENAME];
-  int status;
+  int status, i;
 
   /* Parse command-line */
   if(argc != 2) {
@@ -51,30 +62,23 @@ int main(int argc, char *argv[])
   if(status) goto except;
 
   /* Display summary info */
-  oi_fits_print_summary(&oi);
+  print_oi_fits_summary(&oi);
 
   /* Run checks */
-  if(check_unique_targets(&oi.targets, &result) != OI_BREACH_NONE) {
-    print_check_result(&result);
-  }
-  if(check_targets_present(&oi, &result) != OI_BREACH_NONE) {
-    print_check_result(&result);
-  }
-  if(check_elements_present(&oi, &result) != OI_BREACH_NONE) {
-    print_check_result(&result);
-  }
-  if(check_flagging(&oi, &result) != OI_BREACH_NONE) {
-    print_check_result(&result);
-  }
-  if(check_t3amp(&oi, &result) != OI_BREACH_NONE) {
-    print_check_result(&result);
+  worst = OI_BREACH_NONE;
+  i=0;
+  while(checks[i] != NULL) {
+    if((*checks[i++])(&oi, &result) != OI_BREACH_NONE) {
+      print_check_result(&result);
+      if(result.level > worst) worst = result.level;
+    }
+    free_check_result(&result);
   }
 
-  if(result.level == OI_BREACH_NONE)
+  if(worst == OI_BREACH_NONE)
     printf("All checks passed\n");
 
-  free_check_result(&result);
-
+  free_oi_fits(&oi);
   exit(EXIT_SUCCESS);
 
  except:

@@ -706,7 +706,7 @@ int read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, int *pStatus)
   fits_get_num_rows(fptr, &pT3->numrec, pStatus);
   pT3->record = malloc(pT3->numrec*sizeof(oi_t3_record));
   /* get value for nwave */
-  /* format specifies same repeat count for VIS2DATA & VIS2ERR columns */
+  /* format specifies same repeat count for T3* columns */
   fits_get_colnum(fptr, CASEINSEN, "T3AMP", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   pT3->nwave = repeat;

@@ -41,6 +41,74 @@ GString *pGStr = NULL;
 typedef void (*free_func)(gpointer);
 
 
+/*
+ * Private functions
+ */
+
+/** Find oi_array matching arrname in linked list. */
+static oi_array *find_oi_array(const oi_fits *pOi,
+			       const char *arrname)
+{
+  GList *link;
+  oi_array *pArray;
+
+  link = pOi->arrayList;
+  while(link != NULL) {
+    pArray = (oi_array *) link->data;
+    if(strcmp(pArray->arrname, arrname) == 0)
+      return pArray;
+    link = link->next;
+  }
+  g_warning("Missing OI_ARRAY with ARRNAME=%s", arrname);
+  return NULL;
+}
+
+/** Find oi_wavelength matching insname in linked list. */
+static oi_wavelength *find_oi_wavelength(const oi_fits *pOi,
+					 const char *insname)
+{
+  GList *link;
+  oi_wavelength *pWave;
+
+  link = pOi->wavelengthList;
+  while(link != NULL) {
+    pWave = (oi_wavelength *) link->data;
+    if(strcmp(pWave->insname, insname) == 0)
+      return pWave;
+    link = link->next;
+  }
+  g_warning("Missing OI_WAVELENGTH with INSNAME=%s", insname);
+  return NULL;
+}
+
+
+/*
+ * Public functions
+ */
+
+/**
+ * Initialise empty oi_fits struct.
+ *
+ *   @param pOi  pointer to file data struct, see oifile.h
+ */
+void init_oi_fits(oi_fits *pOi)
+{
+  pOi->numArray = 0;
+  pOi->numWavelength = 0;
+  pOi->numVis = 0;
+  pOi->numVis2 = 0;
+  pOi->numT3 = 0;
+  pOi->arrayList = NULL;
+  pOi->wavelengthList = NULL;
+  pOi->visList = NULL;
+  pOi->vis2List = NULL;
+  pOi->t3List = NULL;
+  pOi->arrayHash = 
+    g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+  pOi->wavelengthHash =
+    g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+}
+
 /** Macro to write FITS table for each oi_* in GList. */
 #define WRITE_OI_LIST(fptr, list, type, link, write_func, \
                       extver, pStatus) \
@@ -103,47 +171,11 @@ int write_oi_fits(const char *filename, oi_fits oi, int *pStatus)
   return *pStatus;
 }
 
-/** Find oi_array matching arrname in linked list. */
-static oi_array *find_oi_array(const oi_fits *pOi,
-			       const char *arrname)
-{
-  GList *link;
-  oi_array *pArray;
-
-  link = pOi->arrayList;
-  while(link != NULL) {
-    pArray = (oi_array *) link->data;
-    if(strcmp(pArray->arrname, arrname) == 0)
-      return pArray;
-    link = link->next;
-  }
-  printf("Missing OI_ARRAY with ARRNAME=%s\n", arrname);
-  return NULL;
-}
-
-/** Find oi_wavelength matching insname in linked list. */
-static oi_wavelength *find_oi_wavelength(const oi_fits *pOi,
-					 const char *insname)
-{
-  GList *link;
-  oi_wavelength *pWave;
-
-  link = pOi->wavelengthList;
-  while(link != NULL) {
-    pWave = (oi_wavelength *) link->data;
-    if(strcmp(pWave->insname, insname) == 0)
-      return pWave;
-    link = link->next;
-  }
-  printf("Missing OI_WAVELENGTH with INSNAME=%s\n", insname);
-  return NULL;
-}
-
 /**
  * Read all OIFITS tables from FITS file.
  *
  *   @param filename  name of file to read
- *   @param pOi       pointer to file data struct, see oifile.h
+ *   @param pOi       pointer to uninitialised file data struct, see oifile.h
  *   @param pStatus   pointer to status variable
  *
  *   @return On error, returns non-zero cfitsio error code (also assigned to
@@ -306,6 +338,7 @@ void free_oi_fits(oi_fits *pOi)
 {
   g_hash_table_destroy(pOi->arrayHash);
   g_hash_table_destroy(pOi->wavelengthHash);
+  free_oi_target(&pOi->targets);
   free_list(pOi->arrayList,
 	    (free_func) free_oi_array);
   free_list(pOi->wavelengthList,
@@ -316,7 +349,6 @@ void free_oi_fits(oi_fits *pOi)
 	    (free_func) free_oi_vis2);
   free_list(pOi->t3List,
 	    (free_func) free_oi_t3);
-
 }
 
 /**
@@ -396,7 +428,7 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
   { link = list; \
     while(link != NULL) { \
       g_string_append_printf( \
-        pGStr, "  %5ld records x %3d wavebands  INSNAME=%s  ARRNAME=%s\n", \
+        pGStr, "  %5ld records x %3d wavebands  INSNAME='%s'  ARRNAME='%s'\n",\
        ((type *) (link->data))->numrec,   \
        ((type *) (link->data))->nwave,    \
        ((type *) (link->data))->insname,  \
@@ -412,20 +444,20 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
  *
  * @return String summarising supplied dataset
  */
-char *oi_fits_format_summary(const oi_fits *pOi)
+const char *format_oi_fits_summary(const oi_fits *pOi)
 {
   GList *link;
 
   if (pGStr == NULL)
     pGStr = g_string_sized_new(256);
 
-  g_string_printf(pGStr, "\n");
-  /* :TODO: wavelength ranges */
-  g_string_append_printf(pGStr, "%d OI_VIS tables:\n", pOi->numVis);
+  g_string_printf(pGStr, "OIFITS data:\n");
+  /* :TODO: wavelength ranges, MJD ranges */
+  g_string_append_printf(pGStr, "  %d OI_VIS tables:\n", pOi->numVis);
   OI_LIST_FORMAT_SUMMARY(pGStr, pOi->visList, oi_vis, link);
-  g_string_append_printf(pGStr, "%d OI_VIS2 tables:\n", pOi->numVis2);
+  g_string_append_printf(pGStr, "  %d OI_VIS2 tables:\n", pOi->numVis2);
   OI_LIST_FORMAT_SUMMARY(pGStr, pOi->vis2List, oi_vis2, link);
-  g_string_append_printf(pGStr, "%d OI_T3 tables:\n", pOi->numT3);
+  g_string_append_printf(pGStr, "  %d OI_T3 tables:\n", pOi->numT3);
   OI_LIST_FORMAT_SUMMARY(pGStr, pOi->t3List, oi_t3, link);
 
   return pGStr->str;
@@ -436,7 +468,7 @@ char *oi_fits_format_summary(const oi_fits *pOi)
  *
  * @param pOi  pointer to oi_fits struct
  */
-void oi_fits_print_summary(const oi_fits *pOi)
+void print_oi_fits_summary(const oi_fits *pOi)
 {
-  printf("%s", oi_fits_format_summary(pOi));
+  printf("%s", format_oi_fits_summary(pOi));
 }

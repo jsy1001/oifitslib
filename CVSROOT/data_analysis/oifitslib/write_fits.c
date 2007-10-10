@@ -284,9 +284,9 @@ int write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, int *pStatus)
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		    "VISAMP", "VISAMPERR", "VISPHI", "VISPHIERR",
 		   "UCOORD", "VCOORD", "STA_INDEX", "FLAG"};
-  char *tformTpl[] = {"I", "D", "D", "D",
-		      "?D", "?D", "?D", "?D",
-		      "1D", "1D", "2I", "?L"};
+  const char *tformTpl[] = {"I", "D", "D", "D",
+			    "?D", "?D", "?D", "?D",
+			    "1D", "1D", "2I", "?L"};
   char **tform;
   char *tunit[] = {"\0", "s", "day", "s",
 		   "\0", "\0", "deg", "deg",
@@ -371,9 +371,9 @@ int write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, int *pStatus)
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		   "VIS2DATA", "VIS2ERR", "UCOORD", "VCOORD",
 		   "STA_INDEX", "FLAG"};
-  char *tformTpl[] = {"I", "D", "D", "D",
-		      "?D", "?D", "1D", "1D",
-		      "2I", "?L"};
+  const char *tformTpl[] = {"I", "D", "D", "D",
+			    "?D", "?D", "1D", "1D",
+			    "2I", "?L"};
   char **tform;
   char *tunit[] = {"\0", "s", "day", "s",
 		   "\0", "\0", "m", "m",
@@ -455,10 +455,10 @@ int write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, int *pStatus)
 		   "T3AMP", "T3AMPERR", "T3PHI", "T3PHIERR",
 		   "U1COORD", "V1COORD", "U2COORD", "V2COORD", 
 		   "STA_INDEX", "FLAG"};
-  char *tformTpl[] = {"I", "D", "D", "D",
-		      "?D", "?D", "?D", "?D",
-		      "1D", "1D", "1D", "1D",
-		      "3I", "?L"};
+  const char *tformTpl[] = {"I", "D", "D", "D",
+			    "?D", "?D", "?D", "?D",
+			    "1D", "1D", "1D", "1D",
+			    "3I", "?L"};
   char **tform;
   char *tunit[] = {"\0", "s", "day", "s",
 		   "\0", "\0", "deg", "deg",
