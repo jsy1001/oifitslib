@@ -32,7 +32,10 @@
 #include "exchange.h"
 
 
-int main(int argc, char *argv[]) 
+/**
+ * Read data from a user-specified text file and write out in OIFITS format.
+ */
+void demo_write(void)
 {
   oi_array array;
   oi_target targets;
@@ -40,11 +43,10 @@ int main(int argc, char *argv[])
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
-
   char filename[FLEN_FILENAME];
   FILE *fp;
-  int i, irec, iwave, itarg, status, hdutype;
-  fitsfile *fptr, *fptr2;
+  int i, irec, iwave, itarg, status;
+  fitsfile *fptr;
 
   /* get input filename */
   printf("Enter input TEXT filename: ");
@@ -240,7 +242,7 @@ int main(int argc, char *argv[])
   fits_create_file(&fptr, filename, &status);
   if (status) {
     fits_report_error(stderr, status);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   write_oi_target(fptr, targets, &status);
   write_oi_vis(fptr, vis, 1, &status);
@@ -252,35 +254,55 @@ int main(int argc, char *argv[])
   if (status) {
     /* Error occurred - delete partially-created file and exit */
     fits_delete_file(fptr, &status);
-    exit(1);
+    exit(EXIT_FAILURE);
   } else {
     fits_close_file(fptr, &status);
   }
 
-  /* Deallocate storage */
-  free_oi_array(&array);
+  /* Free storage */
   free_oi_target(&targets);
-  free_oi_wavelength(&wave);
   free_oi_vis(&vis);
   free_oi_vis2(&vis2);
   free_oi_t3(&t3);
+  free_oi_array(&array);
+  free_oi_wavelength(&wave);
+}
 
-  /* Read new FITS file */
-  /* This code will read a general OIFITS file containing multiple
-     tables of each type (except OI_TARGET). However, its not that
-     useful since the same oi_vis/vis2/t3 object is used to receive
-     the data from all tables of the corresponding type!
-     See oifile.c for a more useful routine (which requires GLib). */
+
+/**
+ * Read OIFITS file.
+ *
+ * This code will read a general OIFITS file containing multiple
+ * tables of each type (except OI_TARGET). However, its not that
+ * useful since the same oi_vis/vis2/t3 object is used to receive the
+ * data from all tables of the corresponding type!  See oifile.c for a
+ * more useful routine (which requires GLib).
+ * 
+ */
+void demo_read(void)
+{
+  oi_array array;
+  oi_target targets;
+  oi_wavelength wave;
+  oi_vis vis;
+  oi_vis2 vis2;
+  oi_t3 t3;
+  char filename[FLEN_FILENAME];
+  int status, hdutype;
+  fitsfile *fptr, *fptr2;
+
   printf("Enter input OIFITS filename: ");
   fgets(filename, FLEN_FILENAME, stdin);
   filename[strlen(filename)-1] = '\0'; /* zap newline */
   printf("Reading FITS file %s...\n", filename);
+  status = 0;
   fits_open_file(&fptr, filename, READONLY, &status);
   if (status) {
     fits_report_error(stderr, status);
-    exit(1);
+    goto except;
   }
   read_oi_target(fptr, &targets, &status);
+  if (status) goto except;
   /* open 2nd connection to read referenced OI_ARRAY and OI_WAVELENGTH tables
      without losing place in file */
   fits_open_file(&fptr2, filename, READONLY, &status);
@@ -296,8 +318,15 @@ int main(int argc, char *argv[])
       read_oi_array(fptr2, vis.arrname, &array, &status);
     }
     read_oi_wavelength(fptr2, vis.insname, &wave, &status);
+    if (!status) {
+      /* Free storage ready to reuse structs for next table */
+      free_oi_wavelength(&wave);
+      if (strlen(vis.arrname) > 0) free_oi_array(&array);
+      free_oi_vis(&vis);
+    }
   }
-  status = 0; /* reset EOF */
+  if (status != END_OF_FILE) goto except;
+  status = 0;
 
   /* Read all OI_VIS2 tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
@@ -310,8 +339,15 @@ int main(int argc, char *argv[])
       read_oi_array(fptr2, vis2.arrname, &array, &status);
     }
     read_oi_wavelength(fptr2, vis2.insname, &wave, &status);
+    if (!status) {
+      /* Free storage ready to reuse structs for next table */
+      free_oi_wavelength(&wave);
+      if (strlen(vis2.arrname) > 0) free_oi_array(&array);
+      free_oi_vis2(&vis2);
+    }
   }
-  status = 0; /* reset EOF */
+  if (status != END_OF_FILE) goto except;
+  status = 0;
 
   /* Read all OI_T3 tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
@@ -324,10 +360,32 @@ int main(int argc, char *argv[])
       read_oi_array(fptr2, t3.arrname, &array, &status);
     }
     read_oi_wavelength(fptr2, t3.insname, &wave, &status);
+    if (!status) {
+      /* Free storage ready to reuse structs for next table */
+      free_oi_wavelength(&wave);
+      if (strlen(t3.arrname) > 0) free_oi_array(&array);
+      free_oi_t3(&t3);
+    }
   }
-  status = 0; /* reset EOF */
+  if (status != END_OF_FILE) goto except;
+  status = 0;
 
   fits_close_file(fptr, &status);
   fits_close_file(fptr2, &status);
-  return (status != 0);
+  free_oi_target(&targets);
+  return;
+
+ except:
+  exit(EXIT_FAILURE);
+}
+
+
+/**
+ * Main function for demonstration program.
+ */
+int main(int argc, char *argv[]) 
+{
+  demo_write();
+  demo_read();
+  exit(EXIT_SUCCESS);
 }
