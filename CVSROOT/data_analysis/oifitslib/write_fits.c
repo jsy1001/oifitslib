@@ -29,10 +29,52 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "exchange.h"
 #include "fitsio.h"
 
+
+/*
+ * Private functions
+ */
+
+/** Make deep copy of array of n strings, substituting value for any
+    initial '?' */
+char **make_tform(char **template, int n, int value)
+{
+  char **tform;
+  int i, size, needed;
+
+  tform = malloc(n*sizeof(char *));
+  for(i=0; i<n; i++) {
+    if (template[i][0] == '?') {
+      size = strlen(template[i]) + 3; /* allow for extra digits */
+      tform[i] = malloc(size*sizeof(char));
+      needed = snprintf(tform[i], size, "%d%s", value, &template[i][1]);
+      assert(needed < size); /* fails if string was truncated */
+    } else {
+      tform[i] = malloc(strlen(template[i])*sizeof(char));
+      strcpy(tform[i], template[i]);
+    }
+  }
+  return tform;
+}
+
+/** Free array of n strings returned by make_tform() */
+void free_tform(char **tform, int n)
+{
+  int i;
+
+  for(i=0; i<n; i++)
+    free(tform[i]);
+  free(tform);
+}
+
+
+/*
+ * Public functions
+ */
 
 /**
  * Write OI_ARRAY fits binary table
@@ -242,29 +284,23 @@ int write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, int *pStatus)
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		    "VISAMP", "VISAMPERR", "VISPHI", "VISPHIERR",
 		   "UCOORD", "VCOORD", "STA_INDEX", "FLAG"};
-  char *tform[] = {"I", "D", "D", "D",
-		   "?D", "?D", "?D", "?D",
-		   "1D", "1D", "2I", "?L"};
+  char *tformTpl[] = {"I", "D", "D", "D",
+		      "?D", "?D", "?D", "?D",
+		      "1D", "1D", "2I", "?L"};
+  char **tform;
   char *tunit[] = {"\0", "s", "day", "s",
 		   "\0", "\0", "deg", "deg",
 		   "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
-  int revision = 1, irow, i;
-  char tmp[8];
+  int revision = 1, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
-  /* Create table structure: */
-  /* - make up TFORM: substitute vis.nwave for '?' */
-  for(i=0; i<tfields; i++) {
-    if (tform[i][0] == '?') {
-      sprintf(tmp, "%d%s", vis.nwave, &tform[i][1]);
-      tform[i] = malloc((strlen(tmp)+1)*sizeof(char));
-      strcpy(tform[i], tmp);
-    }
-  }
+  /* Create table structure */
+  tform = make_tform(tformTpl, tfields, vis.nwave);
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
+  free_tform(tform, tfields);
 
   /* Write keywords */
   if (vis.revision != revision) {
@@ -335,29 +371,23 @@ int write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, int *pStatus)
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		   "VIS2DATA", "VIS2ERR", "UCOORD", "VCOORD",
 		   "STA_INDEX", "FLAG"};
-  char *tform[] = {"I", "D", "D", "D",
-		   "?D", "?D", "1D", "1D",
-		   "2I", "?L"};
+  char *tformTpl[] = {"I", "D", "D", "D",
+		      "?D", "?D", "1D", "1D",
+		      "2I", "?L"};
+  char **tform;
   char *tunit[] = {"\0", "s", "day", "s",
 		   "\0", "\0", "m", "m",
 		   "\0", "\0"};
   char extname[] = "OI_VIS2";
-  int revision = 1, irow, i;
-  char tmp[8];
+  int revision = 1, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
-  /* Create table structure: */
-  /* - make up TFORM: substitute vis2.nwave for '?' */
-  for(i=0; i<tfields; i++) {
-    if (tform[i][0] == '?') {
-      sprintf(tmp, "%d%s", vis2.nwave, &tform[i][1]);
-      tform[i] = malloc((strlen(tmp)+1)*sizeof(char));
-      strcpy(tform[i], tmp);
-    }
-  }
+  /* Create table structure */
+  tform = make_tform(tformTpl, tfields, vis2.nwave);
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
+  free_tform(tform, tfields);
 
   /* Write keywords */
   if (vis2.revision != revision) {
@@ -425,31 +455,25 @@ int write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, int *pStatus)
 		   "T3AMP", "T3AMPERR", "T3PHI", "T3PHIERR",
 		   "U1COORD", "V1COORD", "U2COORD", "V2COORD", 
 		   "STA_INDEX", "FLAG"};
-  char *tform[] = {"I", "D", "D", "D",
-		   "?D", "?D", "?D", "?D",
-		   "1D", "1D", "1D", "1D",
-		   "3I", "?L"};
+  char *tformTpl[] = {"I", "D", "D", "D",
+		      "?D", "?D", "?D", "?D",
+		      "1D", "1D", "1D", "1D",
+		      "3I", "?L"};
+  char **tform;
   char *tunit[] = {"\0", "s", "day", "s",
 		   "\0", "\0", "deg", "deg",
 		   "m", "m", "m", "m",
 		   "\0", "\0"};
   char extname[] = "OI_T3";
-  int revision = 1, irow, i;
-  char tmp[8];
+  int revision = 1, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
-  /* Create table structure: */
-  /* - make up TFORM: substitute t3.nwave for '?' */
-  for(i=0; i<tfields; i++) {
-    if (tform[i][0] == '?') {
-      sprintf(tmp, "%d%s", t3.nwave, &tform[i][1]);
-      tform[i] = malloc((strlen(tmp)+1)*sizeof(char));
-      strcpy(tform[i], tmp);
-    }
-  }
+  /* Create table structure */
+  tform = make_tform(tformTpl, tfields, t3.nwave);
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
+  free_tform(tform, tfields);
 
   /* Write keywords */
   if (t3.revision != revision) {
