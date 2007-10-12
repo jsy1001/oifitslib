@@ -27,6 +27,7 @@
  */
 
 /* :TODO: integrate fitsverify? */
+/* :TODO: check_tables_present() */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,7 +161,8 @@ oi_breach_level check_unique_targets(oi_fits *pOi, oi_check_result *pResult)
     if(g_list_find_custom(idList, pTarget->target,
 			  (GCompareFunc) strcmp) != NULL) {
       /* Duplicate TARGET value */
-      g_snprintf(location, FLEN_VALUE, "TARGET_ID=%d", pTarget->target_id);
+      g_snprintf(location, FLEN_VALUE, "TARGET_ID=%d  TARGET='%s'",
+		 pTarget->target_id, pTarget->target);
       set_result(pResult, OI_BREACH_WARNING, desc, location);
     } else {
       /* prepend to list as faster than appending and order doesn't matter */

@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
   /* Parse command-line */
   if(argc != 2) {
-    printf("Usage:\n%s [FILE]\n", argv[0]);
+    printf("Usage:\n%s FILE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
   (void) g_strlcpy(filename, argv[1], FLEN_FILENAME);

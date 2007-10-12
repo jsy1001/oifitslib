@@ -468,7 +468,9 @@ INPUT                  = exchange.h \
                          oicheck.h \
                          oicheck.c \
                          oifilter.h \
-                         oifilter.c
+                         oifilter.c \
+			 oimerge.h \
+			 oimerge.c
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

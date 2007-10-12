@@ -81,6 +81,76 @@ static oi_wavelength *find_oi_wavelength(const oi_fits *pOi,
   return NULL;
 }
 
+/**
+ * Return shortest wavelength in OI_WAVELENGTH table.
+ *
+ *   @param pWave  pointer to wavelength struct
+ *
+ *   @return Minimum of eff_wave values /m
+ */
+static float get_min_wavelength(const oi_wavelength *pWave)
+{
+  int i;
+  float minWave = 1.0e11;
+
+  for(i=0; i<pWave->nwave; i++) {
+    if (pWave->eff_wave[i] < minWave) minWave = pWave->eff_wave[i];
+  }
+  return minWave;
+}
+
+/**
+ * Return longest wavelength in OI_WAVELENGTH table.
+ *
+ *   @param pWave  pointer to wavelength struct
+ *
+ *   @return Maximum of eff_wave values /m
+ */
+static float get_max_wavelength(const oi_wavelength *pWave)
+{
+  int i;
+  float maxWave = 0.0;
+
+  for(i=0; i<pWave->nwave; i++) {
+    if (pWave->eff_wave[i] > maxWave) maxWave = pWave->eff_wave[i];
+  }
+  return maxWave;
+}
+
+/** Generate summary string for each oi_array in GList. */
+static void format_array_list_summary(GString *pGStr, GList *arrayList)
+{
+  GList *link;
+  oi_array *pArray;
+
+  link = arrayList;
+  while(link != NULL) {
+    pArray = (oi_array *) link->data;
+    g_string_append_printf(pGStr,
+			   "    ARRNAME='%s'  %d elements\n",
+			   pArray->arrname, pArray->nelement);
+    link = link->next;
+  }
+}    
+
+/** Generate summary string for each oi_wavelength in GList. */
+static void format_wavelength_list_summary(GString *pGStr, GList *waveList)
+{
+  GList *link;
+  oi_wavelength *pWave;
+
+  link = waveList;
+  while(link != NULL) {
+    pWave = (oi_wavelength *) link->data;
+    g_string_append_printf(pGStr,
+			   "    INSNAME='%s'  %d channels  %7.1f-%7.1fnm\n",
+			   pWave->insname, pWave->nwave,
+			   1e9*get_min_wavelength(pWave),
+			   1e9*get_max_wavelength(pWave));
+    link = link->next;
+  }
+}    
+
 
 /*
  * Public functions
@@ -423,16 +493,20 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
   return NULL;
 }
 
-/** Macro to generate info for each oi_vis/vis2/t3 in GList. */
-#define OI_LIST_FORMAT_SUMMARY(pGStr, list, type, link) \
+  
+/** Macro to generate summary string for each oi_vis/vis2/t3 in GList. */
+#define FORMAT_OI_LIST_SUMMARY(pGStr, list, type, link) \
   { link = list; \
     while(link != NULL) { \
       g_string_append_printf( \
-        pGStr, "  %5ld records x %3d wavebands  INSNAME='%s'  ARRNAME='%s'\n",\
-       ((type *) (link->data))->numrec,   \
-       ((type *) (link->data))->nwave,    \
+       pGStr, \
+       "    INSNAME='%s'  ARRNAME='%s'  DATE_OBS=%s\n" \
+       "     %5ld records x %3d wavebands\n", \
        ((type *) (link->data))->insname,  \
-       ((type *) (link->data))->arrname); \
+       ((type *) (link->data))->arrname,  \
+       ((type *) (link->data))->date_obs, \
+       ((type *) (link->data))->numrec,   \
+       ((type *) (link->data))->nwave);   \
       link = link->next; \
     } \
   }
@@ -449,16 +523,20 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
   GList *link;
 
   if (pGStr == NULL)
-    pGStr = g_string_sized_new(256);
+    pGStr = g_string_sized_new(512);
 
   g_string_printf(pGStr, "OIFITS data:\n");
-  /* :TODO: wavelength ranges, MJD ranges */
+  g_string_append_printf(pGStr, "  %d OI_ARRAY tables:\n", pOi->numArray);
+  format_array_list_summary(pGStr, pOi->arrayList);
+  g_string_append_printf(pGStr, "  %d OI_WAVELENGTH tables:\n",
+			 pOi->numWavelength);
+  format_wavelength_list_summary(pGStr, pOi->wavelengthList);
   g_string_append_printf(pGStr, "  %d OI_VIS tables:\n", pOi->numVis);
-  OI_LIST_FORMAT_SUMMARY(pGStr, pOi->visList, oi_vis, link);
+  FORMAT_OI_LIST_SUMMARY(pGStr, pOi->visList, oi_vis, link);
   g_string_append_printf(pGStr, "  %d OI_VIS2 tables:\n", pOi->numVis2);
-  OI_LIST_FORMAT_SUMMARY(pGStr, pOi->vis2List, oi_vis2, link);
+  FORMAT_OI_LIST_SUMMARY(pGStr, pOi->vis2List, oi_vis2, link);
   g_string_append_printf(pGStr, "  %d OI_T3 tables:\n", pOi->numT3);
-  OI_LIST_FORMAT_SUMMARY(pGStr, pOi->t3List, oi_t3, link);
+  FORMAT_OI_LIST_SUMMARY(pGStr, pOi->t3List, oi_t3, link);
 
   return pGStr->str;
 }
@@ -471,4 +549,151 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
 void print_oi_fits_summary(const oi_fits *pOi)
 {
   printf("%s", format_oi_fits_summary(pOi));
+}
+
+/**
+ * Make deep copy of a OI_TARGET table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_target *dup_oi_target(const oi_target *pInTab)
+{
+  oi_target *pOutTab;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->targ, pInTab->targ,
+	 pInTab->ntarget*sizeof(pInTab->targ[0]));
+  return pOutTab;
+}
+/**
+ * Make deep copy of a OI_ARRAY table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_array *dup_oi_array(const oi_array *pInTab)
+{
+  oi_array *pOutTab;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->elem, pInTab->elem,
+	 pInTab->nelement*sizeof(pInTab->elem[0]));
+  return pOutTab;
+}
+
+/**
+ * Make deep copy of a OI_WAVELENGTH table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_wavelength *dup_oi_wavelength(const oi_wavelength *pInTab)
+{
+  oi_wavelength *pOutTab;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->eff_wave, pInTab->eff_wave,
+	 pInTab->nwave*sizeof(pInTab->eff_wave[0]));
+  MEMDUP(pOutTab->eff_band, pInTab->eff_band,
+	 pInTab->nwave*sizeof(pInTab->eff_band[0]));
+  return pOutTab;
+}
+
+/**
+ * Make deep copy of a OI_VIS table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_vis *dup_oi_vis(const oi_vis *pInTab)
+{
+  oi_vis *pOutTab;
+  oi_vis_record *pInRec, *pOutRec;
+  int i;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->record, pInTab->record,
+	 pInTab->numrec*sizeof(pInTab->record[0]));
+  for(i=0; i<pInTab->numrec; i++) {
+    pOutRec = &pOutTab->record[i];
+    pInRec = &pInTab->record[i];
+    MEMDUP(pOutRec->visamp, pInRec->visamp,
+	   pInTab->nwave*sizeof(pInRec->visamp[0]));
+    MEMDUP(pOutRec->visamperr, pInRec->visamperr,
+	   pInTab->nwave*sizeof(pInRec->visamperr[0]));
+    MEMDUP(pOutRec->visphi, pInRec->visphi,
+	   pInTab->nwave*sizeof(pInRec->visphi[0]));
+    MEMDUP(pOutRec->visphierr, pInRec->visphierr,
+	   pInTab->nwave*sizeof(pInRec->visphierr[0]));
+    MEMDUP(pOutRec->flag, pInRec->flag,
+	   pInTab->nwave*sizeof(pInRec->flag[0]));
+  }
+  return pOutTab;
+}
+
+/**
+ * Make deep copy of a OI_VIS2 table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_vis2 *dup_oi_vis2(const oi_vis2 *pInTab)
+{
+  oi_vis2 *pOutTab;
+  oi_vis2_record *pInRec, *pOutRec;
+  int i;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->record, pInTab->record,
+	 pInTab->numrec*sizeof(pInTab->record[0]));
+  for(i=0; i<pInTab->numrec; i++) {
+    pOutRec = &pOutTab->record[i];
+    pInRec = &pInTab->record[i];
+    MEMDUP(pOutRec->vis2data, pInRec->vis2data,
+	   pInTab->nwave*sizeof(pInRec->vis2data[0]));
+    MEMDUP(pOutRec->vis2err, pInRec->vis2err,
+	   pInTab->nwave*sizeof(pInRec->vis2err[0]));
+    MEMDUP(pOutRec->flag, pInRec->flag,
+	   pInTab->nwave*sizeof(pInRec->flag[0]));
+  }
+  return pOutTab;
+}
+
+/**
+ * Make deep copy of a OI_T3 table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_t3 *dup_oi_t3(const oi_t3 *pInTab)
+{
+  oi_t3 *pOutTab;
+  oi_t3_record *pInRec, *pOutRec;
+  int i;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->record, pInTab->record,
+	 pInTab->numrec*sizeof(pInTab->record[0]));
+  for(i=0; i<pInTab->numrec; i++) {
+    pOutRec = &pOutTab->record[i];
+    pInRec = &pInTab->record[i];
+    MEMDUP(pOutRec->t3amp, pInRec->t3amp,
+	   pInTab->nwave*sizeof(pInRec->t3amp[0]));
+    MEMDUP(pOutRec->t3amperr, pInRec->t3amperr,
+	   pInTab->nwave*sizeof(pInRec->t3amperr[0]));
+    MEMDUP(pOutRec->t3phi, pInRec->t3phi,
+	   pInTab->nwave*sizeof(pInRec->t3phi[0]));
+    MEMDUP(pOutRec->t3phierr, pInRec->t3phierr,
+	   pInTab->nwave*sizeof(pInRec->t3phierr[0]));
+    MEMDUP(pOutRec->flag, pInRec->flag,
+	   pInTab->nwave*sizeof(pInRec->flag[0]));
+  }
+  return pOutTab;
 }

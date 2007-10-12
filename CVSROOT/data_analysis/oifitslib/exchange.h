@@ -48,7 +48,7 @@
  * OIFITSlib incorporates the following modules:
  * - @ref oitable
  * - @ref oifile
- * - OIFITS merger (to be released later)
+ * - @ref oimerge
  * - @ref oifilter
  * - @ref oicheck
  */

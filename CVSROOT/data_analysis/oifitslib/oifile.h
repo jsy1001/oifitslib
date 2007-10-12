@@ -55,6 +55,14 @@
 
 
 /*
+ * Macros
+ */
+
+#define MEMDUP(dest, src, size) \
+  { (dest) = malloc((size)); memcpy((dest), (src), (size)); } 
+
+
+/*
  * Data structures
  */
 
@@ -90,6 +98,12 @@ oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *, const char *);
 target *oi_fits_lookup_target(const oi_fits *, int);
 const char *format_oi_fits_summary(const oi_fits *);
 void print_oi_fits_summary(const oi_fits *);
+oi_target *dup_oi_target(const oi_target *);
+oi_array *dup_oi_array(const oi_array *);
+oi_wavelength *dup_oi_wavelength(const oi_wavelength *);
+oi_vis *dup_oi_vis(const oi_vis *);
+oi_vis2 *dup_oi_vis2(const oi_vis2 *);
+oi_t3 *dup_oi_t3(const oi_t3 *);
 
 #endif /* #ifndef OIFILE_H */
 

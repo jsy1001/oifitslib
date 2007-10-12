@@ -50,7 +50,7 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 
 OITABLE = liboitable.a demo
-EXES = oifits-filter oifits-check
+EXES = oifits-filter oifits-check oifits-merge
 LIBRARIES = liboifits.a 
 
 # List targets that don't require GLib first
@@ -75,14 +75,18 @@ demo.o: demo.c exchange.h
 # Targets requiring GLib
 #
 liboifits.a: read_fits.o write_fits.o free_fits.o oifile.o \
- oifilter.o oicheck.o
+ oifilter.o oicheck.o oimerge.o
 	$(AR) -ruc $@ $^
 oifile.o: oifile.c oifile.h exchange.h glib-2.0.libexists
 oifilter.o: oifilter.c oifilter.h oifile.h exchange.h glib-2.0.libexists
 oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
+oimerge.o: oimerge.c oimerge.h oifile.h exchange.h glib-2.0.libexists
 
 oifits-filter: oifits-filter.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB) -L. -loifits
 
 oifits-check: oifits-check.o liboifits.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB) -L. -loifits
+
+oifits-merge: oifits-merge.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB) -L. -loifits

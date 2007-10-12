@@ -102,18 +102,18 @@ void filter_all_oi_array(const oi_fits *, const oi_filter_spec *, oi_fits *);
 GHashTable *filter_all_oi_wavelength(const oi_fits *, const oi_filter_spec *,
 				     oi_fits *);
 void filter_oi_wavelength(const oi_wavelength *, const float[2],
-			  oi_wavelength *, char []);
+			  oi_wavelength *, char *);
 void filter_all_oi_vis(const oi_fits *, const oi_filter_spec *, GHashTable *,
 		       oi_fits *);
-void filter_oi_vis(const oi_vis *, const oi_filter_spec *, GHashTable *,
+void filter_oi_vis(const oi_vis *, const oi_filter_spec *, const char *,
 		   oi_vis *);
 void filter_all_oi_vis2(const oi_fits *, const oi_filter_spec *, GHashTable *,
 			oi_fits *);
-void filter_oi_vis2(const oi_vis2 *, const oi_filter_spec *, GHashTable *,
+void filter_oi_vis2(const oi_vis2 *, const oi_filter_spec *, const char *,
 		 oi_vis2 *);
 void filter_all_oi_t3(const oi_fits *, const oi_filter_spec *, GHashTable *,
 		      oi_fits *);
-void filter_oi_t3(const oi_t3 *, const oi_filter_spec *, GHashTable *,
+void filter_oi_t3(const oi_t3 *, const oi_filter_spec *, const char *,
 		  oi_t3 *);
 
 #endif /* #ifndef OIFILTER_H */

@@ -249,11 +249,10 @@ void filter_oi_target(const oi_target *pInTargets,
       }
     }
   } else {
-    /* Copy entire input oi_target */
-    memcpy(pOutTargets, pInTargets, sizeof(oi_target));
-    pOutTargets->targ = malloc(pInTargets->ntarget*sizeof(target));
-    memcpy(pOutTargets->targ, pInTargets->targ,
-	   pInTargets->ntarget*sizeof(target));
+    /* Copy input table */
+    memcpy(pOutTargets, pInTargets, sizeof(*pInTargets));
+    MEMDUP(pOutTargets->targ, pInTargets->targ,
+	   pInTargets->ntarget*sizeof(pInTargets->targ[0]));
   }
 }
 
@@ -277,10 +276,7 @@ void filter_all_oi_array(const oi_fits *pInput, const oi_filter_spec *pFilter,
     pInTab = (oi_array *) link->data;
     if(ACCEPT_ARRNAME(pInTab, pFilter)) {
       /* Copy this table */
-      pOutTab = malloc(sizeof(oi_array));
-      memcpy(pOutTab, pInTab, sizeof(oi_array));
-      pOutTab->elem = malloc(pInTab->nelement*sizeof(element));
-      memcpy(pOutTab->elem, pInTab->elem, pInTab->nelement*sizeof(element));
+      pOutTab = dup_oi_array(pInTab);
       pOutput->arrayList = g_list_append(pOutput->arrayList, pOutTab);
       ++pOutput->numArray;
       g_hash_table_insert(pOutput->arrayHash, pOutTab->arrname, pOutTab);
@@ -348,7 +344,7 @@ GHashTable *filter_all_oi_wavelength(const oi_fits *pInput,
  */
 void filter_oi_wavelength(const oi_wavelength *pInWave,
 			  const float waveRange[2], oi_wavelength *pOutWave,
-			  char useWave[])
+			  char *useWave)
 {
   int i;
 
@@ -356,8 +352,8 @@ void filter_oi_wavelength(const oi_wavelength *pInWave,
   (void) g_strlcpy(pOutWave->insname, pInWave->insname, FLEN_VALUE);
   pOutWave->nwave = 0; /* use as counter */
   /* will reallocate eff_wave and eff_band later */
-  pOutWave->eff_wave = malloc(pInWave->nwave*sizeof(float));
-  pOutWave->eff_band = malloc(pInWave->nwave*sizeof(float));
+  pOutWave->eff_wave = malloc(pInWave->nwave*sizeof(pInWave->eff_wave[0]));
+  pOutWave->eff_band = malloc(pInWave->nwave*sizeof(pInWave->eff_band[0]));
 
   for(i=0; i<pInWave->nwave; i++) {
     if (pInWave->eff_wave[i] < waveRange[0] ||
@@ -371,15 +367,14 @@ void filter_oi_wavelength(const oi_wavelength *pInWave,
   }
   if (pOutWave->nwave < pInWave->nwave) {
     pOutWave->eff_wave = realloc(pOutWave->eff_wave,
-				 pOutWave->nwave*sizeof(float));
+				 pOutWave->nwave*sizeof(pInWave->eff_wave[0]));
     pOutWave->eff_band = realloc(pOutWave->eff_band,
-				 pOutWave->nwave*sizeof(float));
+				 pOutWave->nwave*sizeof(pInWave->eff_band[0]));
   }
 }
 
 /**
  * Filter all OI_VIS tables.
- * :TODO: pass useWave rather than useWaveHash
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -410,7 +405,7 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
       pOutTab = malloc(sizeof(oi_vis));
-      filter_oi_vis(pInTab, pFilter, useWaveHash, pOutTab);
+      filter_oi_vis(pInTab, pFilter, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
 	pOutput->visList = g_list_append(pOutput->visList, pOutTab);
 	++pOutput->numVis;
@@ -427,15 +422,13 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
  *
  * @param pInTab       pointer to input oi_vis
  * @param pFilter      pointer to filter specification
- * @param useWaveHash  hash table with INSAME values as keys and char[]
- *                     specifying wavelength channels to accept as values
+ * @param useWave      boolean array giving wavelength channels to accept
  * @param pOutTab      pointer to output oi_vis
  */
 void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
-		   GHashTable *useWaveHash, oi_vis *pOutTab)
+		   const char *useWave, oi_vis *pOutTab)
 {
   int i, j, k, nrec;
-  char *useWave;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis));
@@ -445,7 +438,6 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_vis_record)); /* will reallocate */
   pOutTab->nwave = pInTab->nwave; /* upper limit */
-  useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
@@ -525,7 +517,7 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
       pOutTab = malloc(sizeof(oi_vis2));
-      filter_oi_vis2(pInTab, pFilter, useWaveHash, pOutTab);
+      filter_oi_vis2(pInTab, pFilter, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
 	pOutput->vis2List = g_list_append(pOutput->vis2List, pOutTab);
 	++pOutput->numVis2;
@@ -542,15 +534,13 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
  *
  * @param pInTab       pointer to input oi_vis2
  * @param pFilter      pointer to filter specification
- * @param useWaveHash  hash table with INSAME values as keys and char[]
- *                     specifying wavelength channels to accept as values
+ * @param useWave      boolean array giving wavelength channels to accept
  * @param pOutTab      pointer to output oi_vis2
  */
 void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
-		    GHashTable *useWaveHash, oi_vis2 *pOutTab)
+		    const char *useWave, oi_vis2 *pOutTab)
 {
   int i, j, k, nrec;
-  char *useWave;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis2));
@@ -560,7 +550,6 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_vis2_record)); /* will reallocate */
   pOutTab->nwave = pInTab->nwave; /* upper limit */
-  useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
@@ -632,7 +621,7 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
       pOutTab = malloc(sizeof(oi_t3));
-      filter_oi_t3(pInTab, pFilter, useWaveHash, pOutTab);
+      filter_oi_t3(pInTab, pFilter, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
 	pOutput->t3List = g_list_append(pOutput->t3List, pOutTab);
 	++pOutput->numT3;
@@ -649,15 +638,13 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
  *
  * @param pInTab       pointer to input oi_t3
  * @param pFilter      pointer to filter specification
- * @param useWaveHash  hash table with INSAME values as keys and char[]
- *                     specifying wavelength channels to accept as values
+ * @param useWave      boolean array giving wavelength channels to accept
  * @param pOutTab      pointer to output oi_t3
  */
 void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
-		  GHashTable *useWaveHash, oi_t3 *pOutTab)
+		  const char *useWave, oi_t3 *pOutTab)
 {
   int i, j, k, nrec;
-  char *useWave;
   double nan;
 
   /* If needed, make a NaN */
@@ -674,7 +661,6 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_t3_record)); /* will reallocate */
   pOutTab->nwave = pInTab->nwave; /* upper limit */
-  useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
