@@ -78,7 +78,7 @@ typedef struct {
   char arrname[FLEN_VALUE]; /**< If not "", accept this ARRNAME only */
   char insname[FLEN_VALUE]; /**< If not "", accept this INSNAME only */
   int target_id;       /**< If >= 0, accept this TARGET_ID only */
-  float mjd_range[2];  /**< Minimum and maximum MJD to accept */
+  double mjd_range[2];  /**< Minimum and maximum MJD to accept */
   float wave_range[2]; /**< Minimum and maximum central wavelength to accept /m */
   int accept_vis;      /**< If non-zero, accept OI_VIS data */
   int accept_vis2;     /**< If non-zero, accept OI_VIS2 data */

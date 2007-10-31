@@ -99,6 +99,7 @@ typedef oi_breach_level (*check_func)(oi_fits *, oi_check_result *);
 /*
  * Function prototypes
  */
+void init_check_result(oi_check_result *);
 void free_check_result(oi_check_result *);
 char *format_check_result(oi_check_result *);
 void print_check_result(oi_check_result *);

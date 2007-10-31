@@ -51,13 +51,16 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 OITABLE = liboitable.a demo
 EXES = oifits-filter oifits-check oifits-merge
-LIBRARIES = liboifits.a 
+LIBRARIES = liboifits.a
+PYTHONMODULES = _oifitsmodule.so \
+ _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
 
 # List targets that don't require GLib first
-default: $(OITABLE) $(LIBRARIES) $(EXES) ;
+default: $(OITABLE) $(LIBRARIES) $(EXES) $(PYTHONMODULES) ;
 
 clean:
 	rm -f $(OITABLE) $(LIBRARIES) $(EXES) *.o *.libexists
+	rm -f $(PYTHONMODULES) *_wrap.c *.py *.pyc
 
 # Library for table level I/O only - does not require GLib
 liboitable.a: read_fits.o write_fits.o free_fits.o
@@ -83,10 +86,26 @@ oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 oimerge.o: oimerge.c oimerge.h oifile.h exchange.h glib-2.0.libexists
 
 oifits-filter: oifits-filter.o liboifits.a
-	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB) -L. -loifits
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 oifits-check: oifits-check.o liboifits.a
-	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB) -L. -loifits
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 oifits-merge: oifits-merge.o liboifits.a
-	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB) -L. -loifits
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
+
+# Python interface
+# :TODO: use distutils instead, perhaps for $(CC) & $(LD) steps only
+%_wrap.c %.py : %.i oifits_typemaps.i
+	swig -python -o $@ $< 
+
+CFLAGS += -I/usr/include/python2.4
+
+_%module.so: %_wrap.o liboifits.a
+	$(LD) -G $^ $(LDLIBS) $(LDLIBS_GLIB) -o $@
+
+test: $(PYTHONMODULES)
+	python oifits.py
+	python oifilter.py
+	python oicheck.py
+	python oimerge.py

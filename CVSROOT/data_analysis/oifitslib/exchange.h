@@ -72,6 +72,9 @@
 
 #include "fitsio.h"
 
+typedef char BOOL;
+typedef double DATA;
+
 
 /*
  * Data structures
@@ -79,7 +82,7 @@
 /* NB must allow for final null when dimensioning character arrays */
 
 /** Array element. Corresponds to one row of an OI_ARRAY FITS table. */
-typedef struct _element {
+typedef struct {
   char tel_name[17];
   char sta_name[17];
   int sta_index;
@@ -88,7 +91,7 @@ typedef struct _element {
 } element;
 
 /** Data for OI_ARRAY FITS table */
-typedef struct _oi_array {
+typedef struct {
   int revision;
   char arrname[FLEN_VALUE];
   char frame[FLEN_VALUE];
@@ -101,7 +104,7 @@ typedef struct _oi_array {
  *
  * Corresponds to one row of an OI_TARGET FITS table.
  */
-typedef struct _target {
+typedef struct {
   int target_id;
   char target[17];
   double raep0, decep0;
@@ -116,14 +119,14 @@ typedef struct _target {
 } target;
 
 /** Data for OI_TARGET FITS table */
-typedef struct _oi_target {
+typedef struct {
   int revision;
   int ntarget;
   target *targ;
 } oi_target;
 
 /** Data for OI_WAVELENGTH FITS table */
-typedef struct _oi_wavelength {
+typedef struct {
   int revision;
   char insname[FLEN_VALUE];
   int nwave;
@@ -133,20 +136,20 @@ typedef struct _oi_wavelength {
 
 /** Complex visibility record. Corresponds to one row of an OI_VIS
     FITS table. */
-typedef struct _oi_vis_record {
+typedef struct {
   int target_id;
   double time;
   double mjd;
   double int_time;
-  double *visamp, *visamperr;
-  double *visphi, *visphierr;
+  DATA *visamp, *visamperr;
+  DATA *visphi, *visphierr;
   double ucoord, vcoord;
   int sta_index[2];
-  char *flag;
+  BOOL *flag;
 } oi_vis_record;
 
 /** Data for OI_VIS FITS table */
-typedef struct _oi_vis {
+typedef struct {
   int revision;
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
@@ -158,19 +161,19 @@ typedef struct _oi_vis {
 
 /** Visibility squared record. Corresponds to one row of an OI_VIS2
     FITS table. */
-typedef struct _oi_vis2_record {
+typedef struct {
   int target_id;
   double time;
   double mjd;
   double int_time;
-  double *vis2data, *vis2err;
+  DATA *vis2data, *vis2err;
   double ucoord, vcoord;
   int sta_index[2];
-  char *flag;
+  BOOL *flag;
 } oi_vis2_record;
 
 /** Data for OI_VIS2 FITS table */
-typedef struct _oi_vis2 {
+typedef struct {
   int revision;
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
@@ -181,20 +184,20 @@ typedef struct _oi_vis2 {
 } oi_vis2;
 
 /** Triple product record. Corresponds to one row of an OI_T3 FITS table. */
-typedef struct _oi_t3_record {
+typedef struct {
   int target_id;
   double time;
   double mjd;
   double int_time;
-  double *t3amp, *t3amperr;
-  double *t3phi, *t3phierr;
+  DATA *t3amp, *t3amperr;
+  DATA *t3phi, *t3phierr;
   double u1coord, v1coord, u2coord, v2coord;
   int sta_index[3];
-  char *flag;
+  BOOL *flag;
 } oi_t3_record;
 
 /** Data for OI_T3 FITS table */
-typedef struct _oi_t3 {
+typedef struct {
   int revision;
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */

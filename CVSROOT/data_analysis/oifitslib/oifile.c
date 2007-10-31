@@ -243,6 +243,7 @@ int write_oi_fits(const char *filename, oi_fits oi, int *pStatus)
 
 /**
  * Read all OIFITS tables from FITS file.
+ * :TODO: mechanism to hush error reports - global variable?
  *
  *   @param filename  name of file to read
  *   @param pOi       pointer to uninitialised file data struct, see oifile.h

@@ -48,16 +48,12 @@ char *oi_breach_level_desc[] = {
 };
 
 
-/*
- * Private functions
- */
-
 /**
  * Initialise check result struct.
  *
  * @param pResult  pointer to check result struct to initialise
  */
-static void init_check_result(oi_check_result *pResult)
+void init_check_result(oi_check_result *pResult)
 {
   int i;
 
@@ -85,11 +81,6 @@ static void set_result(oi_check_result *pResult, oi_breach_level level,
       g_string_chunk_insert(pResult->chunk, "[List truncated]");
   }
 }
-
-
-/*
- * Public functions
- */
 
 /**
  * Free dynamically-allocated storage within check result struct.
