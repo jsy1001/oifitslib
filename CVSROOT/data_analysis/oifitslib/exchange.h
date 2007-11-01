@@ -74,6 +74,10 @@
 
 typedef char BOOL;
 typedef double DATA;
+typedef int STATUS;
+
+
+extern int oi_hush_errors; /**< If TRUE, don't report I/O errors to stderr */
 
 
 /*
@@ -213,25 +217,27 @@ typedef struct {
  */
 
 /* Functions from write_fits.c */
-int write_oi_array(fitsfile *fptr, oi_array array, int extver, int *pStatus);
-int write_oi_target(fitsfile *fptr, oi_target targets, int *pStatus);
-int write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver, 
-			int *pStatus);
-int write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, int *pStatus);
-int write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, int *pStatus);
-int write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, int *pStatus);
+STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
+                      STATUS *pStatus);
+STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus);
+STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver, 
+                           STATUS *pStatus);
+STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus);
+STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver,
+                     STATUS *pStatus);
+STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus);
 /* Functions from read_fits.c */
-int read_oi_target(fitsfile *fptr, oi_target *pTargets, int *pStatus);
-int read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
-		  int *pStatus);
-int read_next_oi_array(fitsfile *fptr, oi_array *pArray, int *pStatus);
-int read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
-		       int *pStatus);
-int read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
-			    int *pStatus);
-int read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, int *pStatus);
-int read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, int *pStatus);
-int read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, int *pStatus);
+STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus);
+STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
+                     STATUS *pStatus);
+STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus);
+STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
+                          STATUS *pStatus);
+STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
+                               STATUS *pStatus);
+STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus);
+STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus);
+STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus);
 /* Functions from free_fits.c */
 void free_oi_array(oi_array *pArray);
 void free_oi_target(oi_target *pTargets);

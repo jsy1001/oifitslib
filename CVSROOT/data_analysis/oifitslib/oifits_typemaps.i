@@ -205,6 +205,30 @@
 }
 
 
+// Pair of typemaps to hide pointer to status variable argument
+// and raise python exception on failure
+%typemap(in, numinputs=0) STATUS *FITSIO_STATUS (STATUS status)
+{
+  status = 0;
+  $1 = &status;
+}
+
+%typemap(argout) STATUS *FITSIO_STATUS
+{
+  GString *gstr;
+  char msg[80];
+  if(*$1) {
+    gstr = g_string_sized_new(80);
+    while(fits_read_errmsg(msg)) {
+      g_string_append_printf(gstr, "%s\n", msg);
+    }
+    PyErr_SetString(PyExc_IOError, gstr->str);
+    g_string_free(gstr, TRUE);
+    SWIG_fail;
+  }
+}
+
+
 // Macro to map python sequence of SWIG-wrapped DATA_TYPE instances to
 // named GList *LIST
 %define %map_in_glist(LIST, DATA_TYPE)

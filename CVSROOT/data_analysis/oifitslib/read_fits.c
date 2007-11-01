@@ -49,7 +49,7 @@
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus)
  */
-static int next_named_hdu(fitsfile *fptr, char *reqName, int *pStatus)
+static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
 {
   char comment[FLEN_COMMENT], extname[FLEN_VALUE];
   int hdutype;
@@ -80,8 +80,8 @@ static int next_named_hdu(fitsfile *fptr, char *reqName, int *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus)
  */
-static int specific_named_hdu(fitsfile *fptr, char *reqName,
-			      char *keyword, char *reqVal, int *pStatus)
+static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
+                                 char *keyword, char *reqVal, STATUS *pStatus)
 {
   char comment[FLEN_COMMENT], extname[FLEN_VALUE], value[FLEN_VALUE];
   int ihdu, nhdu, hdutype;
@@ -123,8 +123,8 @@ static int specific_named_hdu(fitsfile *fptr, char *reqName,
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of array data struct are undefined
  */
-static int read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
-			      char *arrname, int *pStatus)
+static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
+                                 char *arrname, STATUS *pStatus)
 {
   char comment[FLEN_COMMENT], name[FLEN_VALUE];
   char *p;
@@ -197,8 +197,8 @@ static int read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of wavelength data struct are undefined
  */
-static int read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
-				   char *insname, int *pStatus)
+static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
+                                      char *insname, STATUS *pStatus)
 {
   char comment[FLEN_COMMENT], name[FLEN_VALUE];
   float nullfloat = 0.0F;
@@ -250,7 +250,7 @@ static int read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of targets data struct are undefined
  */
-int read_oi_target(fitsfile *fptr, oi_target *pTargets, int *pStatus)
+STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 {
   const char function[] = "read_oi_target";
   char comment[FLEN_COMMENT];
@@ -336,7 +336,7 @@ int read_oi_target(fitsfile *fptr, oi_target *pTargets, int *pStatus)
 	   pTargets->targ[irow-1].raep0, pTargets->targ[irow-1].decep0,
 	   pTargets->targ[irow-1].spectyp);*/
   }
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -355,8 +355,8 @@ int read_oi_target(fitsfile *fptr, oi_target *pTargets, int *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of array data struct are undefined
  */
-int read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
-		  int *pStatus)
+STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
+                     STATUS *pStatus)
 {
   const char function[] = "read_oi_array";
 
@@ -365,7 +365,7 @@ int read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
   specific_named_hdu(fptr, "OI_ARRAY", "ARRNAME", arrname, pStatus);
   read_oi_array_chdu(fptr, pArray, arrname, pStatus);
 
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -382,7 +382,7 @@ int read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of data struct are undefined
  */
-int read_next_oi_array(fitsfile *fptr, oi_array *pArray, int *pStatus)
+STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_array";
 
@@ -392,7 +392,7 @@ int read_next_oi_array(fitsfile *fptr, oi_array *pArray, int *pStatus)
   if (*pStatus == END_OF_FILE) return *pStatus;
   read_oi_array_chdu(fptr, pArray, NULL, pStatus);
 
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -411,8 +411,8 @@ int read_next_oi_array(fitsfile *fptr, oi_array *pArray, int *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of wavelength data struct are undefined
  */
-int read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
-		       int *pStatus)
+STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
+                          STATUS *pStatus)
 {
   const char function[] = "read_oi_wavelength";
 
@@ -421,7 +421,7 @@ int read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
   specific_named_hdu(fptr, "OI_WAVELENGTH", "INSNAME", insname, pStatus);
   read_oi_wavelength_chdu(fptr, pWave, insname, pStatus);
 
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -438,8 +438,8 @@ int read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of data struct are undefined
  */
-int read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
-			    int *pStatus)
+STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
+			    STATUS *pStatus)
 {
   const char function[] = "read_next_oi_wavelength";
 
@@ -449,7 +449,7 @@ int read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
   if (*pStatus == END_OF_FILE) return *pStatus;
   read_oi_wavelength_chdu(fptr, pWave, NULL, pStatus);
 
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -467,7 +467,7 @@ int read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of data struct are undefined
  */
-int read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, int *pStatus)
+STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis";
   char comment[FLEN_COMMENT];
@@ -556,7 +556,7 @@ int read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, int *pStatus)
   }
 
  except:
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -574,7 +574,7 @@ int read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, int *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of data struct are undefined
  */
-int read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, int *pStatus)
+STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis2";
   char comment[FLEN_COMMENT];
@@ -653,7 +653,7 @@ int read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, int *pStatus)
   }
 
  except:
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -671,7 +671,7 @@ int read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, int *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of data struct are undefined
  */
-int read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, int *pStatus)
+STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_t3";
   char comment[FLEN_COMMENT];
@@ -766,7 +766,7 @@ int read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, int *pStatus)
   }
 
  except:
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }

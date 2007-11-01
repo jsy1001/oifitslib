@@ -35,6 +35,9 @@
 #include "fitsio.h"
 
 
+int oi_hush_errors = 0;
+
+
 /*
  * Private functions
  */
@@ -86,7 +89,8 @@ void free_tform(char **tform, int n)
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-int write_oi_array(fitsfile *fptr, oi_array array, int extver, int *pStatus)
+STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
+                      STATUS *pStatus)
 {
   const char function[] = "write_oi_array";
   const int tfields = 5;
@@ -133,7 +137,7 @@ int write_oi_array(fitsfile *fptr, oi_array array, int extver, int *pStatus)
     fits_write_col(fptr, TDOUBLE, 5, irow, 1, 3, &array.elem[irow-1].staxyz,
 		   pStatus);
   }
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -150,7 +154,7 @@ int write_oi_array(fitsfile *fptr, oi_array array, int extver, int *pStatus)
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-int write_oi_target(fitsfile *fptr, oi_target targets, int *pStatus)
+STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
 {
   const char function[] = "write_oi_target";
   const int tfields = 17;
@@ -215,7 +219,7 @@ int write_oi_target(fitsfile *fptr, oi_target targets, int *pStatus)
     str = targets.targ[irow-1].spectyp;
     fits_write_col(fptr, TSTRING, 17, irow, 1, 1, &str, pStatus);
   }
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -233,8 +237,8 @@ int write_oi_target(fitsfile *fptr, oi_target targets, int *pStatus)
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-int write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver, 
-			int *pStatus)
+STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver, 
+                           STATUS *pStatus)
 {
   const char function[] = "write_oi_wavelength";
   const int tfields = 2;
@@ -259,7 +263,7 @@ int write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
   fits_write_col(fptr, TFLOAT, 1, 1, 1, wave.nwave, wave.eff_wave, pStatus);
   fits_write_col(fptr, TFLOAT, 2, 1, 1, wave.nwave, wave.eff_band, pStatus);
 
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -277,7 +281,7 @@ int write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-int write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, int *pStatus)
+STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_vis";
   const int tfields = 12;
@@ -346,7 +350,7 @@ int write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, int *pStatus)
     fits_write_col(fptr, TLOGICAL, 12, irow, 1, vis.nwave,
 		   vis.record[irow-1].flag, pStatus);
   }
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -364,7 +368,7 @@ int write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, int *pStatus)
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-int write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, int *pStatus)
+STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_vis2";
   const int tfields = 10;
@@ -429,7 +433,7 @@ int write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, int *pStatus)
     fits_write_col(fptr, TLOGICAL, 10, irow, 1, vis2.nwave,
 		   vis2.record[irow-1].flag, pStatus);
   }
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -447,7 +451,7 @@ int write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, int *pStatus)
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */ 
-int write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, int *pStatus)
+STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_t3";
   const int tfields = 14;
@@ -523,7 +527,7 @@ int write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, int *pStatus)
     fits_write_col(fptr, TLOGICAL, 14, irow, 1, t3.nwave,
 		   t3.record[irow-1].flag, pStatus);
   }
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }

@@ -199,7 +199,7 @@ void init_oi_fits(oi_fits *pOi)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus)
  */
-int write_oi_fits(const char *filename, oi_fits oi, int *pStatus)
+STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
 {
   const char function[] = "write_oi_fits";
   fitsfile *fptr;
@@ -234,7 +234,7 @@ int write_oi_fits(const char *filename, oi_fits oi, int *pStatus)
   fits_close_file(fptr, pStatus);
 
  except:
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -243,7 +243,6 @@ int write_oi_fits(const char *filename, oi_fits oi, int *pStatus)
 
 /**
  * Read all OIFITS tables from FITS file.
- * :TODO: mechanism to hush error reports - global variable?
  *
  *   @param filename  name of file to read
  *   @param pOi       pointer to uninitialised file data struct, see oifile.h
@@ -252,7 +251,7 @@ int write_oi_fits(const char *filename, oi_fits oi, int *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus). Contents of file data struct are undefined
  */
-int read_oi_fits(const char *filename, oi_fits *pOi, int *pStatus)
+STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
 {
   const char function[] = "read_oi_fits";
   fitsfile *fptr;
@@ -377,7 +376,7 @@ int read_oi_fits(const char *filename, oi_fits *pOi, int *pStatus)
   fits_close_file(fptr, pStatus);
 
  except:
-  if (*pStatus) {
+  if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }

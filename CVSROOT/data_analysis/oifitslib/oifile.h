@@ -89,8 +89,8 @@ typedef struct {
  * Function prototypes, for functions from oifile.c
  */
 void init_oi_fits(oi_fits *);
-int write_oi_fits(const char *, oi_fits, int *);
-int read_oi_fits(const char *, oi_fits *, int *);
+STATUS write_oi_fits(const char *, oi_fits, STATUS *);
+STATUS read_oi_fits(const char *, oi_fits *, STATUS *);
 void free_oi_fits(oi_fits *);
 oi_array *oi_fits_lookup_array(const oi_fits *, const char *);
 element *oi_fits_lookup_element(const oi_fits *, const char *, int);

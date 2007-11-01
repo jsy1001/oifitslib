@@ -9,7 +9,6 @@ a comprehensive set of data attributes (mirroring those in the
 OIFITSlib C API) plus a few methods.
 
 Use the OiFits constructor to read an OIFITS file from disk:
->>> from math import *
 >>> import oifits
 >>> o = oifits.OiFits('bigtest2.fits')
 
@@ -27,6 +26,7 @@ Linked lists of objects are converted to python lists:
 >>> print len(o.vis2List[:2])
 2
 >>> o.vis2List = []
+>>> o.numVis2 = 0
 >>> print len(o.vis2List)
 0
 
@@ -34,6 +34,7 @@ Dictionaries of objects are not mapped, instead we've added methods such
 as get_array() to the top-level class:
 >>> print o.get_element('CHARA_2004Jan', 2).sta_index
 2
+>>> from math import ceil
 >>> print ceil(1e9*o.get_eff_wave('IOTA_IONIC_PICNIC')[0])
 1650.0
 
@@ -104,6 +105,7 @@ if __name__ == '__main__':
 %apply int TUPLE_OUTPUT [ANY] {int [3]};
 %apply double TUPLE_INPUT [ANY] {double [3]}; // staxyz
 %apply double TUPLE_OUTPUT [ANY] {double [3]};
+%apply STATUS *FITSIO_STATUS {STATUS *pStatusToHide};
 %map_in_glist(arrayList, oi_array);
 %map_out_glist(arrayList, oi_array);
 %map_in_glist(wavelengthList, oi_wavelength);
@@ -116,26 +118,11 @@ if __name__ == '__main__':
 %map_out_glist(t3List, oi_t3);
 
 
-// :BUG: $result maps to 'resultObj' but want raw return from new_oi_fits
-//%exception oi_fits
-%exception dontuse
-{
-  char msg[80];
-  $action; //need something else here?
-
-  printf("exception handler: %p\n", $result);
-  if($result == NULL)
-  {
-    fits_read_errmsg(msg);
-    SWIG_exception(SWIG_IOError, msg);
-  }
-}
-
-
 // Exclude few attributes that can't be wrapped sensibly
 // We use new methods to plug the gaps
 %ignore wavelengthHash; // use get_eff_wave() etc. instead
 %ignore arrayHash; // use get_element() etc. instead
+%ignore write_oi_fits; // use write() method instead
 
 %array_class(float, waveArray) // used by get_eff_*() method
 %array_class(double, doubleArray)
@@ -147,6 +134,11 @@ if __name__ == '__main__':
 
 %include "exchange.h"
 %include "oifile.h"
+
+%init
+%{
+  oi_hush_errors = 1;
+%}
 
 // %add_array_access is read-only
 // could add __setitem__
@@ -161,18 +153,15 @@ if __name__ == '__main__':
 %rename(OiFits) oi_fits;
 %extend oi_fits
 {
-  oi_fits(char *filename=NULL) 
+  %feature("autodoc", "OiFits(filename=None) -> oi_fits") oi_fits;
+  oi_fits(STATUS *pStatusToHide, char *filename=NULL) 
   {
     oi_fits *self;
-    int status;
     self = (oi_fits *) malloc(sizeof(oi_fits));
     if(filename != NULL)
     {
-      status = 0;
-      read_oi_fits(filename, self, &status);
-      if(status) {
+      if(read_oi_fits(filename, self, pStatusToHide) != 0) {
         free(self);
-        printf("*** CFITSIO Error %d\n", status); //
         return NULL;
       }
     }
@@ -193,11 +182,10 @@ if __name__ == '__main__':
     return format_oi_fits_summary($self);
   }
 
-  void write(const char *filename)
+  %feature("autodoc", "write(filename)") write;
+  void write(STATUS *pStatusToHide, const char *filename)
   {
-    int status;
-    status = 0;
-    write_oi_fits(filename, *$self, &status);
+    (void) write_oi_fits(filename, *$self, pStatusToHide);
   }
 
   // synthesised attribute
