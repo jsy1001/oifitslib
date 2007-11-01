@@ -154,7 +154,7 @@ if __name__ == '__main__':
 // Object-oriented interface to oi_fits struct
 %extend oi_fits
 {
-  %feature("autodoc", "OiFits(filename=None) -> oi_fits") oi_fits;
+  %feature("autodoc", "OiFits(filename=None) -> OiFits") oi_fits;
   oi_fits(STATUS *pStatusToHide, char *filename=NULL) 
   {
     oi_fits *self;

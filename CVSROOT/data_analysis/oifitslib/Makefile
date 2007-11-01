@@ -23,7 +23,7 @@ AR = ar
 # Note that 'demo' target can be built even if pkg-config not present
 PKGCONFIG = pkg-config
 TOUCH = touch
-PYTHON = python2.3
+PYTHON = python2.4
 
 INCFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
 CFLAGS =  -Wall -g $(INCFLAGS) -fPIC
@@ -107,7 +107,7 @@ _%module.so: %_wrap.o liboifits.a
 	$(LD) -G $^ $(LDLIBS) $(LDLIBS_GLIB) -o $@
 
 test: $(PYTHONMODULES)
-	python oifits.py
-	python oifilter.py
-	python oicheck.py
-	python oimerge.py
+	$(PYTHON) oifits.py
+	$(PYTHON) oifilter.py
+	$(PYTHON) oicheck.py
+	$(PYTHON) oimerge.py
