@@ -35,6 +35,8 @@
 /** Internal use GString, defined in oifile.c */
 extern GString *pGStr;
 
+#ifdef HAVE_G_OPTION_GROUP
+
 #define UNSET -9999.9
 
 /** Filter specified on command-line via g_option_context_parse() */
@@ -134,6 +136,31 @@ GOptionGroup *get_oi_filter_option_group(void)
   g_option_group_set_parse_hooks(group, filter_pre_parse, filter_post_parse);
   return group;
 }
+
+/**
+ * Get command-line filter obtained by by g_option_context_parse().
+ *
+ * @return  Pointer to filter
+ */
+oi_filter_spec *get_user_oi_filter(void)
+{
+  g_assert(mjdMin != UNSET);
+  return &parsedFilter;
+}
+
+/**
+ * Filter OIFITS data using filter specified on commandline. Makes a
+ * deep copy.
+ *
+ * @param pInput   pointer to input file data struct, see oifile.h
+ * @param pOutput  pointer to uninitialised output data struct
+ */
+void apply_user_oi_filter(const oi_fits *pInput, oi_fits *pOutput)
+{
+  apply_oi_filter(pInput, get_user_oi_filter(), pOutput);
+}
+
+#endif /* #ifdef HAVE_G_OPTION_GROUP */
 
 /**
  * Initialise filter specification to accept all data.
@@ -745,27 +772,4 @@ void apply_oi_filter(const oi_fits *pInput, const oi_filter_spec *pFilter,
   /* :TODO: remove orphaned OI_ARRAY & OI_WAVELENGTH tables */
 
   g_hash_table_destroy(useWaveHash);
-}
-
-/**
- * Get command-line filter obtained by by g_option_context_parse().
- *
- * @return  Pointer to filter
- */
-oi_filter_spec *get_user_oi_filter(void)
-{
-  g_assert(mjdMin != UNSET);
-  return &parsedFilter;
-}
-
-/**
- * Filter OIFITS data using filter specified on commandline. Makes a
- * deep copy.
- *
- * @param pInput   pointer to input file data struct, see oifile.h
- * @param pOutput  pointer to uninitialised output data struct
- */
-void apply_user_oi_filter(const oi_fits *pInput, oi_fits *pOutput)
-{
-  apply_oi_filter(pInput, get_user_oi_filter(), pOutput);
 }

@@ -47,6 +47,7 @@ if __name__ == '__main__':
 
 typedef enum {} oi_breach_level;
 
+%rename(CheckResult) oi_check_result;
 typedef struct {
   oi_breach_level level;
   char *description;
@@ -61,7 +62,6 @@ oi_breach_level check_t3amp(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_waveorder(oi_fits *, oi_check_result *pResult);
 
 // Object-oriented interface to result
-%rename(CheckResult) oi_check_result;
 %extend oi_check_result
  {
   ~oi_check_result()

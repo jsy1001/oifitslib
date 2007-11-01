@@ -15,6 +15,7 @@ merges instances supplied in a list.
 >>> o1 = oifits.OiFits('testdata.fits')
 >>> o2 = oifits.OiFits('bigtest2.fits')
 >>> merged = oimerge.merge(o1, o2)
+>>> print merged
 >>> print len(merged.vis2List)
 3
 >>> print len(merged.t3List)

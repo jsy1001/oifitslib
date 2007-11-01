@@ -124,6 +124,8 @@ if __name__ == '__main__':
 %ignore arrayHash; // use get_element() etc. instead
 %ignore write_oi_fits; // use write() method instead
 
+%rename(OiFits) oi_fits;
+
 %array_class(float, waveArray) // used by get_eff_*() method
 %array_class(double, doubleArray)
 %array_class(signed char, boolArray)
@@ -150,7 +152,6 @@ if __name__ == '__main__':
 
 
 // Object-oriented interface to oi_fits struct
-%rename(OiFits) oi_fits;
 %extend oi_fits
 {
   %feature("autodoc", "OiFits(filename=None) -> oi_fits") oi_fits;
@@ -174,18 +175,18 @@ if __name__ == '__main__':
 
   ~oi_fits() 
   {
-    free_oi_fits($self);
+    free_oi_fits(self);
   }
   
   const char *__str__()
   {
-    return format_oi_fits_summary($self);
+    return format_oi_fits_summary(self);
   }
 
   %feature("autodoc", "write(filename)") write;
   void write(STATUS *pStatusToHide, const char *filename)
   {
-    (void) write_oi_fits(filename, *$self, pStatusToHide);
+    (void) write_oi_fits(filename, *self, pStatusToHide);
   }
 
   // synthesised attribute
@@ -193,34 +194,34 @@ if __name__ == '__main__':
 
   target *get_target(int targetId)
   {
-    return oi_fits_lookup_target($self, targetId);
+    return oi_fits_lookup_target(self, targetId);
   }
 
   int get_nelement(char *arrname)
   {
-    return oi_fits_lookup_array($self, arrname)->nelement;
+    return oi_fits_lookup_array(self, arrname)->nelement;
   }
   
   element *get_element(char *arrname, int staIndex)
   {
-    return oi_fits_lookup_element($self, arrname, staIndex);
+    return oi_fits_lookup_element(self, arrname, staIndex);
   }
 
   int get_nwave(char *insname)
   {
-    return oi_fits_lookup_wavelength($self, insname)->nwave;
+    return oi_fits_lookup_wavelength(self, insname)->nwave;
   }
 
   waveArray *get_eff_wave(char *insname)
   {
     return waveArray_frompointer(
-      (oi_fits_lookup_wavelength($self, insname)->eff_wave));
+      (oi_fits_lookup_wavelength(self, insname)->eff_wave));
   }
 
   waveArray *get_eff_band(char *insname)
   {
     return waveArray_frompointer(
-      (oi_fits_lookup_wavelength($self, insname)->eff_band));
+      (oi_fits_lookup_wavelength(self, insname)->eff_band));
   }
   
 };

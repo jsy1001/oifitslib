@@ -78,6 +78,7 @@ if __name__ == '__main__':
 %apply float TUPLE_OUTPUT [ANY] {float wave_range [2]};
 
 
+%rename(Filter) oi_filter_spec;
 typedef struct {
   char arrname[FLEN_VALUE];
   char insname[FLEN_VALUE];
@@ -91,7 +92,6 @@ typedef struct {
 } oi_filter_spec;
 
 // Object-oriented interface to filter
-%rename(Filter) oi_filter_spec;
 %extend oi_filter_spec
 {
   oi_filter_spec()

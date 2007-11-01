@@ -71,6 +71,9 @@
 
 #include "oifile.h"
 
+#if (GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION >= 6)
+#define HAVE_G_OPTION_GROUP
+#endif
 
 /** Filter specification for OIFITS data */
 typedef struct {
@@ -94,9 +97,11 @@ void init_oi_filter(oi_filter_spec *);
 const char *format_oi_filter(oi_filter_spec *);
 void print_oi_filter(oi_filter_spec *);
 void apply_oi_filter(const oi_fits *, const oi_filter_spec *, oi_fits *);
+#ifdef HAVE_G_OPTION_GROUP
 GOptionGroup *get_oi_filter_option_group(void);
 oi_filter_spec *get_user_oi_filter(void);
 void apply_user_oi_filter(const oi_fits *, oi_fits *);
+#endif
 void filter_oi_target(const oi_target *, const oi_filter_spec *, oi_target *);
 void filter_all_oi_array(const oi_fits *, const oi_filter_spec *, oi_fits *);
 GHashTable *filter_all_oi_wavelength(const oi_fits *, const oi_filter_spec *,

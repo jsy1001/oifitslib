@@ -241,9 +241,9 @@
     $1 = NULL;
     for (i=0; i<size; i++) {
       PyObject *o = PySequence_GetItem($input, i);
-      int res = SWIG_ConvertPtr(o, (void **) &item,
-                                SWIGTYPE_p_ ## DATA_TYPE, 0);
-      if (!SWIG_IsOK(res)) return NULL;
+      if(SWIG_ConvertPtr(o, (void **) &item,
+			 SWIGTYPE_p_ ## DATA_TYPE, 0) == -1)
+	  return NULL;
       $1 = g_list_append($1, item);
     }
   } else {

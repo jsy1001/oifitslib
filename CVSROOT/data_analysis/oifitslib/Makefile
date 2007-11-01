@@ -23,9 +23,10 @@ AR = ar
 # Note that 'demo' target can be built even if pkg-config not present
 PKGCONFIG = pkg-config
 TOUCH = touch
+PYTHON = python2.3
 
 INCFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
-CFLAGS =  -Wall -g $(INCFLAGS)
+CFLAGS =  -Wall -g $(INCFLAGS) -fPIC
 ifeq ($(OSTYPE),linux)
   LDLIBS = -lcfitsio -lm
 else
@@ -34,7 +35,10 @@ endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 
-# Rule to make .o file from .c file
+# Rules to make .o file from .c file
+%_wrap.o : %_wrap.c
+	$(CC) $(CFLAGS) -I/usr/include/$(PYTHON) -c $<
+
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
 
@@ -50,13 +54,13 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 
 OITABLE = liboitable.a demo
-EXES = oifits-filter oifits-check oifits-merge
+EXES = oifits-check oifits-merge oifits-filter 
 LIBRARIES = liboifits.a
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
 
 # List targets that don't require GLib first
-default: $(OITABLE) $(LIBRARIES) $(EXES) $(PYTHONMODULES) ;
+default: $(OITABLE) $(LIBRARIES) $(PYTHONMODULES) $(EXES);
 
 clean:
 	rm -f $(OITABLE) $(LIBRARIES) $(EXES) *.o *.libexists
@@ -98,8 +102,6 @@ oifits-merge: oifits-merge.o liboifits.a
 # :TODO: use distutils instead, perhaps for $(CC) & $(LD) steps only
 %_wrap.c %.py : %.i oifits_typemaps.i
 	swig -python -o $@ $< 
-
-CFLAGS += -I/usr/include/python2.4
 
 _%module.so: %_wrap.o liboifits.a
 	$(LD) -G $^ $(LDLIBS) $(LDLIBS_GLIB) -o $@
