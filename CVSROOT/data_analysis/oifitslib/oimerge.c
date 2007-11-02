@@ -165,6 +165,9 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
   return insnameHashList;
 }
 
+/** Replace ARRNAME with empty string */
+#define UNSET_ARRNAME(pTab) { pTab->arrname[0] = '\0'; }
+
 /** Replace INSNAME with string from hash table */
 #define REPLACE_INSNAME(pTab, oldInsname, insnameHash) \
 { \
@@ -214,6 +217,7 @@ void merge_all_oi_vis(const GList *inList, GHashTable *targetIdHash,
     jlink = pInput->visList;
     while(jlink != NULL) {
       pOutTab = dup_oi_vis((oi_vis *) jlink->data);
+      UNSET_ARRNAME(pOutTab);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
@@ -253,6 +257,7 @@ void merge_all_oi_vis2(const GList *inList, GHashTable *targetIdHash,
     jlink = pInput->vis2List;
     while(jlink != NULL) {
       pOutTab = dup_oi_vis2((oi_vis2 *) jlink->data);
+      UNSET_ARRNAME(pOutTab);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
@@ -292,6 +297,7 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
     jlink = pInput->t3List;
     while(jlink != NULL) {
       pOutTab = dup_oi_t3((oi_t3 *) jlink->data);
+      UNSET_ARRNAME(pOutTab);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
