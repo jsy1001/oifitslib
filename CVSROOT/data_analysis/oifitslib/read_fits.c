@@ -520,10 +520,10 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pVis->record[irow-1].int_time, &anynull, pStatus);
-    pVis->record[irow-1].visamp = malloc(pVis->nwave*sizeof(double));
-    pVis->record[irow-1].visamperr = malloc(pVis->nwave*sizeof(double));
-    pVis->record[irow-1].visphi = malloc(pVis->nwave*sizeof(double));
-    pVis->record[irow-1].visphierr = malloc(pVis->nwave*sizeof(double));
+    pVis->record[irow-1].visamp = malloc(pVis->nwave*sizeof(DATA));
+    pVis->record[irow-1].visamperr = malloc(pVis->nwave*sizeof(DATA));
+    pVis->record[irow-1].visphi = malloc(pVis->nwave*sizeof(DATA));
+    pVis->record[irow-1].visphierr = malloc(pVis->nwave*sizeof(DATA));
     pVis->record[irow-1].flag = malloc(pVis->nwave*sizeof(char));
     fits_get_colnum(fptr, CASEINSEN, "VISAMP", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
@@ -627,8 +627,8 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pVis2->record[irow-1].int_time, &anynull, pStatus);
-    pVis2->record[irow-1].vis2data = malloc(pVis2->nwave*sizeof(double));
-    pVis2->record[irow-1].vis2err = malloc(pVis2->nwave*sizeof(double));
+    pVis2->record[irow-1].vis2data = malloc(pVis2->nwave*sizeof(DATA));
+    pVis2->record[irow-1].vis2err = malloc(pVis2->nwave*sizeof(DATA));
     pVis2->record[irow-1].flag = malloc(pVis2->nwave*sizeof(char));
     fits_get_colnum(fptr, CASEINSEN, "VIS2DATA", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis2->nwave,
@@ -724,10 +724,10 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pT3->record[irow-1].int_time, &anynull, pStatus);
-    pT3->record[irow-1].t3amp = malloc(pT3->nwave*sizeof(double));
-    pT3->record[irow-1].t3amperr = malloc(pT3->nwave*sizeof(double));
-    pT3->record[irow-1].t3phi = malloc(pT3->nwave*sizeof(double));
-    pT3->record[irow-1].t3phierr = malloc(pT3->nwave*sizeof(double));
+    pT3->record[irow-1].t3amp = malloc(pT3->nwave*sizeof(DATA));
+    pT3->record[irow-1].t3amperr = malloc(pT3->nwave*sizeof(DATA));
+    pT3->record[irow-1].t3phi = malloc(pT3->nwave*sizeof(DATA));
+    pT3->record[irow-1].t3phierr = malloc(pT3->nwave*sizeof(DATA));
     pT3->record[irow-1].flag = malloc(pT3->nwave*sizeof(char));
     fits_get_colnum(fptr, CASEINSEN, "T3AMP", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave,

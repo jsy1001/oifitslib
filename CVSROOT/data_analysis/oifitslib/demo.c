@@ -123,22 +123,22 @@ void demo_write(void)
     fscanf(fp, "target_id %d time %lf mjd %lf ", &vis.record[irec].target_id,
 	   &vis.record[irec].time, &vis.record[irec].mjd);
     fscanf(fp, "int_time %lf visamp ", &vis.record[irec].int_time);
-    vis.record[irec].visamp = malloc(wave.nwave*sizeof(double));
+    vis.record[irec].visamp = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamp[iwave]);
     }
     fscanf(fp, "visamperr ");
-    vis.record[irec].visamperr = malloc(wave.nwave*sizeof(double));
+    vis.record[irec].visamperr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamperr[iwave]);
     }
     fscanf(fp, "visphi ");
-    vis.record[irec].visphi = malloc(wave.nwave*sizeof(double));
+    vis.record[irec].visphi = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphi[iwave]);
     }
     fscanf(fp, "visphierr ");
-    vis.record[irec].visphierr = malloc(wave.nwave*sizeof(double));
+    vis.record[irec].visphierr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphierr[iwave]);
     }
@@ -165,12 +165,12 @@ void demo_write(void)
     fscanf(fp, "target_id %d time %lf mjd %lf ", &vis2.record[irec].target_id,
 	   &vis2.record[irec].time, &vis2.record[irec].mjd);
     fscanf(fp, "int_time %lf vis2data ", &vis2.record[irec].int_time);
-    vis2.record[irec].vis2data = malloc(wave.nwave*sizeof(double));
+    vis2.record[irec].vis2data = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2data[iwave]);
     }
     fscanf(fp, "vis2err ");
-    vis2.record[irec].vis2err = malloc(wave.nwave*sizeof(double));
+    vis2.record[irec].vis2err = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2err[iwave]);
     }
@@ -197,22 +197,22 @@ void demo_write(void)
     fscanf(fp, "target_id %d time %lf mjd %lf ", &t3.record[irec].target_id,
 	   &t3.record[irec].time, &t3.record[irec].mjd);
     fscanf(fp, "int_time %lf t3amp ", &t3.record[irec].int_time);
-    t3.record[irec].t3amp = malloc(wave.nwave*sizeof(double));
+    t3.record[irec].t3amp = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amp[iwave]);
     }
     fscanf(fp, "t3amperr ");
-    t3.record[irec].t3amperr = malloc(wave.nwave*sizeof(double));
+    t3.record[irec].t3amperr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amperr[iwave]);
     }
     fscanf(fp, "t3phi ");
-    t3.record[irec].t3phi = malloc(wave.nwave*sizeof(double));
+    t3.record[irec].t3phi = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phi[iwave]);
     }
     fscanf(fp, "t3phierr ");
-    t3.record[irec].t3phierr = malloc(wave.nwave*sizeof(double));
+    t3.record[irec].t3phierr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phierr[iwave]);
     }
