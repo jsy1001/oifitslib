@@ -28,6 +28,7 @@
 
 
 #include <string.h>
+#include <math.h>
 
 #include "oifilter.h"
 
@@ -39,12 +40,13 @@ extern GString *pGStr;
 
 #define UNSET -9999.9
 
+
 /** Filter specified on command-line via g_option_context_parse() */
 static oi_filter_spec parsedFilter;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
 char *arrname, *insname;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
-static double mjdMin=UNSET, mjdMax, waveMin, waveMax;
+static double mjdMin=UNSET, mjdMax, waveMin, waveMax, basMin, basMax;
 
 /** Specification of command-line options for dataset filtering */
 static GOptionEntry filterEntries[] = {
@@ -62,6 +64,10 @@ static GOptionEntry filterEntries[] = {
    "Minimum wavelength to accept /nm", "WL" },
   {"wave-max", 0, 0, G_OPTION_ARG_DOUBLE, &waveMax,
    "Maximum wavelength to accept /nm", "WL" },
+  {"bas-min", 0, 0, G_OPTION_ARG_DOUBLE, &basMin,
+   "Minimum baseline to accept /m", "BASE" },
+  {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &basMax,
+   "Maximum baseline to accept /m", "BASE" },
   {"accept-vis", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis,
    "If non-zero, accept complex visibilities (default 1)", "0/1" },
   {"accept-vis2", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis2,
@@ -92,6 +98,8 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
   /* Convert m -> nm */
   waveMin = 1e9*parsedFilter.wave_range[0];
   waveMax = 1e9*parsedFilter.wave_range[1];
+  basMin = parsedFilter.bas_range[0];
+  basMax = parsedFilter.bas_range[1];
   return TRUE;
 }
 
@@ -110,6 +118,8 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
   /* Convert nm -> m */
   parsedFilter.wave_range[0] = 1e-9*waveMin;
   parsedFilter.wave_range[1] = 1e-9*waveMax;
+  parsedFilter.bas_range[0] = basMin;
+  parsedFilter.bas_range[1] = basMax;
   return TRUE;
 }
 
@@ -176,6 +186,8 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->mjd_range[1] = 1e7;
   pFilter->wave_range[0] = 0.;
   pFilter->wave_range[1] = 1e-4;
+  pFilter->bas_range[0] = 0.;
+  pFilter->bas_range[1] = 1e4;
   pFilter->accept_vis = 1;
   pFilter->accept_vis2 = 1;
   pFilter->accept_t3amp = 1;
@@ -212,6 +224,8 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
   g_string_append_printf(pGStr, "  Wavelength: %.1f - %.1fnm\n",
 			 1e9*pFilter->wave_range[0],
 			 1e9*pFilter->wave_range[1]);
+  g_string_append_printf(pGStr, "  Baseline: %.1f - %.1fm\n",
+			 pFilter->bas_range[0], pFilter->bas_range[1]);
   if(pFilter->accept_vis)
     g_string_append_printf(pGStr, "  OI_VIS (complex visibilities)\n");
   else
@@ -456,6 +470,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 		   const char *useWave, oi_vis *pOutTab)
 {
   int i, j, k, nrec;
+  double u1, v1, bas;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis));
@@ -472,15 +487,20 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
        pInTab->record[i].mjd > pFilter->mjd_range[1])
       continue; /* skip record as MJD out of range */
+    u1 = pInTab->record[i].ucoord;
+    v1 = pInTab->record[i].vcoord;
+    bas = pow(u1*u1 + v1*v1, 0.5);
+    if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
+      continue; /* skip record as projected baseline out of range */
 
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis_record));
     if(pFilter->target_id >= 0)
       pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].visamp = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].visamperr = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].visphi = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].visphierr = malloc(pOutTab->nwave*sizeof(double));
+    pOutTab->record[nrec].visamp = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].visamperr = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].visphi = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].visphierr = malloc(pOutTab->nwave*sizeof(DATA));
     pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
     k = 0;
     for(j=0; j<pInTab->nwave; j++) {
@@ -489,24 +509,25 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 	pOutTab->record[nrec].visamperr[k] = pInTab->record[i].visamperr[j];
 	pOutTab->record[nrec].visphi[k] = pInTab->record[i].visphi[j];
 	pOutTab->record[nrec].visphierr[k] = pInTab->record[i].visphierr[j];
-	pOutTab->record[nrec++].flag[k++] = pInTab->record[i].flag[j];
+	pOutTab->record[nrec].flag[k++] = pInTab->record[i].flag[j];
       }
     }
-    if(i == 0 && k < pOutTab->nwave) {
+    if(nrec == 0 && k < pOutTab->nwave) {
       /* For 1st output record, length of vectors wasn't known when
 	 originally allocated, so reallocate */
       pOutTab->nwave = k;
-      pOutTab->record[i].visamp = realloc(pOutTab->record[i].visamp,
-					  k*sizeof(double));
-      pOutTab->record[i].visamperr = realloc(pOutTab->record[i].visamperr,
-					     k*sizeof(double));
-      pOutTab->record[i].visphi = realloc(pOutTab->record[i].visphi,
-					  k*sizeof(double));
-      pOutTab->record[i].visphierr = realloc(pOutTab->record[i].visphierr,
-					     k*sizeof(double));
-      pOutTab->record[i].flag = realloc(pOutTab->record[i].flag,
-					k*sizeof(char));
+      pOutTab->record[nrec].visamp = realloc(
+        pOutTab->record[nrec].visamp, k*sizeof(DATA));
+      pOutTab->record[nrec].visamperr = realloc(
+        pOutTab->record[nrec].visamperr, k*sizeof(DATA));
+      pOutTab->record[nrec].visphi = realloc(
+        pOutTab->record[nrec].visphi, k*sizeof(DATA));
+      pOutTab->record[nrec].visphierr = realloc(
+        pOutTab->record[nrec].visphierr, k*sizeof(DATA));
+      pOutTab->record[nrec].flag = realloc(
+        pOutTab->record[nrec].flag, k*sizeof(char));
     }	
+    ++nrec;
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_vis_record));
@@ -568,6 +589,7 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
 		    const char *useWave, oi_vis2 *pOutTab)
 {
   int i, j, k, nrec;
+  double bas, u1, v1;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis2));
@@ -584,33 +606,39 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
        pInTab->record[i].mjd > pFilter->mjd_range[1])
       continue; /* skip record as MJD out of range */
+    u1 = pInTab->record[i].ucoord;
+    v1 = pInTab->record[i].vcoord;
+    bas = pow(u1*u1 + v1*v1, 0.5);
+    if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
+      continue; /* skip record as projected baseline out of range */
 
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis2_record));
     if(pFilter->target_id >= 0)
       pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].vis2data = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].vis2err = malloc(pOutTab->nwave*sizeof(double));
+    pOutTab->record[nrec].vis2data = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].vis2err = malloc(pOutTab->nwave*sizeof(DATA));
     pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
     k = 0;
     for(j=0; j<pInTab->nwave; j++) {
       if(useWave[j]) {
-	pOutTab->record[nrec].vis2data[k] = pInTab->record[i].vis2data[j];
+	pOutTab->record[nrec].vis2data[k] = pInTab->record[i].vis2data[j]; //
 	pOutTab->record[nrec].vis2err[k] = pInTab->record[i].vis2err[j];
-	pOutTab->record[nrec++].flag[k++] = pInTab->record[i].flag[j];
+	pOutTab->record[nrec].flag[k++] = pInTab->record[i].flag[j];
       }
     }
-    if(i == 0 && k < pOutTab->nwave) {
+    if(nrec == 0 && k < pOutTab->nwave) {
       /* For 1st output record, length of vectors wasn't known when
 	 originally allocated, so reallocate */
       pOutTab->nwave = k;
-      pOutTab->record[i].vis2data = realloc(pOutTab->record[i].vis2data,
-					    k*sizeof(double));
-      pOutTab->record[i].vis2err = realloc(pOutTab->record[i].vis2err,
-					   k*sizeof(double));
-      pOutTab->record[i].flag = realloc(pOutTab->record[i].flag,
-					k*sizeof(char));
-    }	
+      pOutTab->record[nrec].vis2data = realloc(pOutTab->record[nrec].vis2data,
+                                               k*sizeof(DATA));
+      pOutTab->record[nrec].vis2err = realloc(pOutTab->record[nrec].vis2err,
+                                              k*sizeof(DATA));
+      pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
+                                           k*sizeof(char));
+    }
+    ++nrec;
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_vis2_record));
@@ -672,7 +700,7 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 		  const char *useWave, oi_t3 *pOutTab)
 {
   int i, j, k, nrec;
-  double nan;
+  double nan, u1, v1, u2, v2, bas;
 
   /* If needed, make a NaN */
   if(!pFilter->accept_t3amp || !pFilter->accept_t3phi) {
@@ -695,15 +723,28 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
        pInTab->record[i].mjd > pFilter->mjd_range[1])
       continue; /* skip record as MJD out of range */
-
+    u1 = pInTab->record[i].u1coord;
+    v1 = pInTab->record[i].v1coord;
+    u2 = pInTab->record[i].u2coord;
+    v2 = pInTab->record[i].v2coord;
+    bas = pow(u1*u1 + v1*v1, 0.5);
+    if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
+      continue; /* skip record as projected baseline out of range */
+    bas = pow(u2*u2 + v2*v2, 0.5);
+    if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
+      continue; /* skip record as projected baseline out of range */
+    bas = pow((u1+u2)*(u1+u2) + (v1+v2)*(v1+v2), 0.5);
+    if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
+      continue; /* skip record as projected baseline out of range */
+    
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_t3_record));
     if(pFilter->target_id >= 0)
       pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].t3amp = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].t3amperr = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].t3phi = malloc(pOutTab->nwave*sizeof(double));
-    pOutTab->record[nrec].t3phierr = malloc(pOutTab->nwave*sizeof(double));
+    pOutTab->record[nrec].t3amp = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].t3amperr = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].t3phi = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].t3phierr = malloc(pOutTab->nwave*sizeof(DATA));
     pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
     k = 0;
     for(j=0; j<pInTab->nwave; j++) {
@@ -720,24 +761,25 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 	  pOutTab->record[nrec].t3phi[k] = nan;
 	}
 	pOutTab->record[nrec].t3phierr[k] = pInTab->record[i].t3phierr[j];
-	pOutTab->record[nrec++].flag[k++] = pInTab->record[i].flag[j];
+	pOutTab->record[nrec].flag[k++] = pInTab->record[i].flag[j];
       }
     }
-    if(i == 0 && k < pOutTab->nwave) {
+    if(nrec == 0 && k < pOutTab->nwave) {
       /* For 1st output record, length of vectors wasn't known when
 	 originally allocated, so reallocate */
       pOutTab->nwave = k;
-      pOutTab->record[i].t3amp = realloc(pOutTab->record[i].t3amp,
-					 k*sizeof(double));
-      pOutTab->record[i].t3amperr = realloc(pOutTab->record[i].t3amperr,
-					    k*sizeof(double));
-      pOutTab->record[i].t3phi = realloc(pOutTab->record[i].t3phi,
-					 k*sizeof(double));
-      pOutTab->record[i].t3phierr = realloc(pOutTab->record[i].t3phierr,
-					    k*sizeof(double));
-      pOutTab->record[i].flag = realloc(pOutTab->record[i].flag,
-					k*sizeof(char));
-    }	
+      pOutTab->record[nrec].t3amp = realloc(pOutTab->record[nrec].t3amp,
+                                            k*sizeof(DATA));
+      pOutTab->record[nrec].t3amperr = realloc(pOutTab->record[nrec].t3amperr,
+                                               k*sizeof(DATA));
+      pOutTab->record[nrec].t3phi = realloc(pOutTab->record[nrec].t3phi,
+                                            k*sizeof(DATA));
+      pOutTab->record[nrec].t3phierr = realloc(pOutTab->record[nrec].t3phierr,
+                                               k*sizeof(DATA));
+      pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
+                                           k*sizeof(char));
+    }
+    ++nrec;
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_t3_record));

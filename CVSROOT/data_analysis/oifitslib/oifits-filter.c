@@ -33,6 +33,10 @@
  */
 int main(int argc, char *argv[]) 
 {
+#ifndef HAVE_G_OPTION_GROUP
+  printf("Need GLib >= 2.6\n");
+#else
+
   GError *error;
   GOptionContext *context;
   char inFilename[FLEN_FILENAME], outFilename[FLEN_FILENAME];
@@ -83,6 +87,7 @@ int main(int argc, char *argv[])
   g_option_context_free(context);
   exit(EXIT_SUCCESS);
 
+#endif /* #ifndef HAVE_G_OPTION_GROUP */
  except:
   exit(EXIT_FAILURE);
 }
