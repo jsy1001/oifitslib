@@ -84,6 +84,7 @@ typedef struct {
   double mjd_range[2];  /**< Minimum and maximum MJD to accept */
   float wave_range[2];  /**< Min. and max. central wavelength to accept /m */
   double bas_range[2]; /**< Min. and max. projected baseline to accept /m */
+  float snr_range[2];  /**< Min. and max. SNR to accept */
   int accept_vis;      /**< If non-zero, accept OI_VIS data */
   int accept_vis2;     /**< If non-zero, accept OI_VIS2 data */
   int accept_t3amp;    /**< If non-zero, accept OI_T3 amplitude data */

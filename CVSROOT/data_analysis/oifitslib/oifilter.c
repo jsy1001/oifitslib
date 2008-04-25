@@ -40,13 +40,16 @@ extern GString *pGStr;
 
 #define UNSET -9999.9
 
+#define RAD2DEG (180.0/3.14159)
+
 
 /** Filter specified on command-line via g_option_context_parse() */
 static oi_filter_spec parsedFilter;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
 char *arrname, *insname;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
-static double mjdMin=UNSET, mjdMax, waveMin, waveMax, basMin, basMax;
+static double mjdMin=UNSET, mjdMax, waveMin, waveMax, 
+  basMin, basMax, snrMin, snrMax;
 
 /** Specification of command-line options for dataset filtering */
 static GOptionEntry filterEntries[] = {
@@ -68,6 +71,10 @@ static GOptionEntry filterEntries[] = {
    "Minimum baseline to accept /m", "BASE" },
   {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &basMax,
    "Maximum baseline to accept /m", "BASE" },
+  {"snr-min", 0, 0, G_OPTION_ARG_DOUBLE, &snrMin,
+   "Minimum SNR to accept", "SNR" },
+  {"snr-max", 0, 0, G_OPTION_ARG_DOUBLE, &snrMax,
+   "Maximum SNR to accept", "SNR" },
   {"accept-vis", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis,
    "If non-zero, accept complex visibilities (default 1)", "0/1" },
   {"accept-vis2", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis2,
@@ -96,10 +103,12 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
   mjdMin = parsedFilter.mjd_range[0];
   mjdMax = parsedFilter.mjd_range[1];
   /* Convert m -> nm */
-  waveMin = 1e9*parsedFilter.wave_range[0];
-  waveMax = 1e9*parsedFilter.wave_range[1];
+  waveMin = (double) (1e9*parsedFilter.wave_range[0]);
+  waveMax = (double) (1e9*parsedFilter.wave_range[1]);
   basMin = parsedFilter.bas_range[0];
   basMax = parsedFilter.bas_range[1];
+  snrMin = (double) parsedFilter.snr_range[0];
+  snrMax = (double) parsedFilter.snr_range[1];
   return TRUE;
 }
 
@@ -116,10 +125,12 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
   parsedFilter.mjd_range[0] = mjdMin;
   parsedFilter.mjd_range[1] = mjdMax;
   /* Convert nm -> m */
-  parsedFilter.wave_range[0] = 1e-9*waveMin;
-  parsedFilter.wave_range[1] = 1e-9*waveMax;
+  parsedFilter.wave_range[0] = (float) (1e-9*waveMin);
+  parsedFilter.wave_range[1] = (float) (1e-9*waveMax);
   parsedFilter.bas_range[0] = basMin;
   parsedFilter.bas_range[1] = basMax;
+  parsedFilter.snr_range[0] = (float) snrMin;
+  parsedFilter.snr_range[1] = (float) snrMax;
   return TRUE;
 }
 
@@ -188,6 +199,8 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->wave_range[1] = 1e-4;
   pFilter->bas_range[0] = 0.;
   pFilter->bas_range[1] = 1e4;
+  pFilter->snr_range[0] = 0.;
+  pFilter->snr_range[1] = 1e10;
   pFilter->accept_vis = 1;
   pFilter->accept_vis2 = 1;
   pFilter->accept_t3amp = 1;
@@ -226,6 +239,8 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
 			 1e9*pFilter->wave_range[1]);
   g_string_append_printf(pGStr, "  Baseline: %.1f - %.1fm\n",
 			 pFilter->bas_range[0], pFilter->bas_range[1]);
+  g_string_append_printf(pGStr, "  SNR: %.1f - %.1f\n",
+			 pFilter->snr_range[0], pFilter->snr_range[1]);
   if(pFilter->accept_vis)
     g_string_append_printf(pGStr, "  OI_VIS (complex visibilities)\n");
   else
@@ -471,6 +486,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 {
   int i, j, k, nrec;
   double u1, v1, bas;
+  float snrAmp, snrPhi;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis));
@@ -509,7 +525,16 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 	pOutTab->record[nrec].visamperr[k] = pInTab->record[i].visamperr[j];
 	pOutTab->record[nrec].visphi[k] = pInTab->record[i].visphi[j];
 	pOutTab->record[nrec].visphierr[k] = pInTab->record[i].visphierr[j];
-	pOutTab->record[nrec].flag[k++] = pInTab->record[i].flag[j];
+	pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
+	snrAmp = pInTab->record[i].visamp[j]/pInTab->record[i].visamperr[j];
+	snrPhi = RAD2DEG/pInTab->record[i].visphierr[j];
+	if(snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
+	   snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1]) {
+	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
+	} else {
+	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
+	}
+	++k;
       }
     }
     if(nrec == 0 && k < pOutTab->nwave) {
@@ -590,6 +615,7 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
 {
   int i, j, k, nrec;
   double bas, u1, v1;
+  float snr;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis2));
@@ -624,7 +650,13 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
       if(useWave[j]) {
 	pOutTab->record[nrec].vis2data[k] = pInTab->record[i].vis2data[j]; //
 	pOutTab->record[nrec].vis2err[k] = pInTab->record[i].vis2err[j];
-	pOutTab->record[nrec].flag[k++] = pInTab->record[i].flag[j];
+	snr = pInTab->record[i].vis2data[j]/pInTab->record[i].vis2err[j];
+	if(snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
+	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
+	} else {
+	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
+	}
+	++k;
       }
     }
     if(nrec == 0 && k < pOutTab->nwave) {
@@ -701,6 +733,7 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 {
   int i, j, k, nrec;
   double nan, u1, v1, u2, v2, bas;
+  float snrAmp, snrPhi;
 
   /* If needed, make a NaN */
   if(!pFilter->accept_t3amp || !pFilter->accept_t3phi) {
@@ -761,7 +794,15 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 	  pOutTab->record[nrec].t3phi[k] = nan;
 	}
 	pOutTab->record[nrec].t3phierr[k] = pInTab->record[i].t3phierr[j];
-	pOutTab->record[nrec].flag[k++] = pInTab->record[i].flag[j];
+	snrAmp = pInTab->record[i].t3amp[j]/pInTab->record[i].t3amperr[j];
+	snrPhi = RAD2DEG/pInTab->record[i].t3phierr[j];
+	if(snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
+	   snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1]) {
+	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
+	} else {
+	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
+	}
+	++k;
       }
     }
     if(nrec == 0 && k < pOutTab->nwave) {
