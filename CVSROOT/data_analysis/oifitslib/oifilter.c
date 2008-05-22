@@ -796,8 +796,12 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 	pOutTab->record[nrec].t3phierr[k] = pInTab->record[i].t3phierr[j];
 	snrAmp = pInTab->record[i].t3amp[j]/pInTab->record[i].t3amperr[j];
 	snrPhi = RAD2DEG/pInTab->record[i].t3phierr[j];
-	if(snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
-	   snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1]) {
+	if(pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
+				     snrAmp > pFilter->snr_range[1])) {
+	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
+	}
+	else if(pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
+					  snrPhi > pFilter->snr_range[1])) {
 	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
 	} else {
 	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
