@@ -36,11 +36,11 @@
 /** Internal use GString, defined in oifile.c */
 extern GString *pGStr;
 
+#define RAD2DEG (180.0/3.14159)
+
 #ifdef HAVE_G_OPTION_GROUP
 
 #define UNSET -9999.9
-
-#define RAD2DEG (180.0/3.14159)
 
 
 /** Filter specified on command-line via g_option_context_parse() */
