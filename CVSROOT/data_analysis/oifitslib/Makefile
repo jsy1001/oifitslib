@@ -60,7 +60,7 @@ PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
 
 # List targets that don't require GLib first
-default: $(OITABLE) $(LIBRARIES) $(PYTHONMODULES) $(EXES);
+default: $(OITABLE) $(LIBRARIES) $(EXES) $(PYTHONMODULES);
 
 clean:
 	rm -f $(OITABLE) $(LIBRARIES) $(EXES) *.o *.libexists
