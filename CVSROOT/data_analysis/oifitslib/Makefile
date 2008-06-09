@@ -27,10 +27,10 @@ PYTHON = python2.4
 
 INCFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
 CFLAGS =  -Wall -g $(INCFLAGS) -fPIC
-ifeq ($(OSTYPE),linux)
-  LDLIBS = -lcfitsio -lm
-else
+ifeq ($(OSTYPE),solaris)
   LDLIBS = -lcfitsio -lm -lnsl -lsocket
+else
+  LDLIBS = -lcfitsio -lm
 endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
