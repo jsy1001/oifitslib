@@ -24,6 +24,7 @@ AR = ar
 PKGCONFIG = pkg-config
 TOUCH = touch
 PYTHON = python2.4
+PYINCFLAGS = -I/usr/include/$(PYTHON)
 
 INCFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
 CFLAGS =  -Wall -g $(INCFLAGS) -fPIC
@@ -37,7 +38,7 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 # Rules to make .o file from .c file
 %_wrap.o : %_wrap.c
-	$(CC) $(CFLAGS) -I/usr/include/$(PYTHON) -c $<
+	$(CC) $(CFLAGS) $(PYINCFLAGS) -c $<
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<

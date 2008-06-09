@@ -46,10 +46,10 @@ extern GString *pGStr;
 /** Filter specified on command-line via g_option_context_parse() */
 static oi_filter_spec parsedFilter;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
-char *arrname, *insname;
-/** Values set by g_option_context_parse(), used to set parsedFilter */
-static double mjdMin=UNSET, mjdMax, waveMin, waveMax, 
-  basMin, basMax, snrMin, snrMax;
+char *arrname, *insname, *mjdMinStr, *mjdMaxStr, *waveMinStr, *waveMaxStr,
+  *basMinStr, *basMaxStr, *snrMinStr, *snrMaxStr;
+/** Flag set by filter_post_parse */
+static gboolean doneParse = FALSE;
 
 /** Specification of command-line options for dataset filtering */
 static GOptionEntry filterEntries[] = {
@@ -59,21 +59,21 @@ static GOptionEntry filterEntries[] = {
    "Accept only this INSNAME", "NAME" },
   {"target-id", 0, 0, G_OPTION_ARG_INT, &parsedFilter.target_id,
    "Accept only this TARGET_ID", "ID" },
-  {"mjd-min", 0, 0, G_OPTION_ARG_DOUBLE, &mjdMin,
+  {"mjd-min", 0, 0, G_OPTION_ARG_STRING, &mjdMinStr,
    "Minimum MJD to accept", "MJD" },
-  {"mjd-max", 0, 0, G_OPTION_ARG_DOUBLE, &mjdMax,
+  {"mjd-max", 0, 0, G_OPTION_ARG_STRING, &mjdMaxStr,
    "Maximum MJD to accept", "MJD" },
-  {"wave-min", 0, 0, G_OPTION_ARG_DOUBLE, &waveMin,
+  {"wave-min", 0, 0, G_OPTION_ARG_STRING, &waveMinStr,
    "Minimum wavelength to accept /nm", "WL" },
-  {"wave-max", 0, 0, G_OPTION_ARG_DOUBLE, &waveMax,
+  {"wave-max", 0, 0, G_OPTION_ARG_STRING, &waveMaxStr,
    "Maximum wavelength to accept /nm", "WL" },
-  {"bas-min", 0, 0, G_OPTION_ARG_DOUBLE, &basMin,
+  {"bas-min", 0, 0, G_OPTION_ARG_STRING, &basMinStr,
    "Minimum baseline to accept /m", "BASE" },
-  {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &basMax,
+  {"bas-max", 0, 0, G_OPTION_ARG_STRING, &basMaxStr,
    "Maximum baseline to accept /m", "BASE" },
-  {"snr-min", 0, 0, G_OPTION_ARG_DOUBLE, &snrMin,
+  {"snr-min", 0, 0, G_OPTION_ARG_STRING, &snrMinStr,
    "Minimum SNR to accept", "SNR" },
-  {"snr-max", 0, 0, G_OPTION_ARG_DOUBLE, &snrMax,
+  {"snr-max", 0, 0, G_OPTION_ARG_STRING, &snrMaxStr,
    "Maximum SNR to accept", "SNR" },
   {"accept-vis", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis,
    "If non-zero, accept complex visibilities (default 1)", "0/1" },
@@ -100,15 +100,16 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
   init_oi_filter(&parsedFilter);
   arrname = NULL;
   insname = NULL;
-  mjdMin = parsedFilter.mjd_range[0];
-  mjdMax = parsedFilter.mjd_range[1];
+  mjdMinStr = g_strdup_printf("%lf", parsedFilter.mjd_range[0]);
+  mjdMaxStr = g_strdup_printf("%lf", parsedFilter.mjd_range[1]);
   /* Convert m -> nm */
-  waveMin = (double) (1e9*parsedFilter.wave_range[0]);
-  waveMax = (double) (1e9*parsedFilter.wave_range[1]);
-  basMin = parsedFilter.bas_range[0];
-  basMax = parsedFilter.bas_range[1];
-  snrMin = (double) parsedFilter.snr_range[0];
-  snrMax = (double) parsedFilter.snr_range[1];
+  waveMinStr = g_strdup_printf("%f", 1e9*parsedFilter.wave_range[0]);
+  waveMaxStr = g_strdup_printf("%f", 1e9*parsedFilter.wave_range[1]);
+  basMinStr = g_strdup_printf("%lf", parsedFilter.bas_range[0]);
+  basMaxStr = g_strdup_printf("%lf", parsedFilter.bas_range[1]);
+  snrMinStr = g_strdup_printf("%f", parsedFilter.snr_range[0]);
+  snrMaxStr = g_strdup_printf("%f", parsedFilter.snr_range[1]);
+  /* :TODO: will these leak? */
   return TRUE;
 }
 
@@ -118,19 +119,20 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
 static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
 				  gpointer unusedData, GError **error)
 {
+  doneParse = TRUE;
   if (arrname != NULL)
     g_strlcpy(parsedFilter.arrname, arrname, FLEN_VALUE);
   if (insname != NULL)
     g_strlcpy(parsedFilter.insname, insname, FLEN_VALUE);
-  parsedFilter.mjd_range[0] = mjdMin;
-  parsedFilter.mjd_range[1] = mjdMax;
+  parsedFilter.mjd_range[0] = atof(mjdMinStr);
+  parsedFilter.mjd_range[1] = atof(mjdMaxStr);
   /* Convert nm -> m */
-  parsedFilter.wave_range[0] = (float) (1e-9*waveMin);
-  parsedFilter.wave_range[1] = (float) (1e-9*waveMax);
-  parsedFilter.bas_range[0] = basMin;
-  parsedFilter.bas_range[1] = basMax;
-  parsedFilter.snr_range[0] = (float) snrMin;
-  parsedFilter.snr_range[1] = (float) snrMax;
+  parsedFilter.wave_range[0] = (float) (1e-9*atof(waveMinStr));
+  parsedFilter.wave_range[1] = (float) (1e-9*atof(waveMaxStr));
+  parsedFilter.bas_range[0] = atof(basMinStr);
+  parsedFilter.bas_range[1] = atof(basMaxStr);
+  parsedFilter.snr_range[0] = (float) atof(snrMinStr);
+  parsedFilter.snr_range[1] = (float) atof(snrMaxStr);
   return TRUE;
 }
 
@@ -165,7 +167,7 @@ GOptionGroup *get_oi_filter_option_group(void)
  */
 oi_filter_spec *get_user_oi_filter(void)
 {
-  g_assert(mjdMin != UNSET);
+  g_assert(doneParse);
   return &parsedFilter;
 }
 

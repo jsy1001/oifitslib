@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
   g_option_context_free(context);
   exit(EXIT_SUCCESS);
 
-#endif /* #ifndef HAVE_G_OPTION_GROUP */
  except:
   exit(EXIT_FAILURE);
+#endif /* #ifndef HAVE_G_OPTION_GROUP */
 }

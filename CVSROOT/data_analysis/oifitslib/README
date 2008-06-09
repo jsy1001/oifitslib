@@ -16,7 +16,7 @@ table-level code, containing functions to read and write an entire
 OIFITS file (see oifile.h).
 
 Command-line utilities oifits-merge, oifits-filter and oifits-check
-are also provided - these provide very simple user interfaces to
+are also provided - these provide simple user interfaces to
 OIFITSlib routines.
 
 A python interface to OIFITSlib is also provided (created using
@@ -42,21 +42,21 @@ http://www.gnu.org/licenses/
 
 GETTING THE SOFTWARE
 
-The source code for OIFITSlib is available from the OIFITS website
-http://www.mrao.cam.ac.uk/~jsy1001/exchange/
+The source code for OIFITSlib is available from the OIFITS website:
+http://www.mrao.cam.ac.uk/research/OAS/oi_data/oifits.html#resources
 
 
 BUILDING THE SOFTWARE
 
-Use the supplied Makefile, which requires Gnu Make (sometimes installed as
-gmake). You may have to add explicit search paths to the Makefile
-variables INCFLAGS, LDLIBS and LDLIBS_GLIB in order to find all the
-required include files and libraries.
+Use the supplied Makefile, which requires Gnu Make (sometimes
+installed as gmake). You may have to add explicit search paths to the
+Makefile variables INCFLAGS, PYINCFLAGS, LDLIBS and LDLIBS_GLIB in
+order to find all the required include files and libraries.
 
 The following libraries are required:
 - CFITSIO (version 3.x recommended):
   http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
-- GLib    (version 2.x recommended):
+- GLib    (version 2.6 or later recommended):
   http://www.gtk.org/
 
 Note that the "oitable" module can be built without GLib. The supplied
@@ -79,8 +79,8 @@ The HTML documentation is automatically generated from comments
 in the C code using doxygen.
 
 The command-line utilities oifits-merge, oifits-filter, and
-oifits-check will output brief usage information if invoked with an
-incorrect number (e.g. zero) of arguments.
+oifits-check will output brief usage information if invoked with the
+'--help' argument.
 
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
