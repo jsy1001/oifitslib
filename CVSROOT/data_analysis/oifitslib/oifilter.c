@@ -83,7 +83,9 @@ static GOptionEntry filterEntries[] = {
    "If non-zero, accept triple amplitudes (default 1)", "0/1" },
   {"accept-t3phi", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3phi,
    "If non-zero, accept closure phases (default 1)", "0/1" },
-  { NULL }
+   {"accept-flagged", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flagged,
+   "If non-zero, accept records with all data flagged (default 1)", "0/1" },
+ { NULL }
 };
 
 
@@ -207,6 +209,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->accept_vis2 = 1;
   pFilter->accept_t3amp = 1;
   pFilter->accept_t3phi = 1;
+  pFilter->accept_flagged = 1;
 }
 
 /**
@@ -259,6 +262,10 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
     g_string_append_printf(pGStr, "  OI_T3 T3PHI (closure phases)\n");
   else
     g_string_append_printf(pGStr, "  [OI_T3 T3PHI not accepted]\n");
+  if(pFilter->accept_flagged)
+    g_string_append_printf(pGStr, "  All-flagged records\n");
+  else
+    g_string_append_printf(pGStr, "  [All-flagged records not accepted]\n");
 
   return pGStr->str;
 }
@@ -510,6 +517,13 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
+    if(!pFilter->accept_flagged) 
+    {
+      for(j=0; j<pInTab->nwave; j++)
+        if(!pInTab->record[i].flag[j]) break;
+      if(j == pInTab->nwave)
+        continue; /* skip record as all data flagged */
+    }
 
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis_record));
@@ -639,7 +653,14 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
-
+    if(!pFilter->accept_flagged) 
+    {
+      for(j=0; j<pInTab->nwave; j++)
+        if(!pInTab->record[i].flag[j]) break;
+      if(j == pInTab->nwave)
+        continue; /* skip record as all data flagged */
+    }
+    
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis2_record));
     if(pFilter->target_id >= 0)
@@ -771,6 +792,12 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     bas = pow((u1+u2)*(u1+u2) + (v1+v2)*(v1+v2), 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
+    if(!pFilter->accept_flagged) {
+      for(j=0; j<pInTab->nwave; j++)
+        if(!pInTab->record[i].flag[j]) break;
+      if(j == pInTab->nwave)
+        continue; /* skip record as all data flagged */
+    }
     
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_t3_record));

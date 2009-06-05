@@ -89,6 +89,7 @@ typedef struct {
   int accept_vis2;     /**< If non-zero, accept OI_VIS2 data */
   int accept_t3amp;    /**< If non-zero, accept OI_T3 amplitude data */
   int accept_t3phi;    /**< If non-zero, accept OI_T3 phase data */
+  int accept_flagged;  /**< If non-zero, accept records with all data flagged */
 } oi_filter_spec;
 
 

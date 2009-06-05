@@ -23,7 +23,7 @@ AR = ar
 # Note that 'demo' target can be built even if pkg-config not present
 PKGCONFIG = pkg-config
 TOUCH = touch
-PYTHON = python2.4
+PYTHON = python2.5
 PYINCFLAGS = -I/usr/include/$(PYTHON)
 
 INCFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
@@ -34,6 +34,8 @@ else
   LDLIBS = -lcfitsio -lm
 endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
+
+export LD_RUN_PATH:= /usr/local/lib:/star/lib
 
 
 # Rules to make .o file from .c file
