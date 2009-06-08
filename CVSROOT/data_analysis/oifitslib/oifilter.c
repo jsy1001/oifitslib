@@ -493,6 +493,7 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
 void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 		   const char *useWave, oi_vis *pOutTab)
 {
+  char someUnflagged;
   int i, j, k, nrec;
   double u1, v1, bas;
   float snrAmp, snrPhi;
@@ -517,13 +518,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
-    if(!pFilter->accept_flagged) 
-    {
-      for(j=0; j<pInTab->nwave; j++)
-        if(!pInTab->record[i].flag[j]) break;
-      if(j == pInTab->nwave)
-        continue; /* skip record as all data flagged */
-    }
+    /* Apply accept_flagged after filtering individual channels */
 
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis_record));
@@ -535,6 +530,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     pOutTab->record[nrec].visphierr = malloc(pOutTab->nwave*sizeof(DATA));
     pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
     k = 0;
+    someUnflagged = FALSE;
     for(j=0; j<pInTab->nwave; j++) {
       if(useWave[j]) {
 	pOutTab->record[nrec].visamp[k] = pInTab->record[i].visamp[j];
@@ -550,25 +546,34 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 	} else {
 	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
 	}
+        if(!pOutTab->record[nrec].flag[k]) someUnflagged = TRUE;
 	++k;
       }
     }
-    if(nrec == 0 && k < pOutTab->nwave) {
-      /* For 1st output record, length of vectors wasn't known when
-	 originally allocated, so reallocate */
-      pOutTab->nwave = k;
-      pOutTab->record[nrec].visamp = realloc(
-        pOutTab->record[nrec].visamp, k*sizeof(DATA));
-      pOutTab->record[nrec].visamperr = realloc(
-        pOutTab->record[nrec].visamperr, k*sizeof(DATA));
-      pOutTab->record[nrec].visphi = realloc(
-        pOutTab->record[nrec].visphi, k*sizeof(DATA));
-      pOutTab->record[nrec].visphierr = realloc(
-        pOutTab->record[nrec].visphierr, k*sizeof(DATA));
-      pOutTab->record[nrec].flag = realloc(
-        pOutTab->record[nrec].flag, k*sizeof(char));
-    }	
-    ++nrec;
+    if(!someUnflagged && !pFilter->accept_flagged) {
+      free(pOutTab->record[nrec].visamp);
+      free(pOutTab->record[nrec].visamperr);
+      free(pOutTab->record[nrec].visphi);
+      free(pOutTab->record[nrec].visphierr);
+      free(pOutTab->record[nrec].flag);
+    } else {
+      if(nrec == 0 && k < pOutTab->nwave) {
+        /* For 1st output record, length of vectors wasn't known when
+           originally allocated, so reallocate */
+        pOutTab->nwave = k;
+        pOutTab->record[nrec].visamp = realloc(
+          pOutTab->record[nrec].visamp, k*sizeof(DATA));
+        pOutTab->record[nrec].visamperr = realloc(
+          pOutTab->record[nrec].visamperr, k*sizeof(DATA));
+        pOutTab->record[nrec].visphi = realloc(
+          pOutTab->record[nrec].visphi, k*sizeof(DATA));
+        pOutTab->record[nrec].visphierr = realloc(
+          pOutTab->record[nrec].visphierr, k*sizeof(DATA));
+        pOutTab->record[nrec].flag = realloc(
+          pOutTab->record[nrec].flag, k*sizeof(char));
+      }	
+      ++nrec;
+    }
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_vis_record));
@@ -629,6 +634,7 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
 void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
 		    const char *useWave, oi_vis2 *pOutTab)
 {
+  char someUnflagged;
   int i, j, k, nrec;
   double bas, u1, v1;
   float snr;
@@ -653,13 +659,7 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
-    if(!pFilter->accept_flagged) 
-    {
-      for(j=0; j<pInTab->nwave; j++)
-        if(!pInTab->record[i].flag[j]) break;
-      if(j == pInTab->nwave)
-        continue; /* skip record as all data flagged */
-    }
+    /* Apply accept_flagged after filtering individual channels */
     
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis2_record));
@@ -669,6 +669,7 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     pOutTab->record[nrec].vis2err = malloc(pOutTab->nwave*sizeof(DATA));
     pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
     k = 0;
+    someUnflagged = FALSE;
     for(j=0; j<pInTab->nwave; j++) {
       if(useWave[j]) {
 	pOutTab->record[nrec].vis2data[k] = pInTab->record[i].vis2data[j]; //
@@ -679,21 +680,28 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
 	} else {
 	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
 	}
+        if(!pOutTab->record[nrec].flag[k]) someUnflagged = TRUE;
 	++k;
       }
     }
-    if(nrec == 0 && k < pOutTab->nwave) {
-      /* For 1st output record, length of vectors wasn't known when
-	 originally allocated, so reallocate */
-      pOutTab->nwave = k;
-      pOutTab->record[nrec].vis2data = realloc(pOutTab->record[nrec].vis2data,
-                                               k*sizeof(DATA));
-      pOutTab->record[nrec].vis2err = realloc(pOutTab->record[nrec].vis2err,
-                                              k*sizeof(DATA));
-      pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
-                                           k*sizeof(char));
+    if(!someUnflagged && !pFilter->accept_flagged) {
+      free(pOutTab->record[nrec].vis2data);
+      free(pOutTab->record[nrec].vis2err);
+      free(pOutTab->record[nrec].flag);
+    } else {
+      if(nrec == 0 && k < pOutTab->nwave) {
+        /* For 1st output record, length of vectors wasn't known when
+           originally allocated, so reallocate */
+        pOutTab->nwave = k;
+        pOutTab->record[nrec].vis2data = realloc(pOutTab->record[nrec].vis2data,
+                                                 k*sizeof(DATA));
+        pOutTab->record[nrec].vis2err = realloc(pOutTab->record[nrec].vis2err,
+                                                k*sizeof(DATA));
+        pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
+                                             k*sizeof(char));
+      }
+      ++nrec;
     }
-    ++nrec;
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_vis2_record));
@@ -754,6 +762,7 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
 void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 		  const char *useWave, oi_t3 *pOutTab)
 {
+  char someUnflagged;
   int i, j, k, nrec;
   double nan, u1, v1, u2, v2, bas;
   float snrAmp, snrPhi;
@@ -792,12 +801,7 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     bas = pow((u1+u2)*(u1+u2) + (v1+v2)*(v1+v2), 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
-    if(!pFilter->accept_flagged) {
-      for(j=0; j<pInTab->nwave; j++)
-        if(!pInTab->record[i].flag[j]) break;
-      if(j == pInTab->nwave)
-        continue; /* skip record as all data flagged */
-    }
+    /* Apply accept_flagged after filtering individual channels */
     
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_t3_record));
@@ -809,6 +813,7 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     pOutTab->record[nrec].t3phierr = malloc(pOutTab->nwave*sizeof(DATA));
     pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
     k = 0;
+    someUnflagged = FALSE;
     for(j=0; j<pInTab->nwave; j++) {
       if(useWave[j]) {
 	if (pFilter->accept_t3amp) {
@@ -835,25 +840,34 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 	} else {
 	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
 	}
+        if(!pOutTab->record[nrec].flag[k]) someUnflagged = TRUE;
 	++k;
       }
     }
-    if(nrec == 0 && k < pOutTab->nwave) {
-      /* For 1st output record, length of vectors wasn't known when
-	 originally allocated, so reallocate */
-      pOutTab->nwave = k;
-      pOutTab->record[nrec].t3amp = realloc(pOutTab->record[nrec].t3amp,
-                                            k*sizeof(DATA));
-      pOutTab->record[nrec].t3amperr = realloc(pOutTab->record[nrec].t3amperr,
-                                               k*sizeof(DATA));
-      pOutTab->record[nrec].t3phi = realloc(pOutTab->record[nrec].t3phi,
-                                            k*sizeof(DATA));
-      pOutTab->record[nrec].t3phierr = realloc(pOutTab->record[nrec].t3phierr,
-                                               k*sizeof(DATA));
-      pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
-                                           k*sizeof(char));
+    if(!someUnflagged && !pFilter->accept_flagged) {
+      free(pOutTab->record[nrec].t3amp);
+      free(pOutTab->record[nrec].t3amperr);
+      free(pOutTab->record[nrec].t3phi);
+      free(pOutTab->record[nrec].t3phierr);
+      free(pOutTab->record[nrec].flag);
+    } else {
+      if(nrec == 0 && k < pOutTab->nwave) {
+        /* For 1st output record, length of vectors wasn't known when
+           originally allocated, so reallocate */
+        pOutTab->nwave = k;
+        pOutTab->record[nrec].t3amp = realloc(pOutTab->record[nrec].t3amp,
+                                              k*sizeof(DATA));
+        pOutTab->record[nrec].t3amperr = realloc(pOutTab->record[nrec].t3amperr,
+                                                 k*sizeof(DATA));
+        pOutTab->record[nrec].t3phi = realloc(pOutTab->record[nrec].t3phi,
+                                              k*sizeof(DATA));
+        pOutTab->record[nrec].t3phierr = realloc(pOutTab->record[nrec].t3phierr,
+                                                 k*sizeof(DATA));
+        pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
+                                             k*sizeof(char));
+      }
+      ++nrec;
     }
-    ++nrec;
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_t3_record));
