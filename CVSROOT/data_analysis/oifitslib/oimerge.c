@@ -54,10 +54,12 @@ oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
     pCmp = (oi_wavelength *) link->data;
     if (pCmp->nwave == pWave->nwave) {
       for(i=0; i<pWave->nwave; i++) {
-	if (fabs(pCmp->eff_wave[i] - pWave->eff_wave[i]) < tol &&
-	    fabs(pCmp->eff_band[i] - pWave->eff_band[i]) < tol)
-	  return pCmp;
+	if (fabs(pCmp->eff_wave[i] - pWave->eff_wave[i]) >= tol ||
+	    fabs(pCmp->eff_band[i] - pWave->eff_band[i]) >= tol)
+	  break;
       }
+      if(i == pWave->nwave)
+        return pCmp;  /* all wavebands match */
     }
     link = link->next;
   }
