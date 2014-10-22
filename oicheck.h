@@ -1,7 +1,5 @@
-/* $Id$ */
-
 /**
- * @file oicheck.h
+ * @file
  * @ingroup oicheck
  *
  * Definitions for OIFITS conformity checker.
@@ -82,6 +80,8 @@ typedef enum {
   OI_BREACH_NOT_OIFITS, /**< Does not conform to the OIFITS standard */
   OI_BREACH_NOT_FITS,   /**< Does not conform to the FITS standard */
 } oi_breach_level;
+
+extern const char *const oi_breach_level_desc[];
 
 /** Result of checking for a particular class of standard breach */
 typedef struct {

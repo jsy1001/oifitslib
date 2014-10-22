@@ -1,7 +1,5 @@
-/* $Id$ */
-
 /**
- * @file oicheck.c
+ * @file
  * @ingroup oicheck
  *
  * Implementation of OIFITS conformity checker.
@@ -40,7 +38,7 @@
 extern GString *pGStr;
 
 /** Descriptions for oi_breach_level values */
-char *oi_breach_level_desc[] = {
+const char *const oi_breach_level_desc[] = {
   "No error",
   "Valid OIFITS, but may cause problems for some reading software",
   "Does not conform to the OIFITS standard",
@@ -142,7 +140,7 @@ oi_breach_level check_unique_targets(oi_fits *pOi, oi_check_result *pResult)
   int i;
   GList *idList;
   target *pTarget;
-  const char desc[] = "Duplicate value of TARGET keyword in OI_TARGET";
+  const char desc[] = "Duplicate value in TARGET column of OI_TARGET";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
@@ -336,8 +334,8 @@ oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
   while(link != NULL) {
     pVis = link->data;
     for(i=0; i<pVis->numrec; i++) {
-      if(pVis->record[i].flag) continue;
       for(j=0; j<pVis->nwave; j++) {
+        if(pVis->record[i].flag[j]) continue;
 	if(pVis->record[i].visamperr[j] < 0. ||
 	   pVis->record[i].visphierr[j] < 0.) {
 	  g_snprintf(location, FLEN_VALUE, "OI_VIS #%d record %d channel %d",
@@ -354,8 +352,8 @@ oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
   while(link != NULL) {
     pVis2 = link->data;
     for(i=0; i<pVis2->numrec; i++) {
-      if(pVis2->record[i].flag) continue;
       for(j=0; j<pVis2->nwave; j++) {
+        if(pVis2->record[i].flag[j]) continue;
 	if(pVis2->record[i].vis2err[j] < 0.) {
 	  g_snprintf(location, FLEN_VALUE, "OI_VIS2 #%d record %d channel %d",
 		     g_list_position(pOi->vis2List, link)+1, i+1, j+1);
@@ -371,8 +369,8 @@ oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
   while(link != NULL) {
     pT3 = link->data;
     for(i=0; i<pT3->numrec; i++) {
-      if(pT3->record[i].flag) continue;
       for(j=0; j<pT3->nwave; j++) {
+        if(pT3->record[i].flag[j]) continue;
 	if(pT3->record[i].t3amperr[j] < 0. ||
 	   pT3->record[i].t3phierr[j] < 0.) {
 	  g_snprintf(location, FLEN_VALUE, "OI_T3 #%d record %d channel %d",
@@ -412,8 +410,8 @@ oi_breach_level check_t3amp(oi_fits *pOi, oi_check_result *pResult)
     pT3 = link->data;
     for(i=0; i<pT3->numrec; i++) {
       t3Rec = pT3->record[i];
-      if(t3Rec.flag) continue;
       for(j=0; j<pT3->nwave; j++) {
+        if(t3Rec.flag[j]) continue;
 	/* use one sigma in case error bars are overestimated */
 	if((t3Rec.t3amp[j] - 1.0) > 1*t3Rec.t3amperr[j]) {
 	  g_snprintf(location, FLEN_VALUE, "OI_T3 #%d record %d channel %d",
