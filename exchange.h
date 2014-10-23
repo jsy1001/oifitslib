@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file exchange.h
+ * @file
  * @ingroup oitable
- *
  * Data structure definitions and function prototypes for table-level
  * operations on OIFITS data.
  *
@@ -43,7 +40,7 @@
  * The OIFITS standard is described in Pauls et al. (2005) PASP 117,
  * 1255. A PDF reprint of this paper and other OIFITS resources are
  * available from the OIFITS website
- * http://www.mrao.cam.ac.uk/~jsy1001/exchange/
+ * http://www.mrao.cam.ac.uk/research/optical-interferometry/oifits/
  *
  * OIFITSlib incorporates the following modules:
  * - @ref oitable

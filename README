@@ -42,8 +42,8 @@ http://www.gnu.org/licenses/
 
 GETTING THE SOFTWARE
 
-The source code for OIFITSlib is available from the OIFITS website:
-http://www.mrao.cam.ac.uk/research/OAS/oi_data/oifits.html#resources
+The source code for OIFITSlib is available from github:
+https://github.com/jsy1001/oifitslib
 
 
 BUILDING THE SOFTWARE
