@@ -1,7 +1,6 @@
 /**
  * @file
  * @ingroup oicheck
- *
  * Definitions for OIFITS conformity checker.
  *
  * Copyright (C) 2007 John Young

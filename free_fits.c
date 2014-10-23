@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file free_fits.c
+ * @file
  * @ingroup oitable
- *
  * Implementation of functions to free storage allocated by routines
  * in read_fits.c
  *

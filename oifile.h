@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file oifile.h
+ * @file
  * @ingroup oifile
- *
  * Data structure definitions and function prototypes for file-level
  * operations on OIFITS data.
  *

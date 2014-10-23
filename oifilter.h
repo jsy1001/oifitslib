@@ -1,12 +1,9 @@
-/* $Id$ */
-
 /**
- * @file oifilter.h
+ * @file
  * @ingroup oifilter
- *
  * Definitions for OIFITS filter.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -77,19 +74,23 @@
 
 /** Filter specification for OIFITS data */
 typedef struct {
-  /* :TODO: regular expressions or partial match? */
-  char arrname[FLEN_VALUE]; /**< If not "", accept this ARRNAME only */
-  char insname[FLEN_VALUE]; /**< If not "", accept this INSNAME only */
+  /** @publicsection */
+  char arrname[FLEN_VALUE]; /**< Accept ARRNAMEs matching this pattern */
+  char insname[FLEN_VALUE]; /**< Accept INSNAMEs matching this pattern */
   int target_id;       /**< If >= 0, accept this TARGET_ID only */
   double mjd_range[2];  /**< Minimum and maximum MJD to accept */
-  float wave_range[2];  /**< Min. and max. central wavelength to accept /m */
-  double bas_range[2]; /**< Min. and max. projected baseline to accept /m */
-  float snr_range[2];  /**< Min. and max. SNR to accept */
+  float wave_range[2];  /**< Minimum and maximum central wavelength /m */
+  double bas_range[2]; /**< Minimum and maximum projected baseline /m */
+  float snr_range[2];  /**< Minimum and maximum SNR to accept */
   int accept_vis;      /**< If non-zero, accept OI_VIS data */
   int accept_vis2;     /**< If non-zero, accept OI_VIS2 data */
   int accept_t3amp;    /**< If non-zero, accept OI_T3 amplitude data */
   int accept_t3phi;    /**< If non-zero, accept OI_T3 phase data */
   int accept_flagged;  /**< If non-zero, accept records with all data flagged */
+
+  /** @privatesection */
+  GPatternSpec *arrname_pttn; /**< Compiled pattern to match ARRNAME against */
+  GPatternSpec *insname_pttn; /**< Compiled pattern to match INSNAME against */
 } oi_filter_spec;
 
 
@@ -99,7 +100,7 @@ typedef struct {
 void init_oi_filter(oi_filter_spec *);
 const char *format_oi_filter(oi_filter_spec *);
 void print_oi_filter(oi_filter_spec *);
-void apply_oi_filter(const oi_fits *, const oi_filter_spec *, oi_fits *);
+void apply_oi_filter(const oi_fits *, oi_filter_spec *, oi_fits *);
 #ifdef HAVE_G_OPTION_GROUP
 GOptionGroup *get_oi_filter_option_group(void);
 oi_filter_spec *get_user_oi_filter(void);

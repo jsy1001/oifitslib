@@ -1,8 +1,5 @@
-/* $Id$ */
-
 /**
- * @file demo.c
- *
+ * @file
  * Example program - uses oitable API to write and read a OIFITS file.
  *
  * Copyright (C) 2007 John Young

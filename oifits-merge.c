@@ -1,8 +1,5 @@
-/* $Id$ */
-
 /**
- * @file oifits-merge.c
- *
+ * @file
  * Command-line OIFITS merge utility.
  *
  * Copyright (C) 2007 John Young

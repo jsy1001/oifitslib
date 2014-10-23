@@ -1,12 +1,9 @@
-/* $Id$ */
-
 /**
- * @file oimerge.c
+ * @file
  * @ingroup oimerge
- *
  * Implementation of merge component of OIFITSlib.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -26,11 +23,11 @@
  * http://www.gnu.org/licenses/
  */
 
+#include "oimerge.h"
+
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-
-#include "oimerge.h"
 
 
 /*
@@ -41,8 +38,8 @@
  * Return pointer to first oi_wavelength in list that contains
  * identical wavebands (in same order) to pWave.
  */
-oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
-				   const GList *list)
+static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
+                                          const GList *list)
 {
   const GList *link;
   oi_wavelength *pCmp;
@@ -129,6 +126,7 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
   const GList *waveList, *ilink, *jlink;
   GHashTable *hash;
   oi_wavelength *pInTab, *pOutTab;
+  char newName[FLEN_VALUE];
   
   insnameHashList = NULL;
   assert(pOutput->wavelengthList == NULL);
@@ -150,8 +148,14 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
 	pOutTab = dup_oi_wavelength(pInTab);
 	if (g_hash_table_lookup(pOutput->wavelengthHash,
 				pOutTab->insname) != NULL) {
-	  g_snprintf(pOutTab->insname, FLEN_VALUE,
-		     "ins%03d", pOutput->numWavelength+1);
+          /* Avoid truncation at FLEN_VALUE - 1 */
+          if(strlen(pOutTab->insname) < (FLEN_VALUE - 5))
+            g_snprintf(newName, FLEN_VALUE,
+                       "%s_%03d", pOutTab->insname, pOutput->numWavelength + 1);
+          else
+            g_snprintf(newName, FLEN_VALUE,
+                       "ins%03d", pOutput->numWavelength + 1);
+          g_strlcpy(pOutTab->insname, newName, FLEN_VALUE);
 	}
 	g_hash_table_insert(pOutput->wavelengthHash, pOutTab->insname,
 			    pOutTab);

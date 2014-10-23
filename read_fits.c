@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file read_fits.c
+ * @file
  * @ingroup oitable
- *
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *

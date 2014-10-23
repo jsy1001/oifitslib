@@ -1,8 +1,5 @@
-/* $Id$ */
-
 /**
- * @file oifits-check.c
- *
+ * @file
  * Command-line OIFITS conformity check utility.
  *
  * Copyright (C) 2007 John Young

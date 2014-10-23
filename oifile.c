@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file oifile.c
+ * @file
  * @ingroup oifile
- *
  * Implementation of file-level API for OIFITS data.
  *
  * Copyright (C) 2007 John Young

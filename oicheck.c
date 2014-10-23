@@ -1,10 +1,9 @@
 /**
  * @file
  * @ingroup oicheck
- *
  * Implementation of OIFITS conformity checker.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -133,7 +132,7 @@ void print_check_result(oi_check_result *pResult)
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
- * @return oi_breach level indicating overall test result
+ * @return oi_breach_level indicating overall test result
  */
 oi_breach_level check_unique_targets(oi_fits *pOi, oi_check_result *pResult)
 {
@@ -169,7 +168,7 @@ oi_breach_level check_unique_targets(oi_fits *pOi, oi_check_result *pResult)
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
- * @return oi_breach level indicating overall test result
+ * @return oi_breach_level indicating overall test result
  */
 oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
 {
@@ -235,7 +234,7 @@ oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
- * @return oi_breach level indicating overall test result
+ * @return oi_breach_level indicating overall test result
  */
 oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
 {
@@ -315,7 +314,7 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
- * @return oi_breach level indicating overall test result
+ * @return oi_breach_level indicating overall test result
  */
 oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
 {
@@ -391,7 +390,7 @@ oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
- * @return oi_breach level indicating overall test result
+ * @return oi_breach_level indicating overall test result
  */
 oi_breach_level check_t3amp(oi_fits *pOi, oi_check_result *pResult)
 {
@@ -432,7 +431,7 @@ oi_breach_level check_t3amp(oi_fits *pOi, oi_check_result *pResult)
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
- * @return oi_breach level indicating overall test result
+ * @return oi_breach_level indicating overall test result
  */
 oi_breach_level check_waveorder(oi_fits *pOi, oi_check_result *pResult)
 {

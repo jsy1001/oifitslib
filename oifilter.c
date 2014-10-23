@@ -1,12 +1,9 @@
-/* $Id$ */
-
 /**
- * @file oifilter.c
+ * @file
  * @ingroup oifilter
- *
  * Implementation of OIFITS filter.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -27,10 +24,10 @@
  */
 
 
+#include "oifilter.h"
+
 #include <string.h>
 #include <math.h>
-
-#include "oifilter.h"
 
 
 /** Internal use GString, defined in oifile.c */
@@ -54,9 +51,9 @@ static gboolean doneParse = FALSE;
 /** Specification of command-line options for dataset filtering */
 static GOptionEntry filterEntries[] = {
   {"arrname", 0, 0, G_OPTION_ARG_STRING, &arrname,
-   "Accept only this ARRNAME", "NAME" },
+   "Accept ARRNAMEs matching this pattern (use * and ?)", "PATTERN" },
   {"insname", 0, 0, G_OPTION_ARG_STRING, &insname,
-   "Accept only this INSNAME", "NAME" },
+   "Accept INSNAMEs matching this pattern (use * and ?)", "PATTERN" },
   {"target-id", 0, 0, G_OPTION_ARG_INT, &parsedFilter.target_id,
    "Accept only this TARGET_ID", "ID" },
   {"mjd-min", 0, 0, G_OPTION_ARG_STRING, &mjdMinStr,
@@ -111,7 +108,6 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
   basMaxStr = g_strdup_printf("%lf", parsedFilter.bas_range[1]);
   snrMinStr = g_strdup_printf("%f", parsedFilter.snr_range[0]);
   snrMaxStr = g_strdup_printf("%f", parsedFilter.snr_range[1]);
-  /* :TODO: will these leak? */
   return TRUE;
 }
 
@@ -138,18 +134,170 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
   return TRUE;
 }
 
+#endif /* #ifdef HAVE_G_OPTION_GROUP */
+
+/**
+ * Return new linked list of ARRNAMEs referenced by the OI_VIS/VIS2/T3 tables.
+ */
+static GList *get_arrname_list(oi_fits *pData)
+{
+  GList *arrnameList, *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  
+  arrnameList = NULL;
+
+  link = pData->visList;
+  while (link != NULL) {
+    pVis = (oi_vis *) link->data;
+    if (pVis->arrname[0] != '\0'
+        && g_list_find_custom(arrnameList, pVis->arrname,
+                              (GCompareFunc) strcmp) == NULL)
+      arrnameList = g_list_prepend(arrnameList, pVis->arrname);
+    link = link->next;
+  }
+
+  link = pData->vis2List;
+  while (link != NULL) {
+    pVis2 = (oi_vis2 *) link->data;
+    if (pVis2->arrname[0] != '\0' &&
+        g_list_find_custom(arrnameList, pVis2->arrname,
+                           (GCompareFunc) strcmp) == NULL)
+      arrnameList = g_list_prepend(arrnameList, pVis2->arrname);
+    link = link->next;
+  }
+
+  link = pData->t3List;
+  while (link != NULL) {
+    pT3 = (oi_t3 *) link->data;
+    if (pT3->arrname[0] != '\0'
+        && g_list_find_custom(arrnameList, pT3->arrname,
+                              (GCompareFunc) strcmp) == NULL)
+      arrnameList = g_list_prepend(arrnameList, pT3->arrname);
+    link = link->next;
+  }
+  return g_list_reverse(arrnameList);
+}
+
+/**
+ * Return new linked list of INSNAMEs referenced by the OI_VIS/VIS2/T3 tables.
+ */
+static GList *get_insname_list(oi_fits *pData)
+{
+  GList *insnameList, *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  
+  insnameList = NULL;
+
+  link = pData->visList;
+  while (link != NULL) {
+    pVis = (oi_vis *) link->data;
+    if (g_list_find_custom(insnameList, pVis->insname,
+                           (GCompareFunc) strcmp) == NULL)
+      insnameList = g_list_prepend(insnameList, pVis->insname);
+    link = link->next;
+  }
+
+  link = pData->vis2List;
+  while (link != NULL) {
+    pVis2 = (oi_vis2 *) link->data;
+    if (g_list_find_custom(insnameList, pVis2->insname,
+                           (GCompareFunc) strcmp) == NULL)
+      insnameList = g_list_prepend(insnameList, pVis2->insname);
+    link = link->next;
+  }
+
+  link = pData->t3List;
+  while (link != NULL) {
+    pT3 = (oi_t3 *) link->data;
+    if (g_list_find_custom(insnameList, pT3->insname,
+                           (GCompareFunc) strcmp) == NULL)
+      insnameList = g_list_prepend(insnameList, pT3->insname);
+    link = link->next;
+  }
+  return g_list_reverse(insnameList);
+}
+
+/**
+ * Remove first OI_ARRAY table with ARRNAME not in @a arrnameList.
+ *
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ */
+static gboolean prune_oi_array(oi_fits *pData, GList *arrnameList)
+{
+  GList *link;
+  oi_array *pArray;
+
+  link = pData->arrayList;
+  while (link != NULL)
+  {
+    pArray = (oi_array *) link->data;
+    if (g_list_find_custom(arrnameList, pArray->arrname,
+                           (GCompareFunc) strcmp) == NULL)
+    {
+      g_warning("Unreferenced OI_ARRAY table with ARRNAME=%s "
+                "removed from filter output", pArray->arrname);
+      g_hash_table_remove(pData->arrayHash, pArray->arrname);
+      pData->arrayList = g_list_remove(pData->arrayList, pArray);
+      --pData->numArray;
+      free_oi_array(pArray);
+      free(pArray);
+      return TRUE;
+    }
+    link = link->next;
+  }
+  return FALSE;
+}
+
+/**
+ * Remove first OI_WAVELENGTH table with INSNAME not in @a insnameList.
+ *
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ */
+static gboolean prune_oi_wavelength(oi_fits *pData, GList *insnameList)
+{
+  GList *link;
+  oi_wavelength *pWave;
+
+  link = pData->wavelengthList;
+  while (link != NULL)
+  {
+    pWave = (oi_wavelength *) link->data;
+    if (g_list_find_custom(insnameList, pWave->insname,
+                           (GCompareFunc) strcmp) == NULL)
+    {
+      g_warning("Unreferenced OI_WAVELENGTH table with INSNAME=%s "
+                "removed from filter output", pWave->insname);
+      g_hash_table_remove(pData->wavelengthHash, pWave->insname);
+      pData->wavelengthList = g_list_remove(pData->wavelengthList, pWave);
+      --pData->numWavelength;
+      free_oi_wavelength(pWave);
+      free(pWave);
+      return TRUE;
+    }
+    link = link->next;
+  }
+  return FALSE;
+}
+
 
 /*
  * Public functions
  */
+
+#ifdef HAVE_G_OPTION_GROUP
 
 /**
  * Return a GOptionGroup for the filtering command-line options
  * recognized by oifitslib.
  *
  * You should add this group to your GOptionContext with
- * g_option_context_add_group(), if you are using
- * g_option_context_parse() to parse your command-line arguments.
+ * g_option_context_add_group() or g_option_context_set_main_group(),
+ * if you are using g_option_context_parse() to parse your
+ * command-line arguments.
  */
 GOptionGroup *get_oi_filter_option_group(void)
 {
@@ -194,8 +342,8 @@ void apply_user_oi_filter(const oi_fits *pInput, oi_fits *pOutput)
  */
 void init_oi_filter(oi_filter_spec *pFilter)
 {
-  strcpy(pFilter->arrname, "");
-  strcpy(pFilter->insname, "");
+  strcpy(pFilter->arrname, "*");
+  strcpy(pFilter->insname, "*");
   pFilter->target_id = -1;
   pFilter->mjd_range[0] = 0.;
   pFilter->mjd_range[1] = 1e7;
@@ -210,6 +358,9 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->accept_t3amp = 1;
   pFilter->accept_t3phi = 1;
   pFilter->accept_flagged = 1;
+
+  pFilter->arrname_pttn = NULL;
+  pFilter->insname_pttn = NULL;
 }
 
 /**
@@ -225,14 +376,8 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
     pGStr = g_string_sized_new(256);
 
   g_string_printf(pGStr, "Filter accepts:\n");
-  if(strlen(pFilter->arrname) > 0)
-    g_string_append_printf(pGStr, "  ARRNAME='%s'\n", pFilter->arrname);
-  else
-    g_string_append_printf(pGStr, "  [Any ARRNAME]\n");
-  if(strlen(pFilter->insname) > 0)
-    g_string_append_printf(pGStr, "  INSNAME='%s'\n", pFilter->insname);
-  else
-    g_string_append_printf(pGStr, "  [Any INSNAME]\n");
+  g_string_append_printf(pGStr, "  ARRNAME='%s'\n", pFilter->arrname);
+  g_string_append_printf(pGStr, "  INSNAME='%s'\n", pFilter->insname);
   if(pFilter->target_id >= 0)
     g_string_append_printf(pGStr, "  TARGET_ID=%d\n", pFilter->target_id);
   else
@@ -281,13 +426,13 @@ void print_oi_filter(oi_filter_spec *pFilter)
 }
 
 
-#define ACCEPT_ARRNAME(pObject, pFilter) \
-  ( (strlen(pFilter->arrname) == 0 || \
-     strcmp(pObject->arrname, pFilter->arrname) == 0) )
+#define ACCEPT_ARRNAME(pObject, pFilter)                                \
+  ( (pFilter)->arrname_pttn == NULL ||                                  \
+    g_pattern_match_string((pFilter)->arrname_pttn, (pObject)->arrname) )
 
-#define ACCEPT_INSNAME(pObject, pFilter) \
-  ( (strlen(pFilter->insname) == 0 || \
-     strcmp(pObject->insname, pFilter->insname) == 0) )
+#define ACCEPT_INSNAME(pObject, pFilter)                                \
+  ( (pFilter)->insname_pttn == NULL ||                                  \
+    g_pattern_match_string((pFilter)->insname_pttn, (pObject)->insname) )
 
 /**
  * Filter OI_TARGET table.
@@ -580,7 +725,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_VIS tables.
+ * Filter all OI_VIS2 tables.
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -877,15 +1022,22 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
  * Filter OIFITS data. Makes a deep copy.
  *
  * @param pInput   pointer to input file data struct, see oifile.h
- * @param pFilter   pointer to filter specification
+ * @param pFilter  pointer to filter specification
  * @param pOutput  pointer to uninitialised output data struct
  */
-void apply_oi_filter(const oi_fits *pInput, const oi_filter_spec *pFilter,
+void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
 		     oi_fits *pOutput)
 {
   GHashTable *useWaveHash;
+  GList *list;
 
   init_oi_fits(pOutput);
+
+  /* Compile glob-style patterns for efficiency */
+  g_assert(pFilter->arrname_pttn == NULL);
+  pFilter->arrname_pttn = g_pattern_spec_new(pFilter->arrname);
+  g_assert(pFilter->insname_pttn == NULL);
+  pFilter->insname_pttn = g_pattern_spec_new(pFilter->insname);
 
   /* Filter OI_TARGET table and OI_ARRAY tables */
   filter_oi_target(&pInput->targets, pFilter, &pOutput->targets);
@@ -899,7 +1051,20 @@ void apply_oi_filter(const oi_fits *pInput, const oi_filter_spec *pFilter,
   filter_all_oi_vis(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_vis2(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_t3(pInput, pFilter, useWaveHash, pOutput);
-  /* :TODO: remove orphaned OI_ARRAY & OI_WAVELENGTH tables */
+
+  /* Remove orphaned OI_ARRAY & OI_WAVELENGTH tables */
+  list = get_arrname_list(pOutput);
+  while(prune_oi_array(pOutput, list)) ;
+  g_list_free(list);
+  list = get_insname_list(pOutput);
+  while(prune_oi_wavelength(pOutput, list)) ;
+  g_list_free(list);
+
+  /* Free compiled patterns */
+  g_pattern_spec_free(pFilter->arrname_pttn);
+  g_pattern_spec_free(pFilter->insname_pttn);
+  pFilter->arrname_pttn = NULL;
+  pFilter->insname_pttn = NULL;
 
   g_hash_table_destroy(useWaveHash);
 }

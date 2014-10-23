@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file write_fits.c
+ * @file
  * @ingroup oitable
- *
  * Implementation of functions to write FITS tables from data structures
  * in memory.
  *

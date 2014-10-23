@@ -1,9 +1,6 @@
-/* $Id$ */
-
 /**
- * @file oimerge.h
+ * @file
  * @ingroup oimerge
- *
  * Definitions for merge component of OIFITSlib.
  *
  * Copyright (C) 2007 John Young
