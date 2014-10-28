@@ -26,14 +26,15 @@ PYINCFLAGS = -I/usr/include/$(PYTHON)
 
 CPPFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
 CFLAGS =  -Wall -g -fPIC
-ifneq (,$(findstring darwin,$(OSTYPE)))
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
   # Add MacPorts directories to search paths. Libraries installed by Homebrew
   # are accessed from /usr/local which is in gcc's default search paths, so
   # if you have a required library installed in both systems, the Homebrew
   # one will take precedence.
   CPPFLAGS += -I/opt/local/include
   override LDLIBS += -L/opt/local/lib -lcfitsio -lm
-else ifeq ($(OSTYPE),solaris)
+else ifeq ($(UNAME_S),SunOS)
   override LDLIBS += -lcfitsio -lm -lnsl -lsocket
   export LD_RUN_PATH:= /usr/local/lib:/star/lib
 else
