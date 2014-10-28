@@ -26,14 +26,20 @@ PYINCFLAGS = -I/usr/include/$(PYTHON)
 
 CPPFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
 CFLAGS =  -Wall -g -fPIC
-ifeq ($(OSTYPE),solaris)
+ifneq (,$(findstring darwin,$(OSTYPE)))
+  # Add MacPorts directories to search paths. Libraries installed by Homebrew
+  # are accessed from /usr/local which is in gcc's default search paths, so
+  # if you have a required library installed in both systems, the Homebrew
+  # one will take precedence.
+  CPPFLAGS += -I/opt/local/include
+  override LDLIBS += -L/opt/local/lib -lcfitsio -lm
+else ifeq ($(OSTYPE),solaris)
   override LDLIBS += -lcfitsio -lm -lnsl -lsocket
+  export LD_RUN_PATH:= /usr/local/lib:/star/lib
 else
   override LDLIBS += -lcfitsio -lm
 endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
-
-export LD_RUN_PATH:= /usr/local/lib:/star/lib
 
 
 # Rules to make .o file from .c file

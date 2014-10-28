@@ -50,13 +50,13 @@ BUILDING THE SOFTWARE
 
 Use the supplied Makefile, which requires Gnu Make (sometimes
 installed as gmake). You may have to add explicit search paths to the
-Makefile variables INCFLAGS, PYINCFLAGS, LDLIBS and LDLIBS_GLIB in
+Makefile variables CPPFLAGS, PYINCFLAGS, LDLIBS and LDLIBS_GLIB in
 order to find all the required include files and libraries.
 
 The following libraries are required:
 - CFITSIO (version 3.x recommended):
   http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
-- GLib    (version 2.6 or later recommended):
+- GLib    (version 2.16 or later required):
   http://www.gtk.org/
 
 Note that the "oitable" module can be built without GLib. The supplied
@@ -65,8 +65,8 @@ the pkg-config utility). If GLib is not detected or pkg-config is not
 installed, only liboitable and its demonstration program "demo" will
 be built.
 
-OIFITSlib has been tested under Linux and Solaris. The author is
-interested in hearing about successes or failures under other
+OIFITSlib has been tested under Linux, Solaris and MacOS X. The author
+is interested in hearing about successes or failures under other
 operating systems.
 
 
@@ -85,6 +85,3 @@ oifits-check will output brief usage information if invoked with the
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
 oifits, oicheck, oimerge and oifilter modules.
-
-
-$Id$
