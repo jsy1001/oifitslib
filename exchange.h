@@ -214,8 +214,8 @@ typedef struct {
   /* no TIME in this table */
   double mjd;
   double int_time;
-  double *fluxdata;
-  double *fluxerr;
+  DATA *fluxdata;
+  DATA *fluxerr;
   int sta_index;  /**< -1 means not specified */
 } oi_spectrum_record;
 
