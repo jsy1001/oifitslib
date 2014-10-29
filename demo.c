@@ -40,6 +40,7 @@ void demo_write(void)
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
+  oi_spectrum spectrum;
   char filename[FLEN_FILENAME];
   FILE *fp;
   int i, irec, iwave, itarg, status;
@@ -228,6 +229,33 @@ void demo_write(void)
   t3.revision = 1;
   t3.nwave = wave.nwave;
 
+  /* Read info for OI_SPECTRUM table */
+  fscanf(fp, "OI_SPECTRUM date-obs %s ", spectrum.date_obs);
+  fscanf(fp, "arrname %s insname %s ", spectrum.arrname, spectrum.insname);
+  fscanf(fp, "fov %lf fovtype %s ", &spectrum.fov, spectrum.fovtype);
+  spectrum.calibrated = TRUE;
+  fscanf(fp, "numrec %ld ", &spectrum.numrec);
+  spectrum.record = malloc(spectrum.numrec*sizeof(oi_spectrum_record));
+  printf("Reading %ld spectrum records...\n", spectrum.numrec);
+  /* loop over records */
+  for(irec=0; irec<spectrum.numrec; irec++) {
+    fscanf(fp, "target_id %d mjd %lf ", &spectrum.record[irec].target_id,
+	   &spectrum.record[irec].mjd);
+    fscanf(fp, "int_time %lf fluxdata ", &spectrum.record[irec].int_time);
+    spectrum.record[irec].fluxdata = malloc(wave.nwave*sizeof(DATA));
+    for(iwave=0; iwave<wave.nwave; iwave++) {
+      fscanf(fp, "%lf ", &spectrum.record[irec].fluxdata[iwave]);
+    }
+    fscanf(fp, "fluxerr ");
+    spectrum.record[irec].fluxerr = malloc(wave.nwave*sizeof(DATA));
+    for(iwave=0; iwave<wave.nwave; iwave++) {
+      fscanf(fp, "%lf ", &spectrum.record[irec].fluxerr[iwave]);
+    }
+    fscanf(fp, "sta_index %d ", &spectrum.record[irec].sta_index);
+  }
+  spectrum.revision = 1;
+  spectrum.nwave = wave.nwave;
+
   fclose(fp);
 
   /* Write out FITS file */
@@ -245,6 +273,7 @@ void demo_write(void)
   write_oi_vis(fptr, vis, 1, &status);
   write_oi_vis2(fptr, vis2, 1, &status);
   write_oi_t3(fptr, t3, 1, &status);
+  write_oi_spectrum(fptr, spectrum, 1, &status);
   write_oi_array(fptr, array, 1, &status);
   write_oi_wavelength(fptr, wave, 1, &status);
 
@@ -261,6 +290,7 @@ void demo_write(void)
   free_oi_vis(&vis);
   free_oi_vis2(&vis2);
   free_oi_t3(&t3);
+  free_oi_spectrum(&spectrum);
   free_oi_array(&array);
   free_oi_wavelength(&wave);
 }
@@ -271,9 +301,10 @@ void demo_write(void)
  *
  * This code will read a general OIFITS file containing multiple
  * tables of each type (except OI_TARGET). However, its not that
- * useful since the same oi_vis/vis2/t3 object is used to receive the
- * data from all tables of the corresponding type!  See oifile.c for a
- * more useful routine (which requires GLib).
+ * useful since the same oi_vis/vis2/t3/spectrum object is used to
+ * receive the data from all tables of the corresponding type!  See
+ * read_oi_fits() in oifile.c for a more useful routine (which
+ * requires GLib).
  * 
  */
 void demo_read(void)
@@ -284,6 +315,7 @@ void demo_read(void)
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
+  oi_spectrum spectrum;
   char filename[FLEN_FILENAME];
   int status, hdutype;
   fitsfile *fptr, *fptr2;
@@ -307,7 +339,7 @@ void demo_read(void)
   /* Read all OI_VIS tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
   while (1==1) {
     if (read_next_oi_vis(fptr, &vis, &status)) break; /* no more OI_VIS */
-    printf("Read OI_VIS  with  ARRNAME=%s INSNAME=%s\n",
+    printf("Read OI_VIS      with  ARRNAME=%s INSNAME=%s\n",
 	   vis.arrname, vis.insname);
     if (strlen(vis.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY
@@ -329,7 +361,7 @@ void demo_read(void)
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_vis2(fptr, &vis2, &status)) break; /* no more OI_VIS2 */
-    printf("Read OI_VIS2 with  ARRNAME=%s INSNAME=%s\n",
+    printf("Read OI_VIS2     with  ARRNAME=%s INSNAME=%s\n",
 	   vis2.arrname, vis2.insname);
     if (strlen(vis2.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
@@ -350,7 +382,7 @@ void demo_read(void)
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_t3(fptr, &t3, &status)) break; /* no more OI_T3 */
-    printf("Read OI_T3   with  ARRNAME=%s INSNAME=%s\n",
+    printf("Read OI_T3       with  ARRNAME=%s INSNAME=%s\n",
 	   t3.arrname, t3.insname);
     if (strlen(t3.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
@@ -362,6 +394,28 @@ void demo_read(void)
       free_oi_wavelength(&wave);
       if (strlen(t3.arrname) > 0) free_oi_array(&array);
       free_oi_t3(&t3);
+    }
+  }
+  if (status != END_OF_FILE) goto except;
+  status = 0;
+
+  /* Read all OI_SPECTRUM tables & corresponding
+   * OI_ARRAY/OI_WAVELENGTH tables */
+  fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
+  while (1==1) {
+    if (read_next_oi_spectrum(fptr, &spectrum, &status)) break;
+    printf("Read OI_SPECTRUM with  ARRNAME=%s INSNAME=%s\n",
+	   spectrum.arrname, spectrum.insname);
+    if (strlen(spectrum.arrname) > 0) {
+      /* if ARRNAME specified, read corresponding OI_ARRAY */
+      read_oi_array(fptr2, spectrum.arrname, &array, &status);
+    }
+    read_oi_wavelength(fptr2, spectrum.insname, &wave, &status);
+    if (!status) {
+      /* Free storage ready to reuse structs for next table */
+      free_oi_wavelength(&wave);
+      if (strlen(spectrum.arrname) > 0) free_oi_array(&array);
+      free_oi_spectrum(&spectrum);
     }
   }
   if (status != END_OF_FILE) goto except;

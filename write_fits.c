@@ -4,7 +4,7 @@
  * Implementation of functions to write FITS tables from data structures
  * in memory.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -24,13 +24,13 @@
  * http://www.gnu.org/licenses/
  */
 
+#include "exchange.h"
+
+#include <fitsio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include "exchange.h"
-#include "fitsio.h"
 
 
 int oi_hush_errors = 0;
@@ -40,7 +40,7 @@ int oi_hush_errors = 0;
  * Private functions
  */
 
-/** Make deep copy of array of n strings, substituting value for any
+/** Make deep copy of array of n strings, substituting @a value for any
     initial '?' */
 char **make_tform(const char **template, int n, int value)
 {
@@ -103,7 +103,8 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
   if (array.revision != revision) {
-    printf("WARNING! array.revision != %d on entry to write_oi_array. Writing revision %d table\n", revision, revision);
+    printf("WARNING! array.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
@@ -176,7 +177,8 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
   if (targets.revision != revision) {
-    printf("WARNING! targets.revision != %d on entry to write_oi_target. Writing revision %d table\n", revision, revision);
+    printf("WARNING! targets.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
@@ -250,7 +252,8 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
   if (wave.revision != revision) {
-    printf("WARNING! wave.revision != %d on entry to write_oi_wavelength. Writing revision %d table\n", revision, revision);
+    printf("WARNING! wave.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
@@ -306,7 +309,8 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 
   /* Write keywords */
   if (vis.revision != revision) {
-    printf("WARNING! vis.revision != %d on entry to write_oi_vis. Writing revision %d table\n", revision, revision);
+    printf("WARNING! vis.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
@@ -393,7 +397,8 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 
   /* Write keywords */
   if (vis2.revision != revision) {
-    printf("WARNING! vis2.revision != %d on entry to write_oi_vis2. Writing revision %d table\n", revision, revision);
+    printf("WARNING! vis2.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
@@ -479,7 +484,8 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 
   /* Write keywords */
   if (t3.revision != revision) {
-    printf("WARNING! t3.revision != %d on entry to write_oi_t3. Writing revision %d table\n", revision, revision);
+    printf("WARNING! t3.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
@@ -524,6 +530,90 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 		   pStatus);
     fits_write_col(fptr, TLOGICAL, 14, irow, 1, t3.nwave,
 		   t3.record[irow-1].flag, pStatus);
+  }
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
+
+
+/**
+ * Write OI_SPECTRUM fits binary table 
+ *
+ *   @param fptr      see cfitsio documentation
+ *   @param spectrum  data struct, see exchange.h
+ *   @param extver    value for EXTVER keyword
+ *   @param pStatus   pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ */ 
+STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
+                         STATUS *pStatus)
+{
+  const char function[] = "write_oi_spectrum";
+  //:TODO: maybe omit STA_INDEX column
+  const int tfields = 6;
+  char *ttype[] = {"TARGET_ID", "MJD", "INT_TIME",
+		   "FLUXDATA", "FLUXERR", "STA_INDEX"};
+  const char *tformTpl[] = {"I", "D", "D",
+			    "?D", "?D", "I"};
+  char **tform;
+  //:TODO: flux units from struct?
+  char *tunit[] = {"\0", "day", "s",
+		   "\0", "\0", "\0"};
+  char extname[] = "OI_SPECTRUM";
+  int revision = 1, irow;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  /* Create table structure */
+  tform = make_tform(tformTpl, tfields, spectrum.nwave);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
+		  extname, pStatus);
+  free_tform(tform, tfields);
+
+  /* Write keywords */
+  if (spectrum.revision != revision) {
+    printf("WARNING! spectrum.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
+  }
+  fits_write_key(fptr, TINT, "OI_REVN", &revision,
+		 "Revision number of the table definition", pStatus);
+  fits_write_key(fptr, TSTRING, "DATE-OBS", &spectrum.date_obs,
+		 "UTC start date of observations", pStatus);
+  if (strlen(spectrum.arrname) > 0)
+    fits_write_key(fptr, TSTRING, "ARRNAME", &spectrum.arrname,
+		   "Array name", pStatus);
+  fits_write_key(fptr, TSTRING, "INSNAME", &spectrum.insname,
+		 "Detector name", pStatus);
+  fits_write_key(fptr, TDOUBLE, "FOV", &spectrum.fov,
+                 "[arcsec] Field Of View on sky for FLUXDATA", pStatus);
+  //:TODO: alt function to write unit?
+  fits_write_key(fptr, TSTRING, "FOVTYPE", &spectrum.fovtype,
+                 "Model for FOV", pStatus);
+  //:TODO: CALIBRATED keyword > 8 characters
+  fits_write_key(fptr, TLOGICAL, "CALIBRATED", &spectrum.calibrated,
+                 "Is spectrum calibrated?", pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver,
+		 "ID number of this OI_SPECTRUM", pStatus);
+
+  /* Write columns */
+  for(irow=1; irow<=spectrum.numrec; irow++) {
+
+    fits_write_col(fptr, TINT, 1, irow, 1, 1,
+                   &spectrum.record[irow-1].target_id, pStatus);
+    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1,
+                   &spectrum.record[irow-1].mjd, pStatus);
+    fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1,
+                   &spectrum.record[irow-1].int_time, pStatus);
+    fits_write_col(fptr, TDOUBLE, 4, irow, 1, spectrum.nwave,
+		   spectrum.record[irow-1].fluxdata, pStatus);
+    fits_write_col(fptr, TDOUBLE, 5, irow, 1, spectrum.nwave,
+		   spectrum.record[irow-1].fluxerr, pStatus);
+    fits_write_col(fptr, TINT, 6, irow, 1, 1,
+                   &spectrum.record[irow-1].sta_index, pStatus);
   }
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);

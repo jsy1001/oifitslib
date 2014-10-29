@@ -4,7 +4,7 @@
  * Implementation of functions to free storage allocated by routines
  * in read_fits.c
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -24,11 +24,7 @@
  * http://www.gnu.org/licenses/
  */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "exchange.h"
-#include "fitsio.h"
 
 
 /**
@@ -82,7 +78,7 @@ void free_oi_vis(oi_vis *pVis)
 }
 
 /**
- * Free dynamically-allocated storage within oi_vis struct.
+ * Free dynamically-allocated storage within oi_vis2 struct.
  *
  *   @param pVis2  pointer to data struct, see exchange.h
  */
@@ -99,7 +95,7 @@ void free_oi_vis2(oi_vis2 *pVis2)
 }
 
 /**
- * Free dynamically-allocated storage within oi_vis struct.
+ * Free dynamically-allocated storage within oi_t3 struct.
  *
  *   @param pT3  pointer to data struct, see exchange.h
  */
@@ -115,4 +111,20 @@ void free_oi_t3(oi_t3 *pT3)
     free(pT3->record[i].flag);
   }
   free(pT3->record);
+}
+
+/**
+ * Free dynamically-allocated storage within oi_spectrum struct.
+ *
+ *   @param pSpectrum  pointer to data struct, see exchange.h
+ */
+void free_oi_spectrum(oi_spectrum *pSpectrum)
+{
+  int i;
+
+  for(i=0; i<pSpectrum->numrec; i++) {
+    free(pSpectrum->record[i].fluxdata);
+    free(pSpectrum->record[i].fluxerr);
+  }
+  free(pSpectrum->record);
 }

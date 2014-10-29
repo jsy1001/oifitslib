@@ -127,3 +127,27 @@ v1coord  3.29268
 u2coord  9.89310
 v2coord -12.18141
 sta_index 1 2 3
+
+
+OI_SPECTRUM
+
+date-obs 2000-10-19
+arrname COAST
+insname COAST_NICMOS
+fov 0.5
+fovtype RADIUS
+numrec 2
+
+target_id 1
+mjd 51836.972222
+int_time 100.0
+fluxdata 1.2678
+fluxerr 0.0134
+sta_index 1
+
+target_id 1
+mjd 51836.101222
+int_time 100.0
+fluxdata 1.3781
+fluxerr 0.0635
+sta_index 1

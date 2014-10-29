@@ -4,7 +4,7 @@
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -24,11 +24,11 @@
  * http://www.gnu.org/licenses/
  */
 
+#include "exchange.h"
+
+#include <fitsio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "exchange.h"
-#include "fitsio.h"
 
 
 /*
@@ -138,7 +138,8 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, comment, pStatus);
   if (pArray->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in OI_ARRAY table. Got %d\n", revision, pArray->revision);
+    printf("WARNING! Expecting value %d for OI_REVN keyword "
+           "in OI_ARRAY table. Got %d\n", revision, pArray->revision);
   }
   if (arrname == NULL) {
     fits_read_key(fptr, TSTRING, "ARRNAME", name, comment, pStatus);
@@ -208,7 +209,8 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, comment, pStatus);
   if (pWave->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in OI_WAVELENGTH table. Got %d\n", revision, pWave->revision);
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_WAVELENGTH table. Got %d\n", revision, pWave->revision);
   }
   if (insname == NULL) {
     fits_read_key(fptr, TSTRING, "INSNAME", name, comment, pStatus);
@@ -265,7 +267,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, comment, pStatus);
   if (pTargets->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in OI_TARGETS table. Got %d\n", revision, pTargets->revision);
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_TARGETS table. Got %d\n", revision, pTargets->revision);
   }
   /* get number of rows */
   fits_get_num_rows(fptr, &repeat, pStatus);
@@ -486,7 +489,8 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
   if (pVis->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in OI_VIS table. Got %d\n", revision, pVis->revision);
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_VIS table. Got %d\n", revision, pVis->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, comment, pStatus);
@@ -593,7 +597,8 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, comment, pStatus);
   if (pVis2->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in OI_VIS2 table. Got %d\n", revision, pVis2->revision);
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_VIS2 table. Got %d\n", revision, pVis2->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis2->date_obs, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ARRNAME", pVis2->arrname, comment, pStatus);
@@ -690,7 +695,8 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, comment, pStatus);
   if (pT3->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in OI_T3 table. Got %d\n", revision, pT3->revision);
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_T3 table. Got %d\n", revision, pT3->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pT3->date_obs, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ARRNAME", pT3->arrname, comment, pStatus);
@@ -760,6 +766,93 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
     fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pT3->nwave, &nullchar,
 		  pT3->record[irow-1].flag, &anynull, pStatus);
+  }
+
+ except:
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
+
+
+/**
+ * Read next OI_SPECTRUM fits binary table
+ *
+ *   @param fptr       see cfitsio documentation
+ *   @param pSpectrum  ptr to data struct, see exchange.h
+ *   @param pStatus    pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code (also assigned to
+ *           *pStatus). Contents of data struct are undefined
+ */
+STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
+                             STATUS *pStatus)
+{
+  const char function[] = "read_next_oi_spectrum";
+  char comment[FLEN_COMMENT];
+  int nullint = 0;
+  double nulldouble = 0.0;
+  const int revision = 1;
+  int irow, colnum, anynull;
+  long repeat;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  next_named_hdu(fptr, "OI_SPECTRUM", pStatus);
+  if (*pStatus == END_OF_FILE)
+    return *pStatus;
+  else if (*pStatus)
+    goto except;
+
+  /* Read table */
+  fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, comment, pStatus);
+  if (pSpectrum->revision != revision) {
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_SPECTRUM table. Got %d\n", revision, pSpectrum->revision);
+  }
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs,
+                comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pSpectrum->arrname, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
+    pSpectrum->arrname[0] = '\0';
+    *pStatus = 0;
+  }
+  fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
+  /* get number of rows & allocate storage */
+  fits_get_num_rows(fptr, &pSpectrum->numrec, pStatus);
+  pSpectrum->record = malloc(pSpectrum->numrec*sizeof(oi_spectrum_record));
+  /* get value for nwave */
+  /* format specifies same repeat count for FLUX* columns */
+  fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
+  fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
+  pSpectrum->nwave = repeat;
+  /* read rows */
+  for (irow=1; irow<=pSpectrum->numrec; irow++) {
+    fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+		  &pSpectrum->record[irow-1].target_id, &anynull, pStatus);
+    /* no TIME column */
+    fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+		  &pSpectrum->record[irow-1].mjd, &anynull, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+		  &pSpectrum->record[irow-1].int_time, &anynull, pStatus);
+    pSpectrum->record[irow-1].fluxdata = malloc(pSpectrum->nwave*sizeof(DATA));
+    pSpectrum->record[irow-1].fluxerr = malloc(pSpectrum->nwave*sizeof(DATA));
+    fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave,
+		  &nulldouble, pSpectrum->record[irow-1].fluxdata, &anynull,
+		  pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "FLUXERR", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave,
+		  &nulldouble, pSpectrum->record[irow-1].fluxerr, &anynull,
+		  pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+		  &pSpectrum->record[irow-1].sta_index, &anynull, pStatus);
   }
 
  except:
