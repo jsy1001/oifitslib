@@ -25,7 +25,7 @@ PYTHON = python2.7
 PYINCFLAGS = -I/usr/include/$(PYTHON)
 
 CPPFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
-CFLAGS =  -Wall -g -fPIC
+CFLAGS =  -Wall -g -fPIC -std=c99
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
   # Add MacPorts directories to search paths. Libraries installed by Homebrew

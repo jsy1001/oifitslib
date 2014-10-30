@@ -2,7 +2,7 @@
  * @file
  * Example program - uses oitable API to write and read a OIFITS file.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -38,6 +38,7 @@ void demo_write(void)
   oi_target targets;
   oi_wavelength wave;
   oi_corr corr;
+  oi_polar polar;
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
@@ -45,6 +46,7 @@ void demo_write(void)
   char filename[FLEN_FILENAME];
   FILE *fp;
   int i, irec, iwave, itarg, status;
+  float real, imag;
   fitsfile *fptr;
 
   /* get input filename */
@@ -131,6 +133,50 @@ void demo_write(void)
     fscanf(fp, "%lf ", &corr.corr[i]);
   }
   corr.revision = 1;
+
+  /* Read info for OI_POLAR table */
+  fscanf(fp, "OI_POLAR date-obs %s ", polar.date_obs);
+  fscanf(fp, "npol %d ", &polar.npol);
+  fscanf(fp, "arrname %s ", polar.arrname);
+  fscanf(fp, "orientation %s ", polar.orientation);
+  fscanf(fp, "model %s ", polar.model);
+  fscanf(fp, "numrec %ld ", &polar.numrec);
+  polar.record = malloc(polar.numrec*sizeof(oi_polar_record));
+  printf("Reading %ld polar records...\n", polar.numrec);
+  /* loop over records */
+  for(irec=0; irec<polar.numrec; irec++) {
+    fscanf(fp, "target_id %d insname %s mjd %lf ",
+           &polar.record[irec].target_id, polar.record[irec].insname,
+           &polar.record[irec].mjd);
+    fscanf(fp, "int_time %lf lxx ", &polar.record[irec].int_time);
+    polar.record[irec].lxx = malloc(wave.nwave*sizeof(float complex));
+    for(iwave=0; iwave<wave.nwave; iwave++) {
+      fscanf(fp, "%f %fi ", &real, &imag);
+      polar.record[irec].lxx[iwave] = real + imag*I;
+    }
+    fscanf(fp, "lyy ");
+    polar.record[irec].lyy = malloc(wave.nwave*sizeof(float complex));
+    for(iwave=0; iwave<wave.nwave; iwave++) {
+      fscanf(fp, "%f %fi ", &real, &imag);
+      polar.record[irec].lyy[iwave] = real + imag*I;
+    }
+    fscanf(fp, "lxy ");
+    polar.record[irec].lxy = malloc(wave.nwave*sizeof(float complex));
+    for(iwave=0; iwave<wave.nwave; iwave++) {
+      fscanf(fp, "%f %fi ", &real, &imag);
+      polar.record[irec].lxy[iwave] = real + imag*I;
+    }
+    fscanf(fp, "lyx ");
+    polar.record[irec].lyx = malloc(wave.nwave*sizeof(float complex));
+    for(iwave=0; iwave<wave.nwave; iwave++) {
+      fscanf(fp, "%f %fi ", &real, &imag);
+      polar.record[irec].lyx[iwave] = real + imag*I;
+    }
+    fscanf(fp, "sta_index %d %d ", &polar.record[irec].sta_index[0],
+	   &polar.record[irec].sta_index[1]);
+  }
+  polar.revision = 1;
+  polar.nwave = wave.nwave;
 
   /* Read info for OI_VIS table */
   fscanf(fp, "OI_VIS date-obs %s ", vis.date_obs);
@@ -299,6 +345,7 @@ void demo_write(void)
   write_oi_array(fptr, array, 1, &status);
   write_oi_wavelength(fptr, wave, 1, &status);
   write_oi_corr(fptr, corr, 1, &status);
+  write_oi_polar(fptr, polar, 1, &status);
 
   if (status) {
     /* Error occurred - delete partially-created file and exit */
@@ -317,6 +364,7 @@ void demo_write(void)
   free_oi_array(&array);
   free_oi_wavelength(&wave);
   free_oi_corr(&corr);
+  free_oi_polar(&polar);
 }
 
 
@@ -336,6 +384,7 @@ void demo_read(void)
   oi_array array;
   oi_target targets;
   oi_wavelength wave;
+  oi_polar polar;
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
@@ -359,6 +408,8 @@ void demo_read(void)
   /* open 2nd connection to read referenced OI_ARRAY and OI_WAVELENGTH tables
      without losing place in file */
   fits_open_file(&fptr2, filename, READONLY, &status);
+
+  //:TODO: read OI_CORR tables referenced by data tables
 
   /* Read all OI_VIS tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
   while (1==1) {
@@ -440,6 +491,21 @@ void demo_read(void)
       free_oi_wavelength(&wave);
       if (strlen(spectrum.arrname) > 0) free_oi_array(&array);
       free_oi_spectrum(&spectrum);
+    }
+  }
+  if (status != END_OF_FILE) goto except;
+  status = 0;
+
+  /* Read all OI_POLAR tables and corresponding OI_ARRAY tables */
+  fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
+  while (1==1) {
+    if (read_next_oi_polar(fptr, &polar, &status)) break; /* no more OI_POLAR */
+    printf("Read OI_POLAR    with  ARRNAME=%s\n", polar.arrname);
+    read_oi_array(fptr2, polar.arrname, &array, &status);
+    if (!status) {
+      /* Free storage ready to reuse structs for next table */
+      free_oi_array(&array);
+      free_oi_polar(&polar);
     }
   }
   if (status != END_OF_FILE) goto except;

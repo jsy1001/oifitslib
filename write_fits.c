@@ -318,6 +318,90 @@ STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
   return *pStatus;
 }
 
+/**
+ * Write OI_POLAR fits binary table 
+ *
+ *   @param fptr     see cfitsio documentation
+ *   @param polar    polar struct, see exchange.h
+ *   @param extver   value for EXTVER keyword
+ *   @param pStatus  pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ */
+STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
+                      STATUS *pStatus)
+{
+  const char function[] = "write_oi_polar";
+  const int tfields = 9;
+  char *ttype[] = {"TARGET_ID", "INSNAME", "MJD", "INT_TIME",
+                   "LXX", "LYY", "LXY", "LYX", "STA_INDEX"};
+  //:TODO: follow standard in choosing repeat count for INSNAME
+  const char *tformTpl[] = {"I", "70A", "D", "D",
+			    "?C", "?C", "?C", "?C", "2I"};
+  char **tform;
+  char *tunit[] = {"\0", "\0", "day", "s",
+		   "\0", "\0", "\0", "\0", "\0"};
+  char extname[] = "OI_POLAR";
+  char *str;
+  int revision = 1, irow;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  /* Create table structure */
+  tform = make_tform(tformTpl, tfields, polar.nwave);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
+		  extname, pStatus);
+  free_tform(tform, tfields);
+
+  /* Write keywords */
+  if (polar.revision != revision) {
+    printf("WARNING! polar.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
+  }
+  fits_write_key(fptr, TINT, "OI_REVN", &revision,
+		 "Revision number of the table definition", pStatus);
+  fits_write_key(fptr, TSTRING, "DATE-OBS", &polar.date_obs,
+		 "UTC start date of observations", pStatus);
+  fits_write_key(fptr, TINT, "NPOL", &polar.npol,
+                 "Number of polarization types", pStatus);
+  /* note ARRNAME is mandatory */
+  fits_write_key(fptr, TSTRING, "ARRNAME", &polar.arrname,
+                 "Array name", pStatus);
+  fits_write_key(fptr, TSTRING, "ORIENTATION", &polar.orientation,
+		 "Orientation of the Jones matrix L..", pStatus);
+  fits_write_key(fptr, TSTRING, "MODEL", &polar.model,
+		 "How Jones matrix L.. was estimated", pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver,
+		 "ID number of this OI_POLAR", pStatus);
+
+  /* Write columns */
+  for(irow=1; irow<=polar.numrec; irow++) {
+
+    fits_write_col(fptr, TINT, 1, irow, 1, 1,
+                   &polar.record[irow-1].target_id, pStatus);
+    str = polar.record[irow-1].insname;
+    fits_write_col(fptr, TSTRING, 2, irow, 1, 1, &str, pStatus);
+    fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1,
+                   &polar.record[irow-1].mjd, pStatus);
+    fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1,
+                   &polar.record[irow-1].int_time, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 5, irow, 1, polar.nwave,
+		   polar.record[irow-1].lxx, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 6, irow, 1, polar.nwave,
+		   polar.record[irow-1].lyy, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 7, irow, 1, polar.nwave,
+		   polar.record[irow-1].lxy, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 8, irow, 1, polar.nwave,
+		   polar.record[irow-1].lyx, pStatus);
+    fits_write_col(fptr, TINT, 9, irow, 1, 2, polar.record[irow-1].sta_index,
+		   pStatus);
+  }
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
 
 /**
  * Write OI_VIS fits binary table 
@@ -334,7 +418,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
   const char function[] = "write_oi_vis";
   const int tfields = 12;
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
-		    "VISAMP", "VISAMPERR", "VISPHI", "VISPHIERR",
+                   "VISAMP", "VISAMPERR", "VISPHI", "VISPHIERR",
 		   "UCOORD", "VCOORD", "STA_INDEX", "FLAG"};
   const char *tformTpl[] = {"I", "D", "D", "D",
 			    "?D", "?D", "?D", "?D",
