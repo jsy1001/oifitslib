@@ -59,6 +59,18 @@ void free_oi_wavelength(oi_wavelength *pWave)
 }
 
 /**
+ * Free dynamically-allocated storage within oi_corr struct.
+ *
+ *   @param pCorr  pointer to corr data struct, see exchange.h
+ */
+void free_oi_corr(oi_corr *pCorr)
+{
+  free(pCorr->iindx);
+  free(pCorr->jindx);
+  free(pCorr->corr);
+}
+
+/**
  * Free dynamically-allocated storage within oi_vis struct.
  *
  *   @param pVis  pointer to data struct, see exchange.h

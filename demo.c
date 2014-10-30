@@ -37,6 +37,7 @@ void demo_write(void)
   oi_array array;
   oi_target targets;
   oi_wavelength wave;
+  oi_corr corr;
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
@@ -109,6 +110,27 @@ void demo_write(void)
     fscanf(fp, "%f ", &wave.eff_band[i]);
   }
   wave.revision = 1;
+
+  /* Read info for OI_CORR table */
+  fscanf(fp, "OI_CORR corrname %s ", corr.corrname);
+  fscanf(fp, "ndata %d ", &corr.ndata);
+  fscanf(fp, "ncorr %d ", &corr.ncorr);
+  corr.iindx = malloc(corr.ncorr*sizeof(int));
+  corr.jindx = malloc(corr.ncorr*sizeof(int));
+  corr.corr = malloc(corr.ncorr*sizeof(double));
+  fscanf(fp, "iindx ");
+  for(i=0; i<corr.ncorr; i++) {
+    fscanf(fp, "%d ", &corr.iindx[i]);
+  }
+  fscanf(fp, "jindx ");
+  for(i=0; i<corr.ncorr; i++) {
+    fscanf(fp, "%d ", &corr.jindx[i]);
+  }
+  fscanf(fp, "corr ");
+  for(i=0; i<corr.ncorr; i++) {
+    fscanf(fp, "%lf ", &corr.corr[i]);
+  }
+  corr.revision = 1;
 
   /* Read info for OI_VIS table */
   fscanf(fp, "OI_VIS date-obs %s ", vis.date_obs);
@@ -276,6 +298,7 @@ void demo_write(void)
   write_oi_spectrum(fptr, spectrum, 1, &status);
   write_oi_array(fptr, array, 1, &status);
   write_oi_wavelength(fptr, wave, 1, &status);
+  write_oi_corr(fptr, corr, 1, &status);
 
   if (status) {
     /* Error occurred - delete partially-created file and exit */
@@ -293,6 +316,7 @@ void demo_write(void)
   free_oi_spectrum(&spectrum);
   free_oi_array(&array);
   free_oi_wavelength(&wave);
+  free_oi_corr(&corr);
 }
 
 

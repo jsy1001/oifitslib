@@ -59,6 +59,16 @@ eff_wave 1667.0e-9
 eff_band 250.0e-9
 
 
+OI_CORR
+
+corrname TEST
+ndata 10
+ncorr 3
+iindx     1     1     2
+jindx     2    10    10
+corr  0.123 0.345 0.056
+
+
 OI_VIS
 
 date-obs 2000-10-19

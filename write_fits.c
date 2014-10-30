@@ -273,6 +273,53 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
 
 
 /**
+ * Write OI_CORR fits binary table 
+ *
+ *   @param fptr     see cfitsio documentation
+ *   @param corr     corr data struct, see exchange.h
+ *   @param extver   value for EXTVER keyword
+ *   @param pStatus  pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ */
+STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
+{
+  const char function[] = "write_oi_corr";
+  const int tfields = 3;
+  char *ttype[] = {"IINDX", "JINDX", "CORR"};
+  char *tform[] = {"J", "J", "D"};
+  char *tunit[] = {"\0", "\0", "\0"};
+  char extname[] = "OI_CORR";
+  int revision = 1;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
+		  extname, pStatus);
+  if (corr.revision != revision) {
+    printf("WARNING! corr.revision != %d on entry to %s. "
+           "Writing revision %d table\n", revision, function, revision);
+  }
+  fits_write_key(fptr, TINT, "OI_REVN", &revision,
+		 "Revision number of the table definition", pStatus);
+  fits_write_key(fptr, TSTRING, "CORRNAME", corr.corrname,
+		 "Name of correlated data set", pStatus);
+  fits_write_key(fptr, TINT, "NDATA", &corr.ndata,
+		 "Number of correlated data", pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver,
+		 "ID number of this OI_CORR", pStatus);
+  fits_write_col(fptr, TINT, 1, 1, 1, corr.ncorr, corr.iindx, pStatus);
+  fits_write_col(fptr, TINT, 2, 1, 1, corr.ncorr, corr.jindx, pStatus);
+  fits_write_col(fptr, TDOUBLE, 3, 1, 1, corr.ncorr, corr.corr, pStatus);
+
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
+
+
+/**
  * Write OI_VIS fits binary table 
  *
  *   @param fptr     see cfitsio documentation

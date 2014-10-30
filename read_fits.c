@@ -235,6 +235,62 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 }
 
 
+/**
+ * Read OI_CORR fits binary table at current HDU.
+ *
+ *   @param fptr      see cfitsio documentation
+ *   @param pCorr     ptr to corr data struct, see exchange.h
+ *   @param corrname  value of CORRNAME keyword if known, else NULL
+ *   @param pStatus   pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code (also assigned to
+ *           *pStatus). Contents of corr data struct are undefined
+ */
+static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
+                                char *corrname, STATUS *pStatus)
+{
+  char comment[FLEN_COMMENT], name[FLEN_VALUE];
+  int nullint = 0;
+  double nulldouble = 0.0;
+  const int revision = 1;
+  int colnum, anynull;
+  long repeat;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  /* Read table */
+  fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, comment, pStatus);
+  if (pCorr->revision != revision) {
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_CORR table. Got %d\n", revision, pCorr->revision);
+  }
+  if (corrname == NULL) {
+    fits_read_key(fptr, TSTRING, "CORRNAME", name, comment, pStatus);
+    strncpy(pCorr->corrname, name, FLEN_VALUE-1);
+  } else {
+    strncpy(pCorr->corrname, corrname, FLEN_VALUE-1);
+  }
+  fits_read_key(fptr, TINT, "NDATA", &pCorr->ndata, comment, pStatus);
+
+  /* get number of rows */
+  fits_get_num_rows(fptr, &repeat, pStatus);
+  pCorr->ncorr = repeat;
+  pCorr->iindx = malloc(pCorr->ncorr*sizeof(float));
+  pCorr->jindx = malloc(pCorr->ncorr*sizeof(float));
+  /* read columns */
+  fits_get_colnum(fptr, CASEINSEN, "IINDX", &colnum, pStatus);
+  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, &nullint,
+                pCorr->iindx, &anynull, pStatus);
+  fits_get_colnum(fptr, CASEINSEN, "JINDX", &colnum, pStatus);
+  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, &nullint,
+                pCorr->jindx, &anynull, pStatus);
+  fits_get_colnum(fptr, CASEINSEN, "CORR", &colnum, pStatus);
+  fits_read_col(fptr, TDOUBLE, colnum, 1, 1, pCorr->ncorr, &nulldouble,
+		pCorr->corr, &anynull, pStatus);
+  return *pStatus;
+}
+
+
 /*
  * Public functions
  */
@@ -439,7 +495,7 @@ STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
  *           *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
-			    STATUS *pStatus)
+                               STATUS *pStatus)
 {
   const char function[] = "read_next_oi_wavelength";
 
@@ -448,6 +504,62 @@ STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
   next_named_hdu(fptr, "OI_WAVELENGTH", pStatus);
   if (*pStatus == END_OF_FILE) return *pStatus;
   read_oi_wavelength_chdu(fptr, pWave, NULL, pStatus);
+
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
+
+
+/**
+ * Read OI_CORR fits binary table with specified CORRNAME
+ *
+ *   @param fptr      see cfitsio documentation
+ *   @param corrname  read table with this value for CORRNAME
+ *   @param pCorr     ptr to corr data struct, see exchange.h
+ *   @param pStatus   pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code (also assigned to
+ *           *pStatus). Contents of wavelength data struct are undefined
+ */
+STATUS read_oi_corr(fitsfile *fptr, char *corrname, oi_corr *pCorr,
+                    STATUS *pStatus)
+{
+  const char function[] = "read_oi_corr";
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  specific_named_hdu(fptr, "OI_CORR", "CORRNAME", corrname, pStatus);
+  read_oi_corr_chdu(fptr, pCorr, corrname, pStatus);
+
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
+
+/**
+ * Read next OI_CORR fits binary table
+ *
+ *   @param fptr     see cfitsio documentation
+ *   @param pCorr    ptr to corr data struct, see exchange.h
+ *   @param pStatus  pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code (also assigned to
+ *           *pStatus). Contents of data struct are undefined
+ */
+STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
+{
+  const char function[] = "read_next_oi_corr";
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  next_named_hdu(fptr, "OI_CORR", pStatus);
+  if (*pStatus == END_OF_FILE) return *pStatus;
+  read_oi_corr_chdu(fptr, pCorr, NULL, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
