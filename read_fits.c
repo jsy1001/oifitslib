@@ -275,8 +275,9 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   /* get number of rows */
   fits_get_num_rows(fptr, &repeat, pStatus);
   pCorr->ncorr = repeat;
-  pCorr->iindx = malloc(pCorr->ncorr*sizeof(float));
-  pCorr->jindx = malloc(pCorr->ncorr*sizeof(float));
+  pCorr->iindx = malloc(pCorr->ncorr*sizeof(int));
+  pCorr->jindx = malloc(pCorr->ncorr*sizeof(int));
+  pCorr->corr = malloc(pCorr->ncorr*sizeof(double));
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "IINDX", &colnum, pStatus);
   fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, &nullint,
