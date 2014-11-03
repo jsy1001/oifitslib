@@ -1049,6 +1049,10 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
+  fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus);
+  fits_read_key(fptr, TLOGICAL, "CALIBRATED", &pSpectrum->calibrated, comment,
+                pStatus);
   /* get number of rows & allocate storage */
   fits_get_num_rows(fptr, &pSpectrum->numrec, pStatus);
   pSpectrum->record = malloc(pSpectrum->numrec*sizeof(oi_spectrum_record));
