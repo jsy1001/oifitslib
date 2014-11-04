@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 
 int oi_hush_errors = 0;
@@ -404,6 +405,49 @@ STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
 }
 
 /**
+ * Write OI_VIS optional columns for complex visibility representation.
+ */
+static STATUS write_oi_vis_complex(fitsfile *fptr, oi_vis vis, bool correlated,
+                                   STATUS *pStatus)
+{
+  const int tfields = 4;
+  char *ttype[] = {"RVIS", "RVISERR", "IVIS", "IVISERR"};
+  const char *tformTpl[] = {"?D", "?D", "?D", "?D"};
+  char **tform;
+  int irow;
+
+  tform = make_tform(tformTpl, tfields, vis.nwave);
+  fits_insert_cols(fptr, 9, tfields, ttype, tform, pStatus);
+  //:TODO: write units
+
+  for(irow=1; irow<=vis.numrec; irow++) {
+
+    fits_write_col(fptr, TDOUBLE, 9, irow, 1, vis.nwave,
+		   vis.record[irow-1].rvis, pStatus);
+    fits_write_col(fptr, TDOUBLE, 10, irow, 1, vis.nwave,
+		   vis.record[irow-1].rviserr, pStatus);
+    fits_write_col(fptr, TDOUBLE, 11, irow, 1, vis.nwave,
+		   vis.record[irow-1].ivis, pStatus);
+    fits_write_col(fptr, TDOUBLE, 12, irow, 1, vis.nwave,
+		   vis.record[irow-1].iviserr, pStatus);
+  }
+
+  if (correlated)
+  {
+    fits_insert_col(fptr, 11, "CORRINDX_RVIS", "J", pStatus);
+    fits_insert_col(fptr, 14, "CORRINDX_IVIS", "J", pStatus);
+    for(irow=1; irow<=vis.numrec; irow++) {
+
+      fits_write_col(fptr, TINT, 11, irow, 1, 1,
+                     &vis.record[irow-1].corrindx_rvis, pStatus);
+      fits_write_col(fptr, TINT, 14, irow, 1, 1,
+                     &vis.record[irow-1].corrindx_ivis, pStatus);
+    }
+  }
+  return *pStatus;
+}
+
+/**
  * Write OI_VIS fits binary table 
  *
  *   @param fptr     see cfitsio documentation
@@ -429,6 +473,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		   "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
   int revision = 1, irow;
+  bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -447,7 +492,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		 "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &vis.date_obs,
 		 "UTC start date of observations", pStatus);
-  if (strlen(vis.arrname) > 0)
+  if (strlen(vis.arrname) > 0) //:TODO: mandatory in OIFITS2
     fits_write_key(fptr, TSTRING, "ARRNAME", &vis.arrname,
 		   "Array name", pStatus);
   fits_write_key(fptr, TSTRING, "INSNAME", &vis.insname,
@@ -483,6 +528,28 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
     fits_write_col(fptr, TLOGICAL, 12, irow, 1, vis.nwave,
 		   vis.record[irow-1].flag, pStatus);
   }
+
+  /* Write optional keywords */
+  correlated = (strlen(vis.corrname) > 0);
+  if (correlated)
+    fits_write_key(fptr, TSTRING, "CORRNAME", &vis.corrname,
+		   "Correlated data set name", pStatus);
+
+  /* Write optional columns */
+  if (correlated)
+  {
+    fits_insert_col(fptr, 7, "CORRINDX_VISAMP", "J", pStatus);
+    fits_insert_col(fptr, 10, "CORRINDX_VISPHI", "J", pStatus);
+    for(irow=1; irow<=vis.numrec; irow++) {
+      fits_write_col(fptr, TINT, 7, irow, 1, 1,
+                     &vis.record[irow-1].corrindx_visamp, pStatus);
+      fits_write_col(fptr, TINT, 10, irow, 1, 1,
+                     &vis.record[irow-1].corrindx_visphi, pStatus);
+    }
+  }
+  if (vis.usecomplex)
+    write_oi_vis_complex(fptr, vis, correlated, pStatus);
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -504,7 +571,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_vis2";
-  const int tfields = 10;
+  const int tfields = 10;  /* mandatory columns */
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		   "VIS2DATA", "VIS2ERR", "UCOORD", "VCOORD",
 		   "STA_INDEX", "FLAG"};
@@ -517,6 +584,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 		   "\0", "\0"};
   char extname[] = "OI_VIS2";
   int revision = 1, irow;
+  bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -526,7 +594,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 		  extname, pStatus);
   free_tform(tform, tfields);
 
-  /* Write keywords */
+  /* Write mandatory keywords */
   if (vis2.revision != revision) {
     printf("WARNING! vis2.revision != %d on entry to %s. "
            "Writing revision %d table\n", revision, function, revision);
@@ -535,7 +603,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 		 "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &vis2.date_obs,
 		 "UTC start date of observations", pStatus);
-  if (strlen(vis2.arrname) > 0)
+  if (strlen(vis2.arrname) > 0) //:TODO: mandatory in OIFITS2
     fits_write_key(fptr, TSTRING, "ARRNAME", &vis2.arrname,
 		   "Array name", pStatus);
   fits_write_key(fptr, TSTRING, "INSNAME", &vis2.insname,
@@ -543,7 +611,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
   fits_write_key(fptr, TINT, "EXTVER", &extver,
 		 "ID number of this OI_VIS2", pStatus);
 
-  /* Write columns */
+  /* Write mandatory columns */
   for(irow=1; irow<=vis2.numrec; irow++) {
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &vis2.record[irow-1].target_id,
@@ -567,6 +635,23 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
     fits_write_col(fptr, TLOGICAL, 10, irow, 1, vis2.nwave,
 		   vis2.record[irow-1].flag, pStatus);
   }
+
+  /* Write optional keywords */
+  correlated = (strlen(vis2.corrname) > 0);
+  if (correlated)
+    fits_write_key(fptr, TSTRING, "CORRNAME", &vis2.corrname,
+		   "Correlated data set name", pStatus);
+
+  /* Write optional columns */
+  if (correlated)
+  {
+    fits_insert_col(fptr, 7, "CORRINDX_VIS2DATA", "J", pStatus);
+    for(irow=1; irow<=vis2.numrec; irow++) {
+      fits_write_col(fptr, TINT, 7, irow, 1, 1,
+                     &vis2.record[irow-1].corrindx_vis2data, pStatus);
+    }
+  }
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -604,6 +689,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 		   "\0", "\0"};
   char extname[] = "OI_T3";
   int revision = 1, irow;
+  bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -613,7 +699,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 		  extname, pStatus);
   free_tform(tform, tfields);
 
-  /* Write keywords */
+  /* Write mandatory keywords */
   if (t3.revision != revision) {
     printf("WARNING! t3.revision != %d on entry to %s. "
            "Writing revision %d table\n", revision, function, revision);
@@ -622,7 +708,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 		 "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &t3.date_obs,
 		 "UTC start date of observations", pStatus);
-  if (strlen(t3.arrname) > 0)
+  if (strlen(t3.arrname) > 0) //:TODO: mandatory in OIFITS2
     fits_write_key(fptr, TSTRING, "ARRNAME", &t3.arrname,
 		   "Array name", pStatus);
   fits_write_key(fptr, TSTRING, "INSNAME", &t3.insname,
@@ -630,7 +716,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
   fits_write_key(fptr, TINT, "EXTVER", &extver,
 		 "ID number of this OI_T3", pStatus);
 
-  /* Write columns */
+  /* Write mandatory columns */
   for(irow=1; irow<=t3.numrec; irow++) {
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &t3.record[irow-1].target_id,
@@ -662,6 +748,26 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
     fits_write_col(fptr, TLOGICAL, 14, irow, 1, t3.nwave,
 		   t3.record[irow-1].flag, pStatus);
   }
+
+  /* Write optional keywords */
+  correlated = (strlen(t3.corrname) > 0);
+  if (correlated)
+    fits_write_key(fptr, TSTRING, "CORRNAME", &t3.corrname,
+		   "Correlated data set name", pStatus);
+
+  /* Write optional columns */
+  if (correlated)
+  {
+    fits_insert_col(fptr, 7, "CORRINDX_T3AMP", "J", pStatus);
+    fits_insert_col(fptr, 10, "CORRINDX_T3PHI", "J", pStatus);
+    for(irow=1; irow<=t3.numrec; irow++) {
+      fits_write_col(fptr, TINT, 7, irow, 1, 1,
+                     &t3.record[irow-1].corrindx_t3amp, pStatus);
+      fits_write_col(fptr, TINT, 10, irow, 1, 1,
+                     &t3.record[irow-1].corrindx_t3phi, pStatus);
+    }
+  }
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);

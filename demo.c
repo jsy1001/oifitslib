@@ -181,6 +181,7 @@ void demo_write(void)
   /* Read info for OI_VIS table */
   fscanf(fp, "OI_VIS date-obs %s ", vis.date_obs);
   fscanf(fp, "arrname %s insname %s ", vis.arrname, vis.insname);
+  fscanf(fp, "corrname %s ", vis.corrname);
   fscanf(fp, "numrec %ld ", &vis.numrec);
   vis.record = malloc(vis.numrec*sizeof(oi_vis_record));
   printf("Reading %ld vis records...\n", vis.numrec);
@@ -198,6 +199,7 @@ void demo_write(void)
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamperr[iwave]);
     }
+    fscanf(fp, "corrindx_visamp %d ", &vis.record[irec].corrindx_visamp);
     fscanf(fp, "visphi ");
     vis.record[irec].visphi = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
@@ -208,6 +210,7 @@ void demo_write(void)
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphierr[iwave]);
     }
+    fscanf(fp, "corrindx_visphi %d ", &vis.record[irec].corrindx_visphi);
     fscanf(fp, "ucoord %lf vcoord %lf ", &vis.record[irec].ucoord,
 	   &vis.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis.record[irec].sta_index[0],
@@ -219,10 +222,12 @@ void demo_write(void)
   }
   vis.revision = 1;
   vis.nwave = wave.nwave;
+  vis.usecomplex = FALSE;
 
   /* Read info for OI_VIS2 table */
   fscanf(fp, "OI_VIS2 date-obs %s ", vis2.date_obs);
   fscanf(fp, "arrname %s insname %s ", vis2.arrname, vis2.insname);
+  fscanf(fp, "corrname %s ", vis2.corrname);
   fscanf(fp, "numrec %ld ", &vis2.numrec);
   vis2.record = malloc(vis2.numrec*sizeof(oi_vis2_record));
   printf("Reading %ld vis2 records...\n", vis2.numrec);
@@ -240,6 +245,7 @@ void demo_write(void)
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2err[iwave]);
     }
+    fscanf(fp, "corrindx_vis2data %d ", &vis2.record[irec].corrindx_vis2data);
     fscanf(fp, "ucoord %lf vcoord %lf ", &vis2.record[irec].ucoord,
 	   &vis2.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis2.record[irec].sta_index[0],
@@ -255,6 +261,7 @@ void demo_write(void)
   /* Read info for OI_T3 table */
   fscanf(fp, "OI_T3 date-obs %s ", t3.date_obs);
   fscanf(fp, "arrname %s insname %s ", t3.arrname, t3.insname);
+  fscanf(fp, "corrname %s ", t3.corrname);
   fscanf(fp, "numrec %ld ", &t3.numrec);
   t3.record = malloc(t3.numrec*sizeof(oi_t3_record));
   printf("Reading %ld t3 records...\n", t3.numrec);
@@ -272,6 +279,7 @@ void demo_write(void)
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amperr[iwave]);
     }
+    fscanf(fp, "corrindx_t3amp %d ", &t3.record[irec].corrindx_t3amp);
     fscanf(fp, "t3phi ");
     t3.record[irec].t3phi = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
@@ -282,6 +290,7 @@ void demo_write(void)
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phierr[iwave]);
     }
+    fscanf(fp, "corrindx_t3phi %d ", &t3.record[irec].corrindx_t3phi);
     fscanf(fp, "u1coord %lf v1coord %lf ", &t3.record[irec].u1coord,
 	   &t3.record[irec].v1coord);
     fscanf(fp, "u2coord %lf v2coord %lf ", &t3.record[irec].u2coord,

@@ -181,7 +181,13 @@ typedef struct {
   double mjd;
   double int_time;
   DATA *visamp, *visamperr;
+  int corrindx_visamp;
   DATA *visphi, *visphierr;
+  int corrindx_visphi;
+  DATA *rvis, *rviserr;
+  int corrindx_rvis;
+  DATA *ivis, *iviserr;
+  int corrindx_ivis;
   double ucoord, vcoord;
   int sta_index[2];
   BOOL *flag;
@@ -193,6 +199,8 @@ typedef struct {
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
   char insname[FLEN_VALUE];
+  char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
+  BOOL usecomplex;           /**< are rvis/ivis being used? */
   long numrec;
   int nwave;
   oi_vis_record *record;
@@ -206,6 +214,7 @@ typedef struct {
   double mjd;
   double int_time;
   DATA *vis2data, *vis2err;
+  int corrindx_vis2data;
   double ucoord, vcoord;
   int sta_index[2];
   BOOL *flag;
@@ -217,6 +226,7 @@ typedef struct {
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
   char insname[FLEN_VALUE];
+  char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
   long numrec;
   int nwave;
   oi_vis2_record *record;
@@ -229,7 +239,9 @@ typedef struct {
   double mjd;
   double int_time;
   DATA *t3amp, *t3amperr;
+  int corrindx_t3amp;
   DATA *t3phi, *t3phierr;
+  int corrindx_t3phi;
   double u1coord, v1coord, u2coord, v2coord;
   int sta_index[3];
   BOOL *flag;
@@ -241,6 +253,7 @@ typedef struct {
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
   char insname[FLEN_VALUE];
+  char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
   long numrec;
   int nwave;
   oi_t3_record *record;
