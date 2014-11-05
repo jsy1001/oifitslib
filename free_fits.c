@@ -103,6 +103,13 @@ void free_oi_vis(oi_vis *pVis)
     free(pVis->record[i].visphi);
     free(pVis->record[i].visphierr);
     free(pVis->record[i].flag);
+
+    if(pVis->usecomplex) {
+      free(pVis->record[i].rvis);
+      free(pVis->record[i].rviserr);
+      free(pVis->record[i].ivis);
+      free(pVis->record[i].iviserr);
+    }
   }
   free(pVis->record);
 }
