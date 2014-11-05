@@ -29,6 +29,7 @@
 #include <fitsio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 /*
@@ -688,6 +689,47 @@ STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
 
 
 /**
+ * Read OI_VIS optional columns for complex visibility representation.
+ */
+static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
+                                  bool correlated, STATUS *pStatus)
+{
+  int nullint = 0;
+  double nulldouble = 0.0;
+  int irow, colnum, anynull;
+  
+  for (irow=1; irow<=pVis->numrec; irow++) {
+    fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                  &nulldouble, pVis->record[irow-1].rvis, &anynull,
+                  pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "RVISERR", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                  &nulldouble, pVis->record[irow-1].rviserr, &anynull,
+                  pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "IVIS", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                  &nulldouble, pVis->record[irow-1].ivis, &anynull,
+                  pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "IVISERR", &colnum, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                  &nulldouble, pVis->record[irow-1].iviserr, &anynull,
+                  pStatus);
+    if (correlated) {
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_RVIS", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis->record[irow-1].corrindx_rvis,
+                    &anynull, pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_IVIS", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis->record[irow-1].corrindx_ivis,
+                    &anynull, pStatus);
+    }
+  }
+  return *pStatus;
+}
+
+/**
  * Read next OI_VIS fits binary table
  *
  *   @param fptr     see cfitsio documentation
@@ -701,6 +743,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis";
   char comment[FLEN_COMMENT];
+  bool correlated;
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
@@ -729,6 +772,14 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+    pVis->corrname[0] = '\0';
+    *pStatus = 0;
+    correlated = FALSE;
+  } else {
+    correlated = TRUE;
+  }
   /* get number of rows */
   fits_get_num_rows(fptr, &pVis->numrec, pStatus);
   pVis->record = malloc(pVis->numrec*sizeof(oi_vis_record));
@@ -784,6 +835,26 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
     fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave, &nullchar,
 		  pVis->record[irow-1].flag, &anynull, pStatus);
+
+    /* read optional columns */
+    if (correlated) {
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISAMP", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis->record[irow-1].corrindx_visamp,
+                    &anynull, pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISPHI", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis->record[irow-1].corrindx_visphi,
+                    &anynull, pStatus);
+    }
+    fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
+    if(*pStatus == COL_NOT_FOUND) {
+      pVis->usecomplex = FALSE;
+      *pStatus = 0;
+    } else {
+      pVis->usecomplex = TRUE;
+      read_oi_vis_complex(fptr, pVis, correlated, pStatus);
+    }
   }
 
  except:
@@ -809,6 +880,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis2";
   char comment[FLEN_COMMENT];
+  bool correlated;
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
@@ -837,6 +909,14 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+    pVis2->corrname[0] = '\0';
+    *pStatus = 0;
+    correlated = FALSE;
+  } else {
+    correlated = TRUE;
+  }
   /* get number of rows */
   fits_get_num_rows(fptr, &pVis2->numrec, pStatus);
   pVis2->record = malloc(pVis2->numrec*sizeof(oi_vis2_record));
@@ -882,6 +962,14 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
     fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis2->nwave, &nullchar,
 		  pVis2->record[irow-1].flag, &anynull, pStatus);
+
+    /* read optional columns */
+    if (correlated) {
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VIS2DATA", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis2->record[irow-1].corrindx_vis2data,
+                    &anynull, pStatus);
+    }
   }
 
  except:
@@ -907,6 +995,7 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_t3";
   char comment[FLEN_COMMENT];
+  bool correlated;
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
@@ -935,6 +1024,14 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+    pT3->corrname[0] = '\0';
+    *pStatus = 0;
+    correlated = FALSE;
+  } else {
+    correlated = TRUE;
+  }
   /* get number of rows & allocate storage */
   fits_get_num_rows(fptr, &pT3->numrec, pStatus);
   pT3->record = malloc(pT3->numrec*sizeof(oi_t3_record));
@@ -996,6 +1093,16 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
     fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pT3->nwave, &nullchar,
 		  pT3->record[irow-1].flag, &anynull, pStatus);
+
+    /* read optional columns */
+    if (correlated) {
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_T3AMP", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pT3->record[irow-1].corrindx_t3amp, &anynull, pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_T3PHI", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pT3->record[irow-1].corrindx_t3phi, &anynull, pStatus);
+     }
   }
 
  except:
