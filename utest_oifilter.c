@@ -48,6 +48,7 @@ static gboolean ignoreRemoved(const char *logDomain, GLogLevelFlags logLevel,
 static void check(oi_fits *pData)
 {
   check_func checks[] = {
+    check_tables,
     check_unique_targets,
     check_targets_present,
     check_elements_present,
@@ -78,13 +79,16 @@ static void check(oi_fits *pData)
   g_assert_cmpint(pData->numArray, ==, g_list_length(pData->arrayList));
   g_assert_cmpint(pData->numWavelength,
                   ==, g_list_length(pData->wavelengthList));
+  g_assert_cmpint(pData->numCorr, ==, g_list_length(pData->corrList));
   g_assert_cmpint(pData->numVis, ==, g_list_length(pData->visList));
   g_assert_cmpint(pData->numVis2, ==, g_list_length(pData->vis2List));
   g_assert_cmpint(pData->numT3, ==, g_list_length(pData->t3List));
+  g_assert_cmpint(pData->numSpectrum, ==, g_list_length(pData->spectrumList));
 
   g_assert_cmpint(pData->numArray, ==, g_hash_table_size(pData->arrayHash));
   g_assert_cmpint(pData->numWavelength,
                   ==, g_hash_table_size(pData->wavelengthHash));
+  g_assert_cmpint(pData->numCorr, ==, g_hash_table_size(pData->corrHash));
 }
 
 static void setup_fixture(TestFixture *fix, gconstpointer userData)
@@ -155,9 +159,11 @@ static void test_default(TestFixture *fix, gconstpointer userData)
   check(&fix->outData);
   g_assert_cmpint(fix->outData.numArray, ==, fix->inData.numArray);
   g_assert_cmpint(fix->outData.numWavelength, ==, fix->inData.numWavelength);
+  g_assert_cmpint(fix->outData.numCorr, ==, fix->inData.numCorr);
   g_assert_cmpint(fix->outData.numVis, ==, fix->inData.numVis);
   g_assert_cmpint(fix->outData.numVis2, ==, fix->inData.numVis2);
   g_assert_cmpint(fix->outData.numT3, ==, fix->inData.numT3);
+  g_assert_cmpint(fix->outData.numSpectrum, ==, fix->inData.numSpectrum);
 
   status = 0;
   g_assert(write_oi_fits("utest_" FILENAME, fix->outData, &status) == 0);
@@ -183,6 +189,15 @@ static void test_insname(TestFixture *fix, gconstpointer userData)
   g_assert(oi_fits_lookup_wavelength(&fix->outData, "IOTA_IONIC_PICNIC")
            != NULL);
   g_assert(oi_fits_lookup_wavelength(&fix->outData, "CHARA_MIRC") == NULL);
+}
+
+static void test_corrname(TestFixture *fix, gconstpointer userData)
+{
+  g_strlcpy(fix->filter.corrname, "TE?T", FLEN_VALUE);
+  g_test_log_set_fatal_handler(ignoreRemoved, NULL);
+  apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
+  check(&fix->outData);
+  g_assert(oi_fits_lookup_corr(&fix->outData, "TEST") != NULL);
 }
 
 static void test_target(TestFixture *fix, gconstpointer userData)
@@ -223,10 +238,10 @@ static void test_wave(TestFixture *fix, gconstpointer userData)
   tabType *tab;                                                 \
   int i;                                                        \
   GList *link = (tabList);                                      \
-  while (link != NULL)                                        \
+  while (link != NULL)                                          \
   {                                                             \
     tab = (tabType *) link->data;                               \
-    for (i = 0; i < tab->numrec; i++) {                       \
+    for (i = 0; i < tab->numrec; i++) {                         \
       g_assert_cmpfloat(tab->record[i].mjd, >=, (range)[0]);    \
       g_assert_cmpfloat(tab->record[i].mjd, <=, (range)[1]);    \
     }                                                           \
@@ -247,6 +262,7 @@ static void test_mjd(TestFixture *fix, gconstpointer userData)
   ASSERT_MJD_IN_RANGE(fix->outData.visList, oi_vis, range);
   ASSERT_MJD_IN_RANGE(fix->outData.vis2List, oi_vis2, range);
   ASSERT_MJD_IN_RANGE(fix->outData.t3List, oi_t3, range);
+  ASSERT_MJD_IN_RANGE(fix->outData.spectrumList, oi_spectrum, range);
 }
 
 static void test_prune(TestFixture *fix, gconstpointer userData)
@@ -263,6 +279,7 @@ static void test_prune(TestFixture *fix, gconstpointer userData)
   ASSERT_MJD_IN_RANGE(fix->outData.visList, oi_vis, range);
   ASSERT_MJD_IN_RANGE(fix->outData.vis2List, oi_vis2, range);
   ASSERT_MJD_IN_RANGE(fix->outData.t3List, oi_t3, range);
+  ASSERT_MJD_IN_RANGE(fix->outData.spectrumList, oi_spectrum, range);
 }
 
 
@@ -331,9 +348,10 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
   GList *link;
   int i, j;
-  float snrAmp, snrPhi;
+  float snr, snrAmp, snrPhi;
     
   fix->filter.snr_range[0] = range[0];
   fix->filter.snr_range[1] = range[1];
@@ -367,9 +385,9 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
       for (j = 0; j < pVis->nwave; j++) {
         if (!pVis2->record[i].flag[j])
         {
-          snrAmp = pVis2->record[i].vis2data[j]/pVis2->record[i].vis2err[j];
-          g_assert_cmpfloat(snrAmp, >=, range[0]);
-          g_assert_cmpfloat(snrAmp, <=, range[1]);
+          snr = pVis2->record[i].vis2data[j]/pVis2->record[i].vis2err[j];
+          g_assert_cmpfloat(snr, >=, range[0]);
+          g_assert_cmpfloat(snr, <=, range[1]);
         }
       }
     }
@@ -394,6 +412,19 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
     }
     link = link->next;
   }
+  link = fix->outData.spectrumList;
+  while (link != NULL)
+  {
+    pSpectrum = (oi_spectrum *) link->data;
+    for (i = 0; i < pSpectrum->numrec; i++) {
+      for (j = 0; j < pSpectrum->nwave; j++) {
+        snr = pSpectrum->record[i].fluxdata[j]/pSpectrum->record[i].fluxerr[j];
+        g_assert_cmpfloat(snr, >=, range[0]);
+        g_assert_cmpfloat(snr, <=, range[1]);
+      }
+    }
+    link = link->next;
+  }
 }
 
 
@@ -409,6 +440,7 @@ static void test_vis(TestFixture *fix, gconstpointer userData)
 static void test_vis2(TestFixture *fix, gconstpointer userData)
 {
   fix->filter.accept_vis2 = FALSE;
+  g_test_log_set_fatal_handler(ignoreRemoved, NULL);
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
   g_assert_cmpint(fix->inData.numVis2, >, 0);
@@ -452,6 +484,8 @@ int main(int argc, char *argv[])
              setup_fixture, test_arrname, teardown_fixture);
   g_test_add("/oifitslib/oifilter/insname", TestFixture, NULL,
              setup_fixture, test_insname, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/corrname", TestFixture, NULL,
+             setup_fixture, test_corrname, teardown_fixture);
   g_test_add("/oifitslib/oifilter/target", TestFixture, NULL,
              setup_fixture, test_target, teardown_fixture);
 

@@ -43,8 +43,8 @@ extern GString *pGStr;
 /** Filter specified on command-line via g_option_context_parse() */
 static oi_filter_spec parsedFilter;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
-char *arrname, *insname, *mjdMinStr, *mjdMaxStr, *waveMinStr, *waveMaxStr,
-  *basMinStr, *basMaxStr, *snrMinStr, *snrMaxStr;
+char *arrname, *insname, *corrname, *mjdMinStr, *mjdMaxStr,
+  *waveMinStr, *waveMaxStr, *basMinStr, *basMaxStr, *snrMinStr, *snrMaxStr;
 /** Flag set by filter_post_parse */
 static gboolean doneParse = FALSE;
 
@@ -54,6 +54,8 @@ static GOptionEntry filterEntries[] = {
    "Accept ARRNAMEs matching this pattern (use * and ?)", "PATTERN" },
   {"insname", 0, 0, G_OPTION_ARG_STRING, &insname,
    "Accept INSNAMEs matching this pattern (use * and ?)", "PATTERN" },
+  {"corrname", 0, 0, G_OPTION_ARG_STRING, &corrname,
+   "Accept CORRNAMEs matching this pattern (use * and ?)", "PATTERN" },
   {"target-id", 0, 0, G_OPTION_ARG_INT, &parsedFilter.target_id,
    "Accept only this TARGET_ID", "ID" },
   {"mjd-min", 0, 0, G_OPTION_ARG_STRING, &mjdMinStr,
@@ -99,6 +101,7 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
   init_oi_filter(&parsedFilter);
   arrname = NULL;
   insname = NULL;
+  corrname = NULL;
   mjdMinStr = g_strdup_printf("%lf", parsedFilter.mjd_range[0]);
   mjdMaxStr = g_strdup_printf("%lf", parsedFilter.mjd_range[1]);
   /* Convert m -> nm */
@@ -122,6 +125,8 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
     g_strlcpy(parsedFilter.arrname, arrname, FLEN_VALUE);
   if (insname != NULL)
     g_strlcpy(parsedFilter.insname, insname, FLEN_VALUE);
+  if (corrname != NULL)
+    g_strlcpy(parsedFilter.corrname, corrname, FLEN_VALUE);
   parsedFilter.mjd_range[0] = atof(mjdMinStr);
   parsedFilter.mjd_range[1] = atof(mjdMaxStr);
   /* Convert nm -> m */
@@ -137,7 +142,8 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
 #endif /* #ifdef HAVE_G_OPTION_GROUP */
 
 /**
- * Return new linked list of ARRNAMEs referenced by the OI_VIS/VIS2/T3 tables.
+ * Return new linked list of ARRNAMEs referenced by the
+ * OI_VIS/VIS2/T3/SPECTRUM tables.
  */
 static GList *get_arrname_list(oi_fits *pData)
 {
@@ -145,6 +151,7 @@ static GList *get_arrname_list(oi_fits *pData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
   
   arrnameList = NULL;
 
@@ -171,17 +178,28 @@ static GList *get_arrname_list(oi_fits *pData)
   link = pData->t3List;
   while (link != NULL) {
     pT3 = (oi_t3 *) link->data;
-    if (pT3->arrname[0] != '\0'
-        && g_list_find_custom(arrnameList, pT3->arrname,
-                              (GCompareFunc) strcmp) == NULL)
+    if (pT3->arrname[0] != '\0' &&
+        g_list_find_custom(arrnameList, pT3->arrname,
+                           (GCompareFunc) strcmp) == NULL)
       arrnameList = g_list_prepend(arrnameList, pT3->arrname);
+    link = link->next;
+  }
+
+  link = pData->spectrumList;
+  while (link != NULL) {
+    pSpectrum = (oi_spectrum *) link->data;
+    if (pSpectrum->arrname[0] != '\0' &&
+        g_list_find_custom(arrnameList, pSpectrum->arrname,
+                           (GCompareFunc) strcmp) == NULL)
+      arrnameList = g_list_prepend(arrnameList, pSpectrum->arrname);
     link = link->next;
   }
   return g_list_reverse(arrnameList);
 }
 
 /**
- * Return new linked list of INSNAMEs referenced by the OI_VIS/VIS2/T3 tables.
+ * Return new linked list of INSNAMEs referenced by the
+ * OI_VIS/VIS2/T3/SPECTRUM tables.
  */
 static GList *get_insname_list(oi_fits *pData)
 {
@@ -189,6 +207,7 @@ static GList *get_insname_list(oi_fits *pData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
   
   insnameList = NULL;
 
@@ -218,7 +237,61 @@ static GList *get_insname_list(oi_fits *pData)
       insnameList = g_list_prepend(insnameList, pT3->insname);
     link = link->next;
   }
+
+  link = pData->spectrumList;
+  while (link != NULL) {
+    pSpectrum = (oi_spectrum *) link->data;
+    if (g_list_find_custom(insnameList, pSpectrum->insname,
+                           (GCompareFunc) strcmp) == NULL)
+      insnameList = g_list_prepend(insnameList, pSpectrum->insname);
+    link = link->next;
+  }
   return g_list_reverse(insnameList);
+}
+
+/**
+ * Return new linked list of CORRNAMEs referenced by the OI_VIS/VIS2/T3 tables.
+ */
+static GList *get_corrname_list(oi_fits *pData)
+{
+  GList *corrnameList, *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  
+  corrnameList = NULL;
+
+  link = pData->visList;
+  while (link != NULL) {
+    pVis = (oi_vis *) link->data;
+    if (pVis->corrname[0] != '\0' &&
+        g_list_find_custom(corrnameList, pVis->corrname,
+                           (GCompareFunc) strcmp) == NULL)
+      corrnameList = g_list_prepend(corrnameList, pVis->corrname);
+    link = link->next;
+  }
+
+  link = pData->vis2List;
+  while (link != NULL) {
+    pVis2 = (oi_vis2 *) link->data;
+    if (pVis2->corrname[0] != '\0' &&
+        g_list_find_custom(corrnameList, pVis2->corrname,
+                           (GCompareFunc) strcmp) == NULL)
+      corrnameList = g_list_prepend(corrnameList, pVis2->corrname);
+    link = link->next;
+  }
+
+  link = pData->t3List;
+  while (link != NULL) {
+    pT3 = (oi_t3 *) link->data;
+    if (pT3->corrname[0] != '\0' &&
+        g_list_find_custom(corrnameList, pT3->corrname,
+                           (GCompareFunc) strcmp) == NULL)
+      corrnameList = g_list_prepend(corrnameList, pT3->corrname);
+    link = link->next;
+  }
+  /* OI_SPECTRUM does not use CORRNAME */
+  return g_list_reverse(corrnameList);
 }
 
 /**
@@ -276,6 +349,37 @@ static gboolean prune_oi_wavelength(oi_fits *pData, GList *insnameList)
       --pData->numWavelength;
       free_oi_wavelength(pWave);
       free(pWave);
+      return TRUE;
+    }
+    link = link->next;
+  }
+  return FALSE;
+}
+
+/**
+ * Remove first OI_CORR table with CORRNAME not in @a corrnameList.
+ *
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ */
+static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
+{
+  GList *link;
+  oi_corr *pCorr;
+
+  link = pData->corrList;
+  while (link != NULL)
+  {
+    pCorr = (oi_corr *) link->data;
+    if (g_list_find_custom(corrnameList, pCorr->corrname,
+                           (GCompareFunc) strcmp) == NULL)
+    {
+      g_warning("Unreferenced OI_CORR table with CORRNAME=%s "
+                "removed from filter output", pCorr->corrname);
+      g_hash_table_remove(pData->corrHash, pCorr->corrname);
+      pData->corrList = g_list_remove(pData->corrList, pCorr);
+      --pData->numCorr;
+      free_oi_corr(pCorr);
+      free(pCorr);
       return TRUE;
     }
     link = link->next;
@@ -344,6 +448,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
 {
   strcpy(pFilter->arrname, "*");
   strcpy(pFilter->insname, "*");
+  strcpy(pFilter->corrname, "*");
   pFilter->target_id = -1;
   pFilter->mjd_range[0] = 0.;
   pFilter->mjd_range[1] = 1e7;
@@ -361,6 +466,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
 
   pFilter->arrname_pttn = NULL;
   pFilter->insname_pttn = NULL;
+  pFilter->corrname_pttn = NULL;
 }
 
 /**
@@ -378,6 +484,7 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
   g_string_printf(pGStr, "Filter accepts:\n");
   g_string_append_printf(pGStr, "  ARRNAME='%s'\n", pFilter->arrname);
   g_string_append_printf(pGStr, "  INSNAME='%s'\n", pFilter->insname);
+  g_string_append_printf(pGStr, "  CORRNAME='%s'\n", pFilter->corrname);
   if(pFilter->target_id >= 0)
     g_string_append_printf(pGStr, "  TARGET_ID=%d\n", pFilter->target_id);
   else
@@ -434,6 +541,10 @@ void print_oi_filter(oi_filter_spec *pFilter)
   ( (pFilter)->insname_pttn == NULL ||                                  \
     g_pattern_match_string((pFilter)->insname_pttn, (pObject)->insname) )
 
+#define ACCEPT_CORRNAME(pObject, pFilter)                               \
+  ( (pFilter)->corrname_pttn == NULL ||                                 \
+    g_pattern_match_string((pFilter)->corrname_pttn, (pObject)->corrname) )
+
 /**
  * Filter OI_TARGET table.
  *
@@ -468,6 +579,8 @@ void filter_oi_target(const oi_target *pInTargets,
 
 /**
  * Filter OI_ARRAY tables.
+ *
+ * Tables are either removed or copied verbatim.
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -584,6 +697,148 @@ void filter_oi_wavelength(const oi_wavelength *pInWave,
 }
 
 /**
+ * Filter OI_CORR tables.
+ *
+ * Tables are either removed or copied verbatim.
+ *
+ * @param pInput       pointer to input dataset
+ * @param pFilter      pointer to filter specification
+ * @param pOutput      pointer to oi_fits struct to write filtered tables to
+ */
+void filter_all_oi_corr(const oi_fits *pInput, const oi_filter_spec *pFilter,
+                        oi_fits *pOutput)
+{
+  GList *link;
+  oi_corr *pInTab, *pOutTab;
+
+  /* Filter OI_CORR tables in turn */
+  link = pInput->corrList;
+  while(link != NULL) {
+
+    pInTab = (oi_corr *) link->data;
+    if(ACCEPT_CORRNAME(pInTab, pFilter)) {
+      /* Copy this table */
+      pOutTab = dup_oi_corr(pInTab);
+      pOutput->corrList = g_list_append(pOutput->corrList, pOutTab);
+      ++pOutput->numCorr;
+      g_hash_table_insert(pOutput->corrHash, pOutTab->corrname, pOutTab);
+    }
+    link = link->next;
+  }
+}
+
+/**
+ * Filter all OI_POLAR tables.
+ *
+ * @param pInput       pointer to input dataset
+ * @param pFilter      pointer to filter specification
+ * @param useWaveHash  hash table with INSAME values as keys and char[]
+ *                     specifying wavelength channels to accept as values
+ * @param pOutput      pointer to output oi_fits struct
+ */
+void filter_all_oi_polar(const oi_fits *pInput, const oi_filter_spec *pFilter,
+                         GHashTable *useWaveHash, oi_fits *pOutput)
+{
+  GList *link;
+  oi_polar *pInTab, *pOutTab;
+
+  /* Filter OI_POLAR tables in turn */
+  link = pInput->polarList;
+  while(link != NULL) {
+
+    pInTab = (oi_polar *) link->data;
+    link = link->next; /* follow link now so we can use continue statements */
+
+    /* If applicable, check whether ARRNAME matches */
+    if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
+
+    pOutTab = malloc(sizeof(oi_polar));
+    filter_oi_polar(pInTab, pFilter, useWaveHash, pOutTab);
+    if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+      pOutput->polarList = g_list_append(pOutput->polarList, pOutTab);
+      ++pOutput->numPolar;
+    } else {
+      g_warning("Empty OI_POLAR table removed from filter output");
+      free(pOutTab);
+    }
+  }
+}
+
+/**
+ * Filter specified OI_POLAR table by TARGET_ID, INSNAME, and MJD.
+ *
+ * @param pInTab   pointer to input oi_polar
+ * @param pFilter  pointer to filter specification
+ * @param useWaveHash  hash table with INSAME values as keys and char[]
+ *                     specifying wavelength channels to accept as values
+ * @param pOutTab  pointer to output oi_polar
+ */
+void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
+                     GHashTable *useWaveHash, oi_polar *pOutTab)
+{
+  int i, j, k, nrec;
+  char *useWave;
+
+  /* Copy table header items */
+  memcpy(pOutTab, pInTab, sizeof(oi_polar));
+
+  /* Filter records */
+  nrec = 0; /* counter */
+  pOutTab->record =
+    malloc(pInTab->numrec*sizeof(oi_polar_record)); /* will reallocate */
+  pOutTab->nwave = pInTab->nwave; /* upper limit */
+  for(i=0; i<pInTab->numrec; i++) {
+    if(pFilter->target_id >= 0 &&
+       pInTab->record[i].target_id != pFilter->target_id)
+      continue; /* skip record as TARGET_ID doesn't match */
+    if(pFilter->insname_pttn != NULL &&
+       !g_pattern_match_string(pFilter->insname_pttn,
+                               pInTab->record[i].insname))
+      continue;  /* skip record as INSNAME doesn't match */
+    if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
+       pInTab->record[i].mjd > pFilter->mjd_range[1])
+      continue; /* skip record as MJD out of range */
+    
+    /* Create output record */
+    memcpy(&pOutTab->record[nrec], &pInTab->record[i],
+           sizeof(oi_polar_record));
+    if(pFilter->target_id >= 0)
+      pOutTab->record[nrec].target_id = 1;
+    pOutTab->record[nrec].lxx = malloc(pOutTab->nwave*sizeof(float complex));
+    pOutTab->record[nrec].lyy = malloc(pOutTab->nwave*sizeof(float complex));
+    pOutTab->record[nrec].lxy = malloc(pOutTab->nwave*sizeof(float complex));
+    pOutTab->record[nrec].lyx = malloc(pOutTab->nwave*sizeof(float complex));
+    useWave = g_hash_table_lookup(useWaveHash, pInTab->record[i].insname);
+    k = 0;
+    for(j=0; j<pInTab->nwave; j++) {
+      if(useWave[j]) {
+	pOutTab->record[nrec].lxx[k] = pInTab->record[i].lxx[j];
+	pOutTab->record[nrec].lyy[k] = pInTab->record[i].lyy[j];
+	pOutTab->record[nrec].lxy[k] = pInTab->record[i].lxy[j];
+	pOutTab->record[nrec].lyx[k] = pInTab->record[i].lyx[j];
+	++k;
+      }
+    }
+    if(nrec == 0 && k < pOutTab->nwave) {
+      /* For 1st output record, length of vectors wasn't known when
+         originally allocated, so reallocate */
+      pOutTab->nwave = k;
+      pOutTab->record[nrec].lxx = realloc(pOutTab->record[nrec].lxx,
+                                          k*sizeof(DATA));
+      pOutTab->record[nrec].lyy = realloc(pOutTab->record[nrec].lyy,
+                                          k*sizeof(DATA));
+      pOutTab->record[nrec].lxy = realloc(pOutTab->record[nrec].lxy,
+                                          k*sizeof(DATA));
+      pOutTab->record[nrec].lyx = realloc(pOutTab->record[nrec].lyx,
+                                          k*sizeof(DATA));
+    }
+    ++nrec;
+  }
+  pOutTab->numrec = nrec;
+  pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_polar_record));
+}
+
+/**
  * Filter all OI_VIS tables.
  *
  * @param pInput       pointer to input dataset
@@ -611,6 +866,7 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
     /* If applicable, check whether INSNAME, ARRNAME match */
     if(!ACCEPT_INSNAME(pInTab, pFilter)) continue;
     if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
+    if(!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
@@ -752,6 +1008,7 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
     /* If applicable, check whether INSNAME, ARRNAME match */
     if(!ACCEPT_INSNAME(pInTab, pFilter)) continue;
     if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
+    if(!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
@@ -880,6 +1137,7 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
     /* If applicable, check whether INSNAME, ARRNAME match */
     if(!ACCEPT_INSNAME(pInTab, pFilter)) continue;
     if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
+    if(!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
@@ -1019,6 +1277,122 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
+ * Filter all OI_SPECTRUM tables.
+ *
+ * @param pInput       pointer to input dataset
+ * @param pFilter      pointer to filter specification
+ * @param useWaveHash  hash table with INSAME values as keys and char[]
+ *                     specifying wavelength channels to accept as values
+ * @param pOutput      pointer to output oi_fits struct
+ */
+void filter_all_oi_spectrum(const oi_fits *pInput,
+                            const oi_filter_spec *pFilter,
+                            GHashTable *useWaveHash, oi_fits *pOutput)
+{
+  GList *link;
+  oi_spectrum *pInTab, *pOutTab;
+  char *useWave;
+
+  /* Filter OI_SPECTRUM tables in turn */
+  link = pInput->spectrumList;
+  while(link != NULL) {
+
+    pInTab = (oi_spectrum *) link->data;
+    link = link->next; /* follow link now so we can use continue statements */
+
+    /* If applicable, check whether INSNAME, ARRNAME, CORRNAME match */
+    if(!ACCEPT_INSNAME(pInTab, pFilter)) continue;
+    if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
+    /* OI_SPECTRUM does not use CORRNAME */
+
+    useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
+    if (useWave != NULL) {
+      pOutTab = malloc(sizeof(oi_spectrum));
+      filter_oi_spectrum(pInTab, pFilter, useWave, pOutTab);
+      if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+	pOutput->spectrumList = g_list_append(pOutput->spectrumList, pOutTab);
+	++pOutput->numSpectrum;
+      } else {
+	g_warning("Empty OI_SPECTRUM table removed from filter output");
+	free(pOutTab);
+      }
+    }
+  }
+}
+
+/**
+ * Filter specified OI_SPECTRUM table by TARGET_ID, MJD, wavelength, and SNR.
+ *
+ * @param pInTab       pointer to input oi_spectrum
+ * @param pFilter      pointer to filter specification
+ * @param useWave      boolean array giving wavelength channels to accept
+ * @param pOutTab      pointer to output oi_spectrum
+ */
+void filter_oi_spectrum(const oi_spectrum *pInTab,
+                        const oi_filter_spec *pFilter,
+                        const char *useWave, oi_spectrum *pOutTab)
+{
+  int i, j, k, nrec;
+  double nan;
+  float snr;
+
+  /* Make a NaN, for fluxdata rejected on SNR */
+  nan = 0.0;
+  nan /= nan;
+
+  /* Copy table header items */
+  memcpy(pOutTab, pInTab, sizeof(oi_spectrum));
+
+  /* Filter records */
+  nrec = 0; /* counter */
+  pOutTab->record =
+    malloc(pInTab->numrec*sizeof(oi_spectrum_record)); /* will reallocate */
+  pOutTab->nwave = pInTab->nwave; /* upper limit */
+  for(i=0; i<pInTab->numrec; i++) {
+    if(pFilter->target_id >= 0 &&
+       pInTab->record[i].target_id != pFilter->target_id)
+      continue; /* skip record as TARGET_ID doesn't match */
+    if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
+       pInTab->record[i].mjd > pFilter->mjd_range[1])
+      continue; /* skip record as MJD out of range */
+    
+    /* Create output record */
+    memcpy(&pOutTab->record[nrec], &pInTab->record[i],
+           sizeof(oi_spectrum_record));
+    if(pFilter->target_id >= 0)
+      pOutTab->record[nrec].target_id = 1;
+    pOutTab->record[nrec].fluxdata = malloc(pOutTab->nwave*sizeof(DATA));
+    pOutTab->record[nrec].fluxerr = malloc(pOutTab->nwave*sizeof(DATA));
+    k = 0;
+    for(j=0; j<pInTab->nwave; j++) {
+      if(useWave[j]) {
+	snr = pInTab->record[i].fluxdata[j]/pInTab->record[i].fluxerr[j];
+	if(snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
+          /* SNR out of range, null datum */
+	  pOutTab->record[nrec].fluxdata[k] = nan;
+	} else {
+          pOutTab->record[nrec].fluxdata[k] = pInTab->record[i].fluxdata[j];
+        }
+	pOutTab->record[nrec].fluxerr[k] = pInTab->record[i].fluxerr[j];
+	++k;
+      }
+    }
+    if(nrec == 0 && k < pOutTab->nwave) {
+      /* For 1st output record, length of vectors wasn't known when
+         originally allocated, so reallocate */
+      pOutTab->nwave = k;
+      pOutTab->record[nrec].fluxdata = realloc(pOutTab->record[nrec].fluxdata,
+                                               k*sizeof(DATA));
+      pOutTab->record[nrec].fluxerr = realloc(pOutTab->record[nrec].fluxerr,
+                                              k*sizeof(DATA));
+    }
+    ++nrec;
+  }
+  pOutTab->numrec = nrec;
+  pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_spectrum_record));
+}
+
+/**
  * Filter OIFITS data. Makes a deep copy.
  *
  * @param pInput   pointer to input file data struct, see oifile.h
@@ -1038,33 +1412,46 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   pFilter->arrname_pttn = g_pattern_spec_new(pFilter->arrname);
   g_assert(pFilter->insname_pttn == NULL);
   pFilter->insname_pttn = g_pattern_spec_new(pFilter->insname);
+  g_assert(pFilter->corrname_pttn == NULL);
+  pFilter->corrname_pttn = g_pattern_spec_new(pFilter->corrname);
 
-  /* Filter OI_TARGET table and OI_ARRAY tables */
+  /* Filter OI_TARGET, OI_ARRAY, and OI_CORR tables */
   filter_oi_target(&pInput->targets, pFilter, &pOutput->targets);
   filter_all_oi_array(pInput, pFilter, pOutput);
+  filter_all_oi_corr(pInput, pFilter, pOutput);
 
   /* Filter OI_WAVELENGTH tables, remembering which wavelengths have
      been accepted for each */
   useWaveHash = filter_all_oi_wavelength(pInput, pFilter, pOutput);
 
-  /* Filter data tables */
+  /* Filter tables with spectral data */
+  filter_all_oi_polar(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_vis(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_vis2(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_t3(pInput, pFilter, useWaveHash, pOutput);
+  filter_all_oi_spectrum(pInput, pFilter, useWaveHash, pOutput);
 
-  /* Remove orphaned OI_ARRAY & OI_WAVELENGTH tables */
+  /* Remove orphaned OI_ARRAY, OI_WAVELENGTH and OI_CORR tables */
   list = get_arrname_list(pOutput);
   while(prune_oi_array(pOutput, list)) ;
   g_list_free(list);
   list = get_insname_list(pOutput);
   while(prune_oi_wavelength(pOutput, list)) ;
   g_list_free(list);
+  list = get_corrname_list(pOutput);
+  while(prune_oi_corr(pOutput, list)) ;
+  g_list_free(list);
+
+  //:TODO: remove orphaned OI_POLAR records?
+  // Note these do not invalidate the OIFITS file
 
   /* Free compiled patterns */
   g_pattern_spec_free(pFilter->arrname_pttn);
   g_pattern_spec_free(pFilter->insname_pttn);
+  g_pattern_spec_free(pFilter->corrname_pttn);
   pFilter->arrname_pttn = NULL;
   pFilter->insname_pttn = NULL;
+  pFilter->corrname_pttn = NULL;
 
   g_hash_table_destroy(useWaveHash);
 }
