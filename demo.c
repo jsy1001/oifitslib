@@ -423,8 +423,8 @@ void demo_read(void)
   /* Read all OI_VIS tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
   while (1==1) {
     if (read_next_oi_vis(fptr, &vis, &status)) break; /* no more OI_VIS */
-    printf("Read OI_VIS      with  ARRNAME=%s INSNAME=%s\n",
-	   vis.arrname, vis.insname);
+    printf("Read OI_VIS      with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
+	   vis.arrname, vis.insname, vis.corrname);
     if (strlen(vis.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY
          Note we may have read it previously */
@@ -445,8 +445,8 @@ void demo_read(void)
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_vis2(fptr, &vis2, &status)) break; /* no more OI_VIS2 */
-    printf("Read OI_VIS2     with  ARRNAME=%s INSNAME=%s\n",
-	   vis2.arrname, vis2.insname);
+    printf("Read OI_VIS2     with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
+	   vis2.arrname, vis2.insname, vis.corrname);
     if (strlen(vis2.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, vis2.arrname, &array, &status);
@@ -466,8 +466,8 @@ void demo_read(void)
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_t3(fptr, &t3, &status)) break; /* no more OI_T3 */
-    printf("Read OI_T3       with  ARRNAME=%s INSNAME=%s\n",
-	   t3.arrname, t3.insname);
+    printf("Read OI_T3       with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
+	   t3.arrname, t3.insname, t3.corrname);
     if (strlen(t3.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, t3.arrname, &array, &status);
