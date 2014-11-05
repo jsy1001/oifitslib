@@ -422,6 +422,10 @@ static STATUS write_oi_vis_complex(fitsfile *fptr, oi_vis vis, bool correlated,
 
   for(irow=1; irow<=vis.numrec; irow++) {
 
+    assert(vis.record[irow-1].rvis != NULL);
+    assert(vis.record[irow-1].rviserr != NULL);
+    assert(vis.record[irow-1].ivis != NULL);
+    assert(vis.record[irow-1].iviserr != NULL);
     fits_write_col(fptr, TDOUBLE, 9, irow, 1, vis.nwave,
 		   vis.record[irow-1].rvis, pStatus);
     fits_write_col(fptr, TDOUBLE, 10, irow, 1, vis.nwave,

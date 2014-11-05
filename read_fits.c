@@ -699,6 +699,10 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
   int irow, colnum, anynull;
   
   for (irow=1; irow<=pVis->numrec; irow++) {
+    pVis->record[irow-1].rvis = malloc(pVis->nwave*sizeof(DATA));
+    pVis->record[irow-1].rviserr = malloc(pVis->nwave*sizeof(DATA));
+    pVis->record[irow-1].ivis = malloc(pVis->nwave*sizeof(DATA));
+    pVis->record[irow-1].iviserr = malloc(pVis->nwave*sizeof(DATA));
     fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
                   &nulldouble, pVis->record[irow-1].rvis, &anynull,
@@ -851,6 +855,10 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     if(*pStatus == COL_NOT_FOUND) {
       pVis->usecomplex = FALSE;
       *pStatus = 0;
+      pVis->record[irow-1].rvis = NULL;
+      pVis->record[irow-1].rviserr = NULL;
+      pVis->record[irow-1].ivis = NULL;
+      pVis->record[irow-1].iviserr = NULL;
     } else {
       pVis->usecomplex = TRUE;
       read_oi_vis_complex(fptr, pVis, correlated, pStatus);
