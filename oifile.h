@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for file-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -67,18 +67,25 @@
 typedef struct {
   int numArray;              /**< Length of arrayList */
   int numWavelength;         /**< Length of wavelengthList */
+  int numCorr;               /**< Length of corrList */
+  int numPolar;              /**< Length of polarList */
   int numVis;                /**< Length of visList */
   int numVis2;               /**< Length of vis2List */
   int numT3;                 /**< Length of t3List */
+  int numSpectrum;           /**< Length of spectrumList */
   oi_target targets;         /**< oi_target struct */
   GList *arrayList;          /**< Linked list of oi_array structs */
   GList *wavelengthList;     /**< Linked list of oi_wavelength structs */
+  GList *corrList;           /**< Linked list of oi_corr structs */
+  GList *polarList;          /**< Linked list of oi_polar structs */
   GList *visList;            /**< Linked list of oi_vis structs */
   GList *vis2List;           /**< Linked list of oi_vis2 structs */
   GList *t3List;             /**< Linked list of oi_t3 structs */
+  GList *spectrumList;       /**< Linked list of oi_spectrum structs */
   GHashTable *arrayHash;     /**< Hash table of oi_array, indexed by ARRNAME */
   GHashTable *wavelengthHash; /**< Hash table of oi_wavelength, 
 				   indexed by INSNAME */
+  GHashTable *corrHash;      /**< Hash table of oi_corr, indexed by CORRNAME */
 } oi_fits;
 
 
@@ -86,21 +93,27 @@ typedef struct {
  * Function prototypes, for functions from oifile.c
  */
 void init_oi_fits(oi_fits *);
+int is_oi_fits_one(oi_fits *);
+int is_oi_fits_two(oi_fits *);
 STATUS write_oi_fits(const char *, oi_fits, STATUS *);
 STATUS read_oi_fits(const char *, oi_fits *, STATUS *);
 void free_oi_fits(oi_fits *);
 oi_array *oi_fits_lookup_array(const oi_fits *, const char *);
 element *oi_fits_lookup_element(const oi_fits *, const char *, int);
 oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *, const char *);
+oi_corr *oi_fits_lookup_corr(const oi_fits *, const char *);
 target *oi_fits_lookup_target(const oi_fits *, int);
 const char *format_oi_fits_summary(const oi_fits *);
 void print_oi_fits_summary(const oi_fits *);
 oi_target *dup_oi_target(const oi_target *);
 oi_array *dup_oi_array(const oi_array *);
 oi_wavelength *dup_oi_wavelength(const oi_wavelength *);
+oi_corr *dup_oi_corr(const oi_corr *);
+oi_polar *dup_oi_polar(const oi_polar *);
 oi_vis *dup_oi_vis(const oi_vis *);
 oi_vis2 *dup_oi_vis2(const oi_vis2 *);
 oi_t3 *dup_oi_t3(const oi_t3 *);
+oi_spectrum *dup_oi_spectrum(const oi_spectrum *);
 
 #endif /* #ifndef OIFILE_H */
 
