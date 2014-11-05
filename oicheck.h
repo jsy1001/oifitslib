@@ -3,7 +3,7 @@
  * @ingroup oicheck
  * Definitions for OIFITS conformity checker.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -35,6 +35,7 @@
  * dataset, so that an application can perform only those checks that
  * are relevant to the tasks it performs. The available checking
  * functions are:
+ * - check_tables()
  * - check_unique_targets()
  * - check_targets_present()
  * - check_elements_present()
@@ -102,6 +103,7 @@ void init_check_result(oi_check_result *);
 void free_check_result(oi_check_result *);
 char *format_check_result(oi_check_result *);
 void print_check_result(oi_check_result *);
+oi_breach_level check_tables(oi_fits *, oi_check_result *);
 oi_breach_level check_unique_targets(oi_fits *, oi_check_result *);
 oi_breach_level check_targets_present(oi_fits *, oi_check_result *);
 oi_breach_level check_elements_present(oi_fits *, oi_check_result *);

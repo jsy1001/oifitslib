@@ -24,7 +24,6 @@
  */
 
 /* :TODO: integrate fitsverify? */
-/* :TODO: check_tables_present() */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -127,7 +126,33 @@ void print_check_result(oi_check_result *pResult)
 }
 
 /**
- * Check targets have unique identifiers
+ * Check tables present and their revision numbers.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
+{
+  const char desc[] = "Mandatory table missing or mixed table revisions";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+  if(is_oi_fits_one(pOi)) {
+    //:TODO: check mandatory OIFITS v1 tables present
+  } else if(is_oi_fits_two(pOi)) {
+    //:TODO: check mandatory OIFITS v2 tables present
+  } else {
+    g_snprintf(location, FLEN_VALUE, "Table revision numbers do not match "
+               "either v1 or v2 of the OIFITS standard");
+    set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+  }
+  return pResult->level;
+}
+
+/**
+ * Check targets have unique identifiers.
  *
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
@@ -177,6 +202,7 @@ oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
   const char desc[] = "Reference to missing target record";
   char location[FLEN_VALUE];
 
@@ -224,6 +250,20 @@ oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
     link = link->next;
   }
 
+  /* Check OI_SPECTRUM tables */
+  link = pOi->spectrumList;
+  while(link != NULL) {
+    pSpectrum = link->data;
+    for(i=0; i<pSpectrum->numrec; i++) {
+      if(oi_fits_lookup_target(pOi, pSpectrum->record[i].target_id) == NULL) {
+	g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d record %d",
+		   g_list_position(pOi->spectrumList, link)+1, i+1);
+	set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+    }
+    link = link->next;
+  }
+
   return pResult->level;
 }
 
@@ -243,10 +283,13 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
   const char desc[] = "Reference to missing array element";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
+
+  //:TODO: check OI_POLAR tables?
 
   /* Check OI_VIS tables */
   link = pOi->visList;
@@ -300,6 +343,24 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
 	    set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
 	  }
 	}
+      }
+    }
+    link = link->next;
+  }
+
+  /* Check OI_SPECTRUM tables */
+  link = pOi->spectrumList;
+  while(link != NULL) {
+    pSpectrum = link->data;
+    if(strlen(pSpectrum->arrname) > 0) {
+      for(i=0; i<pSpectrum->numrec; i++) {
+        if(pSpectrum->record[i].sta_index == -1) continue;
+        if(oi_fits_lookup_element(pOi, pSpectrum->arrname,
+                                  pSpectrum->record[i].sta_index) == NULL) {
+          g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d record %d",
+                     g_list_position(pOi->spectrumList, link)+1, i+1);
+          set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+        }
       }
     }
     link = link->next;
