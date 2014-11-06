@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Definitions for merge component of OIFITSlib.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -55,9 +55,15 @@
  */
 GHashTable *merge_oi_target(const GList *, oi_fits *);
 GList *merge_all_oi_wavelength(const GList *, oi_fits *);
-void merge_all_oi_vis(const GList *, GHashTable *, const GList *, oi_fits *);
-void merge_all_oi_vis2(const GList *, GHashTable *, const GList *, oi_fits *);
-void merge_all_oi_t3(const GList *, GHashTable *, const GList *, oi_fits *);
+GList *merge_all_oi_corr(const GList *, oi_fits *);
+void merge_all_oi_vis(const GList *, GHashTable *,
+                      const GList *, const GList *, oi_fits *);
+void merge_all_oi_vis2(const GList *, GHashTable *,
+                       const GList *, const GList *, oi_fits *);
+void merge_all_oi_t3(const GList *, GHashTable *,
+                     const GList *, const GList *, oi_fits *);
+void merge_all_oi_spectrum(const GList *, GHashTable *, const GList *,
+                           oi_fits *);
 void merge_oi_fits_list(const GList *, oi_fits *);
 void merge_oi_fits(oi_fits *, oi_fits *, oi_fits *,...);
 
