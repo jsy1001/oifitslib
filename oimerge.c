@@ -340,6 +340,7 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
     g_hash_table_destroy((GHashTable *) link->data);
     link = link->next;
   }
+  g_list_free(insnameHashList);
 }
 
 /**
