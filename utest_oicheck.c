@@ -98,8 +98,8 @@ int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_data_func("/oifitslib/oifilter/pass", &passSet, test_check);
-  g_test_add_data_func("/oifitslib/oifilter/fail", &failSet, test_check);
+  g_test_add_data_func("/oifitslib/oicheck/pass", &passSet, test_check);
+  g_test_add_data_func("/oifitslib/oicheck/fail", &failSet, test_check);
 
   return g_test_run();
 }

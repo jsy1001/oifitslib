@@ -17,12 +17,13 @@
 # http://www.gnu.org/licenses/
 
 CC = gcc
+#CC = cc
 AR = ar
 # Note that 'demo' target can be built even if pkg-config not present
 PKGCONFIG = pkg-config
 TOUCH = touch
 PYTHON = python2.7
-PYINCFLAGS = -I/usr/include/$(PYTHON)
+PYINCFLAGS = `$(PYTHON)-config --cflags`
 
 CPPFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
 CFLAGS =  -Wall -g -fPIC -std=c99
@@ -34,11 +35,19 @@ ifeq ($(UNAME_S),Darwin)
   # one will take precedence.
   CPPFLAGS += -I/opt/local/include
   override LDLIBS += -L/opt/local/lib -lcfitsio -lm
+  ifeq ($(CC),cc)
+    SHAREDFLAGS = -bundle
+  else
+    SHAREDFLAGS = -shared
+  endif
 else ifeq ($(UNAME_S),SunOS)
   override LDLIBS += -lcfitsio -lm -lnsl -lsocket
   export LD_RUN_PATH:= /usr/local/lib:/star/lib
+  # assume gcc
+  SHAREDFLAGS = -shared
 else
   override LDLIBS += -lcfitsio -lm
+  SHAREDFLAGS = -shared
 endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
@@ -120,12 +129,12 @@ utest_oifilter: utest_oifilter.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 # Python interface
-# :TODO: use distutils instead, perhaps for $(CC) & $(LD) steps only
+# :TODO: use distutils instead, perhaps for compile and link steps only
 %_wrap.c %.py : %.i oifits_typemaps.i
 	swig -python -o $@ $< 
 
 _%module.so: %_wrap.o liboifits.a
-	$(LD) -G $^ $(LDLIBS) $(LDLIBS_GLIB) -o $@
+	$(CC) $(SHAREDFLAGS) $^ `$(PYTHON)-config --ldflags` $(LDLIBS) $(LDLIBS_GLIB) -o $@
 
 test: $(TEST_EXES) $(PYTHONMODULES)
 	./utest_oicheck	
