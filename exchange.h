@@ -90,6 +90,8 @@ typedef struct {
   int sta_index;
   float diameter;
   double staxyz[3];
+  double fov;
+  char fovtype[7];
 } element;
 
 /** Data for OI_ARRAY FITS table */
