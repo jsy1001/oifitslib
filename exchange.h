@@ -120,6 +120,7 @@ typedef struct {
   double pmra_err, pmdec_err;
   float parallax, para_err;
   char spectyp[17];
+  char category[4];
 } target;
 
 /** Data for OI_TARGET FITS table */
@@ -127,6 +128,7 @@ typedef struct {
   int revision;
   int ntarget;
   target *targ;
+  BOOL usecategory;  /**< is target::category being used? */
 } oi_target;
 
 /** Data for OI_WAVELENGTH FITS table */
@@ -186,6 +188,7 @@ typedef struct {
   int corrindx_visamp;
   DATA *visphi, *visphierr;
   int corrindx_visphi;
+  //:TODO: visrefmap
   DATA *rvis, *rviserr;
   int corrindx_rvis;
   DATA *ivis, *iviserr;
@@ -202,7 +205,11 @@ typedef struct {
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
   char insname[FLEN_VALUE];
   char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
-  BOOL usecomplex;           /**< are rvis/ivis being used? */
+  char amptyp[FLEN_VALUE];  /**< empty string "" means not specified */
+  char phityp[FLEN_VALUE];   /**< empty string "" means not specified */
+  int amporder;              /**< -1 means not specified */
+  int phiorder;              /**< -1 means not specified */
+  BOOL usecomplex;           /**< are oi_vis_record::rvis etc. being used? */
   long numrec;
   int nwave;
   oi_vis_record *record;

@@ -25,9 +25,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "exchange.h"
 
+static bool scan_opt_string(FILE *fp, const char *format, char *dest)
+{
+  if (fscanf(fp, format, dest) < 1) {
+    dest[0] = '\0';
+    printf("Optional %s not specified - set to \"\"\n", format);
+    return FALSE;
+  }
+  return TRUE;
+}
+
+static bool scan_opt_int(FILE *fp, const char *format, int *dest, int nullval)
+{
+  if (fscanf(fp, format, dest) < 1) {
+    *dest = nullval;
+    printf("Optional %s not specified - set to %d\n", format, nullval);
+    return FALSE;
+  }
+  return TRUE;
+}
 
 /**
  * Read data from a user-specified text file and write out in OIFITS format.
@@ -57,15 +77,15 @@ void demo_write(void)
   fp = fopen(filename, "r");
 
   /* Read info for OI_ARRAY table */
-  fscanf(fp, "OI_ARRAY arrname %s ", array.arrname);
-  fscanf(fp, "frame %s ", array.frame);
+  fscanf(fp, "OI_ARRAY arrname %70s ", array.arrname);
+  fscanf(fp, "frame %70s ", array.frame);
   fscanf(fp, "arrayx %lf arrayy %lf arrayz %lf ", &array.arrayx,
 	 &array.arrayy, &array.arrayz);
   fscanf(fp, "nelement %d ", &array.nelement);
   array.elem = malloc(array.nelement*sizeof(element));
   for (i=0; i<array.nelement; i++) {
     
-    fscanf(fp, "tel_name %s sta_name %s ", array.elem[i].tel_name,
+    fscanf(fp, "tel_name %16s sta_name %16s ", array.elem[i].tel_name,
 	   array.elem[i].sta_name);
     fscanf(fp, "staxyz %lf %lf %lf diameter %f ", &array.elem[i].staxyz[0],
 	   &array.elem[i].staxyz[1], &array.elem[i].staxyz[2],
@@ -77,29 +97,33 @@ void demo_write(void)
   /* Read info for OI_TARGET table */
   fscanf(fp, "OI_TARGET ntarget %d ", &targets.ntarget);
   targets.targ = malloc(targets.ntarget*sizeof(target));
+  targets.usecategory = FALSE;
   for (itarg=0; itarg<targets.ntarget; itarg++) {
     fscanf(fp, "target_id %d ", &targets.targ[itarg].target_id);
-    fscanf(fp, "target %s ", targets.targ[itarg].target);
+    fscanf(fp, "target %16s ", targets.targ[itarg].target);
     fscanf(fp, "raep0 %lf ", &targets.targ[itarg].raep0);
     fscanf(fp, "decep0 %lf ", &targets.targ[itarg].decep0);
     fscanf(fp, "equinox %f ", &targets.targ[itarg].equinox);
     fscanf(fp, "ra_err %lf ", &targets.targ[itarg].ra_err);
     fscanf(fp, "dec_err %lf ", &targets.targ[itarg].dec_err);
     fscanf(fp, "sysvel %lf ", &targets.targ[itarg].sysvel);
-    fscanf(fp, "veltyp %s ", targets.targ[itarg].veltyp);
-    fscanf(fp, "veldef %s ", targets.targ[itarg].veldef);
+    fscanf(fp, "veltyp %8s ", targets.targ[itarg].veltyp);
+    fscanf(fp, "veldef %8s ", targets.targ[itarg].veldef);
     fscanf(fp, "pmra %lf ", &targets.targ[itarg].pmra);
     fscanf(fp, "pmdec %lf ", &targets.targ[itarg].pmdec);
     fscanf(fp, "pmra_err %lf ", &targets.targ[itarg].pmra_err);
     fscanf(fp, "pmdec_err %lf ", &targets.targ[itarg].pmdec_err);
     fscanf(fp, "parallax %f ", &targets.targ[itarg].parallax);
     fscanf(fp, "para_err %f ", &targets.targ[itarg].para_err);
-    fscanf(fp, "spectyp %s ", targets.targ[itarg].spectyp);
+    fscanf(fp, "spectyp %16s ", targets.targ[itarg].spectyp);
+    if(scan_opt_string(fp, "category %3s", targets.targ[itarg].category))
+      targets.usecategory = TRUE;
+    fscanf(fp, " ");
   }
   targets.revision = 1;
 
   /* Read info for OI_WAVELENGTH table */
-  fscanf(fp, "OI_WAVELENGTH insname %s ", wave.insname);
+  fscanf(fp, "OI_WAVELENGTH insname %70s ", wave.insname);
   fscanf(fp, "nwave %d ", &wave.nwave);
   wave.eff_wave = malloc(wave.nwave*sizeof(float));
   wave.eff_band = malloc(wave.nwave*sizeof(float));
@@ -114,7 +138,7 @@ void demo_write(void)
   wave.revision = 1;
 
   /* Read info for OI_CORR table */
-  fscanf(fp, "OI_CORR corrname %s ", corr.corrname);
+  fscanf(fp, "OI_CORR corrname %70s ", corr.corrname);
   fscanf(fp, "ndata %d ", &corr.ndata);
   fscanf(fp, "ncorr %d ", &corr.ncorr);
   corr.iindx = malloc(corr.ncorr*sizeof(int));
@@ -135,17 +159,17 @@ void demo_write(void)
   corr.revision = 1;
 
   /* Read info for OI_POLAR table */
-  fscanf(fp, "OI_POLAR date-obs %s ", polar.date_obs);
+  fscanf(fp, "OI_POLAR date-obs %70s ", polar.date_obs);
   fscanf(fp, "npol %d ", &polar.npol);
-  fscanf(fp, "arrname %s ", polar.arrname);
-  fscanf(fp, "orientation %s ", polar.orientation);
-  fscanf(fp, "model %s ", polar.model);
+  fscanf(fp, "arrname %70s ", polar.arrname);
+  fscanf(fp, "orientation %70s ", polar.orientation);
+  fscanf(fp, "model %70s ", polar.model);
   fscanf(fp, "numrec %ld ", &polar.numrec);
   polar.record = malloc(polar.numrec*sizeof(oi_polar_record));
   printf("Reading %ld polar records...\n", polar.numrec);
   /* loop over records */
   for(irec=0; irec<polar.numrec; irec++) {
-    fscanf(fp, "target_id %d insname %s mjd %lf ",
+    fscanf(fp, "target_id %d insname %70s mjd %lf ",
            &polar.record[irec].target_id, polar.record[irec].insname,
            &polar.record[irec].mjd);
     fscanf(fp, "int_time %lf lxx ", &polar.record[irec].int_time);
@@ -179,10 +203,14 @@ void demo_write(void)
   polar.nwave = wave.nwave;
 
   /* Read info for OI_VIS table */
-  fscanf(fp, "OI_VIS date-obs %s ", vis.date_obs);
-  fscanf(fp, "arrname %s insname %s ", vis.arrname, vis.insname);
-  fscanf(fp, "corrname %s ", vis.corrname);
-  fscanf(fp, "numrec %ld ", &vis.numrec);
+  fscanf(fp, "OI_VIS date-obs %70s ", vis.date_obs);
+  fscanf(fp, "arrname %70s insname %70s ", vis.arrname, vis.insname);
+  fscanf(fp, "corrname %70s ", vis.corrname);
+  scan_opt_string(fp, "amptyp %70s", vis.amptyp);
+  scan_opt_string(fp, " phityp %70s", vis.phityp);
+  scan_opt_int(fp, " amporder %d", &vis.amporder, -1);
+  scan_opt_int(fp, " phiorder %d", &vis.phiorder, -1);
+  fscanf(fp, " numrec %ld ", &vis.numrec);
   vis.record = malloc(vis.numrec*sizeof(oi_vis_record));
   printf("Reading %ld vis records...\n", vis.numrec);
   /* loop over records */
@@ -225,9 +253,9 @@ void demo_write(void)
   vis.usecomplex = FALSE;
 
   /* Read info for OI_VIS2 table */
-  fscanf(fp, "OI_VIS2 date-obs %s ", vis2.date_obs);
-  fscanf(fp, "arrname %s insname %s ", vis2.arrname, vis2.insname);
-  fscanf(fp, "corrname %s ", vis2.corrname);
+  fscanf(fp, "OI_VIS2 date-obs %70s ", vis2.date_obs);
+  fscanf(fp, "arrname %70s insname %70s ", vis2.arrname, vis2.insname);
+  fscanf(fp, "corrname %70s ", vis2.corrname);
   fscanf(fp, "numrec %ld ", &vis2.numrec);
   vis2.record = malloc(vis2.numrec*sizeof(oi_vis2_record));
   printf("Reading %ld vis2 records...\n", vis2.numrec);
@@ -259,9 +287,9 @@ void demo_write(void)
   vis2.nwave = wave.nwave;
 
   /* Read info for OI_T3 table */
-  fscanf(fp, "OI_T3 date-obs %s ", t3.date_obs);
-  fscanf(fp, "arrname %s insname %s ", t3.arrname, t3.insname);
-  fscanf(fp, "corrname %s ", t3.corrname);
+  fscanf(fp, "OI_T3 date-obs %70s ", t3.date_obs);
+  fscanf(fp, "arrname %70s insname %70s ", t3.arrname, t3.insname);
+  fscanf(fp, "corrname %70s ", t3.corrname);
   fscanf(fp, "numrec %ld ", &t3.numrec);
   t3.record = malloc(t3.numrec*sizeof(oi_t3_record));
   printf("Reading %ld t3 records...\n", t3.numrec);
@@ -307,9 +335,9 @@ void demo_write(void)
   t3.nwave = wave.nwave;
 
   /* Read info for OI_SPECTRUM table */
-  fscanf(fp, "OI_SPECTRUM date-obs %s ", spectrum.date_obs);
-  fscanf(fp, "arrname %s insname %s ", spectrum.arrname, spectrum.insname);
-  fscanf(fp, "fov %lf fovtype %s ", &spectrum.fov, spectrum.fovtype);
+  fscanf(fp, "OI_SPECTRUM date-obs %70s ", spectrum.date_obs);
+  fscanf(fp, "arrname %70s insname %70s ", spectrum.arrname, spectrum.insname);
+  fscanf(fp, "fov %lf fovtype %6s ", &spectrum.fov, spectrum.fovtype);
   spectrum.calibrated = TRUE;
   fscanf(fp, "numrec %ld ", &spectrum.numrec);
   spectrum.record = malloc(spectrum.numrec*sizeof(oi_spectrum_record));

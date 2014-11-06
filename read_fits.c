@@ -483,6 +483,22 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 	   pTargets->targ[irow-1].raep0, pTargets->targ[irow-1].decep0,
 	   pTargets->targ[irow-1].spectyp);*/
   }
+
+  /* Read optional column */
+  fits_get_colnum(fptr, CASEINSEN, "CATEGORY", &colnum, pStatus);
+  if(*pStatus == COL_NOT_FOUND) {
+    pTargets->usecategory = FALSE;
+    *pStatus = 0;
+    //:TODO: set to -1?
+  } else {
+    pTargets->usecategory = TRUE;
+    for (irow=1; irow<=pTargets->ntarget; irow++) {
+      p = pTargets->targ[irow-1].category;
+      fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
+                    &anynull, pStatus);
+    }
+  }
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -764,6 +780,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     goto except;
 
   /* Read table */
+  //:TODO: split this function
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
   if (pVis->revision != revision) {
     printf("WARNING! Expecting value %d for OI_REVN keyword in "
@@ -783,6 +800,26 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     correlated = FALSE;
   } else {
     correlated = TRUE;
+  }
+  fits_read_key(fptr, TSTRING, "AMPTYP", pVis->amptyp, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* AMPTYP is optional */
+    pVis->amptyp[0] = '\0';
+    *pStatus = 0;
+  }
+  fits_read_key(fptr, TSTRING, "PHITYP", pVis->phityp, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* PHITYP is optional */
+    pVis->phityp[0] = '\0';
+    *pStatus = 0;
+  }
+  fits_read_key(fptr, TINT, "AMPORDER", &pVis->amporder, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* AMPORDER is optional */
+    pVis->amporder = -1;
+    *pStatus = 0;
+  }
+  fits_read_key(fptr, TINT, "PHIORDER", &pVis->phiorder, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* PHIORDER is optional */
+    pVis->phiorder = -1;
+    *pStatus = 0;
   }
   /* get number of rows */
   fits_get_num_rows(fptr, &pVis->numrec, pStatus);
@@ -1166,7 +1203,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
   fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus); //:BUG: buffer overrun
   fits_read_key(fptr, TLOGICAL, "CALIBRATED", &pSpectrum->calibrated, comment,
                 pStatus);
   /* get number of rows & allocate storage */

@@ -220,6 +220,17 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
     str = targets.targ[irow-1].spectyp;
     fits_write_col(fptr, TSTRING, 17, irow, 1, 1, &str, pStatus);
   }
+
+  /* Write optional columns */
+  if (targets.usecategory)
+  {
+    fits_insert_col(fptr, 18, "CATEGORY", "3A", pStatus);
+    for(irow=1; irow<=targets.ntarget; irow++) {
+      str = targets.targ[irow-1].category;
+      fits_write_col(fptr, TSTRING, 18, irow, 1, 1, &str, pStatus);
+    }
+  }
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -538,6 +549,18 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
   if (correlated)
     fits_write_key(fptr, TSTRING, "CORRNAME", &vis.corrname,
 		   "Correlated data set name", pStatus);
+  if (strlen(vis.amptyp) > 0)
+    fits_write_key(fptr, TSTRING, "AMPTYP", &vis.amptyp,
+		   "Class of amplitude data", pStatus);
+  if (strlen(vis.phityp) > 0)
+    fits_write_key(fptr, TSTRING, "PHITYP", &vis.phityp,
+		   "Class of phase data", pStatus);
+  if (vis.amporder >= 0)
+    fits_write_key(fptr, TINT, "AMPORDER", &vis.amporder,
+		   "Polynomial fit order for differential amp", pStatus);
+  if (vis.phiorder >= 0)
+    fits_write_key(fptr, TINT, "PHIORDER", &vis.phiorder,
+		   "Polynomial fit order for differential phi", pStatus);
 
   /* Write optional columns */
   if (correlated)

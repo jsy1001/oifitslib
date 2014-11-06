@@ -93,6 +93,7 @@ typedef struct {
  * Function prototypes, for functions from oifile.c
  */
 void init_oi_fits(oi_fits *);
+//:TODO: return a boolean type? stdbool.h already used internally
 int is_oi_fits_one(oi_fits *);
 int is_oi_fits_two(oi_fits *);
 STATUS write_oi_fits(const char *, oi_fits, STATUS *);
