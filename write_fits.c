@@ -52,11 +52,11 @@ char **make_tform(const char **template, int n, int value)
   for(i=0; i<n; i++) {
     if (template[i][0] == '?') {
       size = strlen(template[i]) + 4; /* allow for extra digits + \0 */
-      tform[i] = malloc(size*sizeof(char));
+      tform[i] = malloc(size);
       needed = snprintf(tform[i], size, "%d%s", value, &template[i][1]);
       assert(needed < size); /* fails if string was truncated */
     } else {
-      tform[i] = malloc((strlen(template[i])+1)*sizeof(char)); /* \0 */
+      tform[i] = malloc((strlen(template[i])+1)); /* +1 for \0 */
       strcpy(tform[i], template[i]);
     }
   }
@@ -429,6 +429,8 @@ static STATUS write_oi_vis_complex(fitsfile *fptr, oi_vis vis, bool correlated,
 
   tform = make_tform(tformTpl, tfields, vis.nwave);
   fits_insert_cols(fptr, 9, tfields, ttype, tform, pStatus);
+  free_tform(tform, tfields);
+  
   //:TODO: write units
 
   for(irow=1; irow<=vis.numrec; irow++) {
@@ -487,6 +489,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		   "\0", "\0", "deg", "deg",
 		   "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
+  char keyval[FLEN_VALUE];
   int revision = 1, irow;
   bool correlated;
 
@@ -572,6 +575,17 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
                      &vis.record[irow-1].corrindx_visamp, pStatus);
       fits_write_col(fptr, TINT, 10, irow, 1, 1,
                      &vis.record[irow-1].corrindx_visphi, pStatus);
+    }
+  }
+  if (vis.usevisrefmap) {
+    snprintf(keyval, FLEN_VALUE, "%dL", vis.nwave*vis.nwave);
+    fits_insert_col(fptr, 11, "VISREFMAP", keyval, pStatus);
+    snprintf(keyval, FLEN_VALUE, "(%d,%d)", vis.nwave, vis.nwave);
+    fits_write_key(fptr, TSTRING, "TDIM11", &keyval,
+                   "Dimensions of field  11", pStatus);
+    for(irow=1; irow<=vis.numrec; irow++) {
+      fits_write_col(fptr, TLOGICAL, 11, irow, 1, vis.nwave*vis.nwave,
+                     vis.record[irow-1].visrefmap, pStatus);
     }
   }
   if (vis.usecomplex)

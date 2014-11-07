@@ -188,7 +188,7 @@ typedef struct {
   int corrindx_visamp;
   DATA *visphi, *visphierr;
   int corrindx_visphi;
-  //:TODO: visrefmap
+  BOOL *visrefmap;
   DATA *rvis, *rviserr;
   int corrindx_rvis;
   DATA *ivis, *iviserr;
@@ -209,6 +209,7 @@ typedef struct {
   char phityp[FLEN_VALUE];   /**< empty string "" means not specified */
   int amporder;              /**< -1 means not specified */
   int phiorder;              /**< -1 means not specified */
+  BOOL usevisrefmap;         /**< is oi_vis_record::visrefmap being used? */
   BOOL usecomplex;           /**< are oi_vis_record::rvis etc. being used? */
   long numrec;
   int nwave;

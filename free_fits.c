@@ -104,6 +104,9 @@ void free_oi_vis(oi_vis *pVis)
     free(pVis->record[i].visphierr);
     free(pVis->record[i].flag);
 
+    if(pVis->usevisrefmap)
+      free(pVis->record[i].visrefmap);
+
     if(pVis->usecomplex) {
       free(pVis->record[i].rvis);
       free(pVis->record[i].rviserr);

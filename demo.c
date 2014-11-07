@@ -243,13 +243,14 @@ void demo_write(void)
 	   &vis.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis.record[irec].sta_index[0],
 	   &vis.record[irec].sta_index[1]);
-    vis.record[irec].flag = malloc(wave.nwave*sizeof(char));
+    vis.record[irec].flag = malloc(wave.nwave*sizeof(BOOL));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       vis.record[irec].flag[iwave] = FALSE;
     }
   }
   vis.revision = 1;
   vis.nwave = wave.nwave;
+  vis.usevisrefmap = FALSE;
   vis.usecomplex = FALSE;
 
   /* Read info for OI_VIS2 table */
@@ -278,7 +279,7 @@ void demo_write(void)
 	   &vis2.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis2.record[irec].sta_index[0],
 	   &vis2.record[irec].sta_index[1]);
-    vis2.record[irec].flag = malloc(wave.nwave*sizeof(char));
+    vis2.record[irec].flag = malloc(wave.nwave*sizeof(BOOL));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       vis2.record[irec].flag[iwave] = FALSE;
     }
@@ -326,7 +327,7 @@ void demo_write(void)
     fscanf(fp, "sta_index %d %d %d ", &t3.record[irec].sta_index[0],
 	   &t3.record[irec].sta_index[1],
 	   &t3.record[irec].sta_index[2]);
-    t3.record[irec].flag = malloc(wave.nwave*sizeof(char));
+    t3.record[irec].flag = malloc(wave.nwave*sizeof(BOOL));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       t3.record[irec].flag[iwave] = FALSE;
     }
