@@ -339,7 +339,7 @@ void demo_write(void)
   fscanf(fp, "OI_SPECTRUM date-obs %70s ", spectrum.date_obs);
   fscanf(fp, "arrname %70s insname %70s ", spectrum.arrname, spectrum.insname);
   fscanf(fp, "fov %lf fovtype %6s ", &spectrum.fov, spectrum.fovtype);
-  spectrum.calibrated = TRUE;
+  fscanf(fp, "calstat %c ", &spectrum.calstat);
   fscanf(fp, "numrec %ld ", &spectrum.numrec);
   spectrum.record = malloc(spectrum.numrec*sizeof(oi_spectrum_record));
   printf("Reading %ld spectrum records...\n", spectrum.numrec);

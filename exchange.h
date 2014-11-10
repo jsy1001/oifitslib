@@ -288,7 +288,7 @@ typedef struct {
   char insname[FLEN_VALUE];
   double fov;
   char fovtype[FLEN_VALUE];
-  BOOL calibrated;
+  char calstat;  /**< first character of FITS keyword */
   long numrec;
   int nwave;
   oi_spectrum_record *record;

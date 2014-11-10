@@ -1209,6 +1209,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
 {
   const char function[] = "read_next_oi_spectrum";
   char comment[FLEN_COMMENT];
+  char keyval[FLEN_VALUE];
   int nullint = 0;
   double nulldouble = 0.0;
   const int revision = 1;
@@ -1239,8 +1240,8 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
   fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, comment, pStatus);
   fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus); //:BUG: buffer overrun
-  fits_read_key(fptr, TLOGICAL, "CALIBRATED", &pSpectrum->calibrated, comment,
-                pStatus);
+  fits_read_key(fptr, TSTRING, "CALSTAT", keyval, comment, pStatus);
+  pSpectrum->calstat = keyval[0];
   /* get number of rows & allocate storage */
   fits_get_num_rows(fptr, &pSpectrum->numrec, pStatus);
   pSpectrum->record = malloc(pSpectrum->numrec*sizeof(oi_spectrum_record));

@@ -215,6 +215,7 @@ arrname COAST
 insname COAST_NICMOS
 fov 0.5
 fovtype RADIUS
+calstat U
 numrec 2
 
 target_id 1

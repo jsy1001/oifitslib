@@ -840,6 +840,7 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   char *tunit[] = {"\0", "day", "s",
 		   "\0", "\0", "\0"};
   char extname[] = "OI_SPECTRUM";
+  char keyval[FLEN_VALUE];
   int revision = 1, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
@@ -869,9 +870,10 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   //:TODO: alt function to write unit?
   fits_write_key(fptr, TSTRING, "FOVTYPE", &spectrum.fovtype,
                  "Model for FOV", pStatus);
-  //:TODO: CALIBRATED keyword > 8 characters
-  fits_write_key(fptr, TLOGICAL, "CALIBRATED", &spectrum.calibrated,
-                 "Is spectrum calibrated?", pStatus);
+  keyval[0] = spectrum.calstat;
+  keyval[1] = '\0';
+  fits_write_key(fptr, TSTRING, "CALSTAT", &keyval,
+                 "Calibration state (U or C)", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
 		 "ID number of this OI_SPECTRUM", pStatus);
 
