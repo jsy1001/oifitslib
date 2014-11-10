@@ -135,15 +135,17 @@ static float get_max_wavelength(const oi_wavelength *pWave)
 /** Generate summary string for each oi_array in GList. */
 static void format_array_list_summary(GString *pGStr, GList *arrayList)
 {
+  int nn;
   GList *link;
   oi_array *pArray;
 
+  nn = 1;
   link = arrayList;
   while(link != NULL) {
     pArray = (oi_array *) link->data;
     g_string_append_printf(pGStr,
-			   "    ARRNAME='%s'  %d elements\n",
-			   pArray->arrname, pArray->nelement);
+			   "    #%-2d ARRNAME='%s'  %d elements\n",
+			   nn++, pArray->arrname, pArray->nelement);
     link = link->next;
   }
 }    
@@ -151,15 +153,18 @@ static void format_array_list_summary(GString *pGStr, GList *arrayList)
 /** Generate summary string for each oi_wavelength in GList. */
 static void format_wavelength_list_summary(GString *pGStr, GList *waveList)
 {
+  int nn;
   GList *link;
   oi_wavelength *pWave;
 
+  nn = 1;
   link = waveList;
   while(link != NULL) {
     pWave = (oi_wavelength *) link->data;
     g_string_append_printf(pGStr,
-			   "    INSNAME='%s'  %d channels  %7.1f-%7.1fnm\n",
-			   pWave->insname, pWave->nwave,
+                           "    #%-2d INSNAME='%s'  %d channels  "
+                           "%7.1f-%7.1fnm\n",
+			   nn++, pWave->insname, pWave->nwave,
 			   1e9*get_min_wavelength(pWave),
 			   1e9*get_max_wavelength(pWave));
     link = link->next;
@@ -169,15 +174,18 @@ static void format_wavelength_list_summary(GString *pGStr, GList *waveList)
 /** Generate summary string for each oi_corr in GList. */
 static void format_corr_list_summary(GString *pGStr, GList *corrList)
 {
+  int nn;
   GList *link;
   oi_corr *pCorr;
 
+  nn = 1;
   link = corrList;
   while(link != NULL) {
     pCorr = (oi_corr *) link->data;
     g_string_append_printf(pGStr,
-			   "    CORRNAME='%s'  %d/%d non-zero correlations\n",
-			   pCorr->corrname, pCorr->ncorr, pCorr->ndata);
+                           "    #%-2d CORRNAME='%s'  "
+                           "%d/%d non-zero correlations\n",
+			   nn++, pCorr->corrname, pCorr->ncorr, pCorr->ndata);
     link = link->next;
   }
 }    
@@ -185,15 +193,17 @@ static void format_corr_list_summary(GString *pGStr, GList *corrList)
 /** Generate summary string for each oi_polar in GList. */
 static void format_polar_list_summary(GString *pGStr, GList *polarList)
 {
+  int nn;
   GList *link;
   oi_polar *pPolar;
 
+  nn = 1;
   link = polarList;
   while(link != NULL) {
     pPolar = (oi_polar *) link->data;
     //:TODO: add list of unique INSNAME values in this table
     g_string_append_printf(pGStr,
-			   "    ARRNAME='%s'\n", pPolar->arrname);
+			   "    #%-2d ARRNAME='%s'\n", nn++, pPolar->arrname);
     link = link->next;
   }
 }    
@@ -716,13 +726,15 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
 /** Generate summary string for each oi_vis/vis2/t3 in GList. */
 #define FORMAT_OI_LIST_SUMMARY(pGStr, list, type)               \
   {                                                             \
+    int nn = 1;                                                 \
     GList *link = list;                                         \
     while(link != NULL) {                                       \
       g_string_append_printf(                                   \
         pGStr,                                                  \
-        "    DATE_OBS=%s\n"                                     \
+        "    #%-2d DATE_OBS=%s\n"                               \
         "    INSNAME='%s'  ARRNAME='%s'  CORRNAME='%s'\n"       \
         "     %5ld records x %3d wavebands\n",                  \
+        nn++,                                                   \
         ((type *) (link->data))->date_obs,                      \
         ((type *) (link->data))->insname,                       \
         ((type *) (link->data))->arrname,                       \
@@ -736,13 +748,15 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
 /** Generate summary string for each oi_vis/vis2/t3/spectrum in GList. */
 #define FORMAT_OI_LIST_SUMMARY_NOCORR(pGStr, list, type)        \
   {                                                             \
+    int nn = 1;                                                 \
     GList *link = list;                                         \
     while(link != NULL) {                                       \
       g_string_append_printf(                                   \
         pGStr,                                                  \
-        "    DATE_OBS=%s\n"                                     \
+        "    #%-2d DATE_OBS=%s\n"                               \
         "    INSNAME='%s'  ARRNAME='%s'\n"                      \
         "     %5ld records x %3d wavebands\n",                  \
+        nn++,                                                   \
         ((type *) (link->data))->date_obs,                      \
         ((type *) (link->data))->insname,                       \
         ((type *) (link->data))->arrname,                       \
