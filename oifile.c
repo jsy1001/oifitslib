@@ -898,6 +898,11 @@ oi_vis *dup_oi_vis(const oi_vis *pInTab)
 	   pInTab->nwave*sizeof(pInRec->visphierr[0]));
     MEMDUP(pOutRec->flag, pInRec->flag,
 	   pInTab->nwave*sizeof(pInRec->flag[0]));
+    if(pInTab->usevisrefmap)
+    {
+      MEMDUP(pOutRec->visrefmap, pInRec->visrefmap,
+             pInTab->nwave*pInTab->nwave*sizeof(pInRec->visrefmap[0]));
+    }
     if(pInTab->usecomplex)
     {
       MEMDUP(pOutRec->rvis, pInRec->rvis,
