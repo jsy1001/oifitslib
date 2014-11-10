@@ -28,6 +28,7 @@
 
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 
 /** Internal use GString, defined in oifile.c */
@@ -759,6 +760,7 @@ void filter_all_oi_polar(const oi_fits *pInput, const oi_filter_spec *pFilter,
       ++pOutput->numPolar;
     } else {
       g_warning("Empty OI_POLAR table removed from filter output");
+      g_debug("Removed empty OI_POLAR with ARRNAME=%s", pOutTab->arrname);
       free(pOutTab);
     }
   }
@@ -877,6 +879,8 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
 	++pOutput->numVis;
       } else {
 	g_warning("Empty OI_VIS table removed from filter output");
+        g_debug("Removed empty OI_VIS with DATE-OBS=%s INSNAME=%s",
+                pOutTab->date_obs, pOutTab->insname);
 	free(pOutTab);
       }
     }
@@ -884,7 +888,99 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter specified OI_VIS table by TARGET_ID, MJD, and wavelength.
+ * Do any of selected channels in @a pRec have an acceptable SNR?
+ */
+static bool any_vis_snr_ok(const oi_vis_record *pRec,
+                           const oi_filter_spec *pFilter,
+                           const char *useWave, int nwave)
+{
+  int j;
+  float snrAmp, snrPhi;
+  
+  for (j=0; j<nwave; j++) {
+    if (useWave[j]) {
+      snrAmp = pRec->visamp[j]/pRec->visamperr[j];
+      if (snrAmp >= pFilter->snr_range[0] && snrAmp <= pFilter->snr_range[1])
+        return TRUE;
+      snrPhi = RAD2DEG/pRec->visphierr[j];
+      if (snrPhi >= pFilter->snr_range[0] && snrPhi <= pFilter->snr_range[1])
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Filter OI_VIS table row by wavelength and SNR.
+ */
+static void filter_oi_vis_record(const oi_vis_record *pInRec,
+                                 const oi_filter_spec *pFilter,
+                                 const char *useWave,
+                                 int nwaveIn, int nwaveOut,
+                                 oi_vis_record *pOutRec)
+{
+  bool someUnflagged;
+  int j, k, l, m;
+  float snrAmp, snrPhi;
+  
+  memcpy(pOutRec, pInRec, sizeof(oi_vis_record));
+  if (pFilter->target_id >= 0)
+    pOutRec->target_id = 1;
+  pOutRec->visamp = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->visamperr = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->visphi = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->visphierr = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
+  //:TODO: pass usevisrefmap, usecomplex instead?
+  if (pInRec->visrefmap != NULL)
+    pOutRec->visrefmap = malloc(nwaveOut*nwaveOut*sizeof(BOOL));
+  if (pInRec->rvis != NULL) {
+    pOutRec->rvis = malloc(nwaveOut*sizeof(DATA));
+    pOutRec->rviserr = malloc(nwaveOut*sizeof(DATA));
+    pOutRec->ivis = malloc(nwaveOut*sizeof(DATA));
+    pOutRec->iviserr = malloc(nwaveOut*sizeof(DATA));
+  }
+  k = 0;
+  someUnflagged = FALSE;
+  for (j=0; j<nwaveIn; j++) {
+    if (useWave[j]) {
+      pOutRec->visamp[k] = pInRec->visamp[j];
+      pOutRec->visamperr[k] = pInRec->visamperr[j];
+      pOutRec->visphi[k] = pInRec->visphi[j];
+      pOutRec->visphierr[k] = pInRec->visphierr[j];
+      pOutRec->flag[k] = pInRec->flag[j];
+      snrAmp = pInRec->visamp[j]/pInRec->visamperr[j];
+      snrPhi = RAD2DEG/pInRec->visphierr[j];
+      if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
+          snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1]) {
+        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
+      } else {
+        pOutRec->flag[k] = pInRec->flag[j];
+      }
+      if (!pOutRec->flag[k]) someUnflagged = TRUE;
+      if (pInRec->visrefmap != NULL) {
+        m = 0;
+        for (l=0; l<nwaveIn; l++) {
+          if (useWave[l]) {
+            pOutRec->visrefmap[m+k*nwaveOut] = pInRec->visrefmap[l+j*nwaveIn];
+            ++m;
+          }
+        }
+      }
+      if (pInRec->rvis != NULL) {
+        pOutRec->rvis[k] = pInRec->rvis[j];
+        pOutRec->rviserr[k] = pInRec->rviserr[j];
+        pOutRec->ivis[k] = pInRec->ivis[j];
+        pOutRec->iviserr[k] = pInRec->iviserr[j];
+      }
+      ++k;
+    }
+  }
+  g_assert(pFilter->accept_flagged || someUnflagged);
+}
+
+/**
+ * Filter specified OI_VIS table by TARGET_ID, MJD, wavelength, and SNR.
  *
  * @param pInTab       pointer to input oi_vis
  * @param pFilter      pointer to filter specification
@@ -894,19 +990,19 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
 void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 		   const char *useWave, oi_vis *pOutTab)
 {
-  char someUnflagged;
-  int i, j, k, nrec;
+  int i, j, nrec;
   double u1, v1, bas;
-  float snrAmp, snrPhi;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis));
+  pOutTab->nwave = 0;
+  for(j=0; j<pInTab->nwave; j++)
+    if(useWave[j]) ++pOutTab->nwave;
 
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_vis_record)); /* will reallocate */
-  pOutTab->nwave = pInTab->nwave; /* upper limit */
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
@@ -919,62 +1015,14 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
-    /* Apply accept_flagged after filtering individual channels */
+    if(!pFilter->accept_flagged &&
+       !any_vis_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
+      continue; /* filter out all-flagged record */
 
     /* Create output record */
-    memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis_record));
-    if(pFilter->target_id >= 0)
-      pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].visamp = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].visamperr = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].visphi = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].visphierr = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
-    k = 0;
-    someUnflagged = FALSE;
-    for(j=0; j<pInTab->nwave; j++) {
-      if(useWave[j]) {
-	pOutTab->record[nrec].visamp[k] = pInTab->record[i].visamp[j];
-	pOutTab->record[nrec].visamperr[k] = pInTab->record[i].visamperr[j];
-	pOutTab->record[nrec].visphi[k] = pInTab->record[i].visphi[j];
-	pOutTab->record[nrec].visphierr[k] = pInTab->record[i].visphierr[j];
-	pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
-	snrAmp = pInTab->record[i].visamp[j]/pInTab->record[i].visamperr[j];
-	snrPhi = RAD2DEG/pInTab->record[i].visphierr[j];
-	if(snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
-	   snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1]) {
-	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
-	} else {
-	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
-	}
-        if(!pOutTab->record[nrec].flag[k]) someUnflagged = TRUE;
-	++k;
-      }
-    }
-    if(!someUnflagged && !pFilter->accept_flagged) {
-      free(pOutTab->record[nrec].visamp);
-      free(pOutTab->record[nrec].visamperr);
-      free(pOutTab->record[nrec].visphi);
-      free(pOutTab->record[nrec].visphierr);
-      free(pOutTab->record[nrec].flag);
-    } else {
-      if(nrec == 0 && k < pOutTab->nwave) {
-        /* For 1st output record, length of vectors wasn't known when
-           originally allocated, so reallocate */
-        pOutTab->nwave = k;
-        pOutTab->record[nrec].visamp = realloc(
-          pOutTab->record[nrec].visamp, k*sizeof(DATA));
-        pOutTab->record[nrec].visamperr = realloc(
-          pOutTab->record[nrec].visamperr, k*sizeof(DATA));
-        pOutTab->record[nrec].visphi = realloc(
-          pOutTab->record[nrec].visphi, k*sizeof(DATA));
-        pOutTab->record[nrec].visphierr = realloc(
-          pOutTab->record[nrec].visphierr, k*sizeof(DATA));
-        pOutTab->record[nrec].flag = realloc(
-          pOutTab->record[nrec].flag, k*sizeof(char));
-      }	
-      ++nrec;
-    }
+    filter_oi_vis_record(&pInTab->record[i], pFilter, useWave,
+                         pInTab->nwave, pOutTab->nwave,
+                         &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_vis_record));
@@ -1019,6 +1067,8 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
 	++pOutput->numVis2;
       } else {
 	g_warning("Empty OI_VIS2 table removed from filter output");
+        g_debug("Removed empty OI_VIS2 with DATE-OBS=%s INSNAME=%s",
+                pOutTab->date_obs, pOutTab->insname);
 	free(pOutTab);
       }
     }
@@ -1026,7 +1076,65 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter specified OI_VIS2 table by TARGET_ID, MJD, and wavelength.
+ * Do any of selected channels in @a pRec have an acceptable SNR?
+ */
+static bool any_vis2_snr_ok(const oi_vis2_record *pRec,
+                            const oi_filter_spec *pFilter,
+                            const char *useWave, int nwave)
+{
+  int j;
+  float snr;
+  
+  for (j=0; j<nwave; j++) {
+    if (useWave[j]) {
+      snr = pRec->vis2data[j]/pRec->vis2err[j];
+      if (snr >= pFilter->snr_range[0] && snr <= pFilter->snr_range[1])
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Filter OI_VIS2 table row by wavelength and SNR.
+ */
+static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
+                                  const oi_filter_spec *pFilter,
+                                  const char *useWave,
+                                  int nwaveIn, int nwaveOut,
+                                  oi_vis2_record *pOutRec)
+{
+  bool someUnflagged;
+  int j, k;
+  float snr;
+
+  memcpy(pOutRec, pInRec, sizeof(oi_vis2_record));
+  if(pFilter->target_id >= 0)
+    pOutRec->target_id = 1;
+  pOutRec->vis2data = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->vis2err = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
+  k = 0;
+  someUnflagged = FALSE;
+  for(j=0; j<nwaveIn; j++) {
+    if(useWave[j]) {
+      pOutRec->vis2data[k] = pInRec->vis2data[j];
+      pOutRec->vis2err[k] = pInRec->vis2err[j];
+      snr = pInRec->vis2data[j]/pInRec->vis2err[j];
+      if(snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
+        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
+      } else {
+        pOutRec->flag[k] = pInRec->flag[j];
+      }
+      if(!pOutRec->flag[k]) someUnflagged = TRUE;
+      ++k;
+    }
+  }
+  g_assert(pFilter->accept_flagged || someUnflagged);
+}
+
+/**
+ * Filter specified OI_VIS2 table by TARGET_ID, MJD, wavelength, and SNR.
  *
  * @param pInTab       pointer to input oi_vis2
  * @param pFilter      pointer to filter specification
@@ -1036,19 +1144,19 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
 void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
 		    const char *useWave, oi_vis2 *pOutTab)
 {
-  char someUnflagged;
-  int i, j, k, nrec;
+  int i, j, nrec;
   double bas, u1, v1;
-  float snr;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_vis2));
+  pOutTab->nwave = 0;
+  for(j=0; j<pInTab->nwave; j++)
+    if(useWave[j]) ++pOutTab->nwave;
 
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_vis2_record)); /* will reallocate */
-  pOutTab->nwave = pInTab->nwave; /* upper limit */
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
@@ -1061,49 +1169,14 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue; /* skip record as projected baseline out of range */
-    /* Apply accept_flagged after filtering individual channels */
+    if(!pFilter->accept_flagged &&
+       !any_vis2_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
+      continue; /* filter out all-flagged record */
     
     /* Create output record */
-    memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_vis2_record));
-    if(pFilter->target_id >= 0)
-      pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].vis2data = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].vis2err = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
-    k = 0;
-    someUnflagged = FALSE;
-    for(j=0; j<pInTab->nwave; j++) {
-      if(useWave[j]) {
-	pOutTab->record[nrec].vis2data[k] = pInTab->record[i].vis2data[j]; //
-	pOutTab->record[nrec].vis2err[k] = pInTab->record[i].vis2err[j];
-	snr = pInTab->record[i].vis2data[j]/pInTab->record[i].vis2err[j];
-	if(snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
-	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
-	} else {
-	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
-	}
-        if(!pOutTab->record[nrec].flag[k]) someUnflagged = TRUE;
-	++k;
-      }
-    }
-    if(!someUnflagged && !pFilter->accept_flagged) {
-      free(pOutTab->record[nrec].vis2data);
-      free(pOutTab->record[nrec].vis2err);
-      free(pOutTab->record[nrec].flag);
-    } else {
-      if(nrec == 0 && k < pOutTab->nwave) {
-        /* For 1st output record, length of vectors wasn't known when
-           originally allocated, so reallocate */
-        pOutTab->nwave = k;
-        pOutTab->record[nrec].vis2data = realloc(pOutTab->record[nrec].vis2data,
-                                                 k*sizeof(DATA));
-        pOutTab->record[nrec].vis2err = realloc(pOutTab->record[nrec].vis2err,
-                                                k*sizeof(DATA));
-        pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
-                                             k*sizeof(char));
-      }
-      ++nrec;
-    }
+    filter_oi_vis2_record(&pInTab->record[i], pFilter, useWave,
+                          pInTab->nwave, pOutTab->nwave,
+                          &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_vis2_record));
@@ -1148,6 +1221,8 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
 	++pOutput->numT3;
       } else {
 	g_warning("Empty OI_T3 table removed from filter output");
+        g_debug("Removed empty OI_T3 with DATE-OBS=%s INSNAME=%s",
+                pOutTab->date_obs, pOutTab->insname);
 	free(pOutTab);
       }
     }
@@ -1155,7 +1230,98 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter specified OI_T3 table by TARGET_ID, MJD, and wavelength.
+ * Do any of selected channels in @a pRec have an acceptable SNR?
+ */
+static bool any_t3_snr_ok(const oi_t3_record *pRec,
+                          const oi_filter_spec *pFilter,
+                          const char *useWave, int nwave)
+{
+  int j;
+  float snrAmp, snrPhi;
+  
+  for (j=0; j<nwave; j++) {
+    if (useWave[j]) 
+    {
+      if (pFilter->accept_t3amp) {
+        snrAmp = pRec->t3amp[j]/pRec->t3amperr[j];
+        if (snrAmp >= pFilter->snr_range[0] && snrAmp <= pFilter->snr_range[1])
+          return TRUE;
+      }
+      if (pFilter->accept_t3phi) {
+        snrPhi = RAD2DEG/pRec->t3phierr[j];
+        if (snrPhi >= pFilter->snr_range[0] && snrPhi <= pFilter->snr_range[1])
+          return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Filter OI_T3 table row by wavelength and SNR.
+ */
+static void filter_oi_t3_record(const oi_t3_record *pInRec,
+                                const oi_filter_spec *pFilter,
+                                const char *useWave,
+                                int nwaveIn, int nwaveOut,
+                                oi_t3_record *pOutRec)
+{
+  bool someUnflagged;
+  int j, k;
+  double nan;
+  float snrAmp, snrPhi;
+
+  /* If needed, make a NaN */
+  if (!pFilter->accept_t3amp || !pFilter->accept_t3phi) {
+    nan = 0.0;
+    nan /= nan;
+  }
+
+  memcpy(pOutRec, pInRec, sizeof(oi_t3_record));
+  if (pFilter->target_id >= 0)
+    pOutRec->target_id = 1;
+  pOutRec->t3amp = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->t3amperr = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->t3phi = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->t3phierr = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
+  k = 0;
+  someUnflagged = FALSE;
+  for (j=0; j<nwaveIn; j++) {
+    if (useWave[j]) {
+      if (pFilter->accept_t3amp) {
+        pOutRec->t3amp[k] = pInRec->t3amp[j];
+      } else {
+        pOutRec->t3amp[k] = nan;
+      }
+      pOutRec->t3amperr[k] = pInRec->t3amperr[j];
+      if (pFilter->accept_t3phi) {
+        pOutRec->t3phi[k] = pInRec->t3phi[j];
+      } else {
+        pOutRec->t3phi[k] = nan;
+      }
+      pOutRec->t3phierr[k] = pInRec->t3phierr[j];
+      snrAmp = pInRec->t3amp[j]/pInRec->t3amperr[j];
+      snrPhi = RAD2DEG/pInRec->t3phierr[j];
+      if (pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
+                                    snrAmp > pFilter->snr_range[1])) {
+        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
+      }
+      else if (pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
+                                         snrPhi > pFilter->snr_range[1])) {
+        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
+      } else {
+        pOutRec->flag[k] = pInRec->flag[j];
+      }
+      if (!pOutRec->flag[k]) someUnflagged = TRUE;
+      ++k;
+    }
+  }
+  g_assert(pFilter->accept_flagged || someUnflagged);
+}
+
+/**
+ * Filter specified OI_T3 table by TARGET_ID, MJD, wavelength, and SNR.
  *
  * @param pInTab       pointer to input oi_t3
  * @param pFilter      pointer to filter specification
@@ -1165,25 +1331,19 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
 void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 		  const char *useWave, oi_t3 *pOutTab)
 {
-  char someUnflagged;
-  int i, j, k, nrec;
-  double nan, u1, v1, u2, v2, bas;
-  float snrAmp, snrPhi;
-
-  /* If needed, make a NaN */
-  if(!pFilter->accept_t3amp || !pFilter->accept_t3phi) {
-    nan = 0.0;
-    nan /= nan;
-  }
+  int i, j, nrec;
+  double u1, v1, u2, v2, bas;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_t3));
+  pOutTab->nwave = 0;
+  for(j=0; j<pInTab->nwave; j++)
+    if(useWave[j]) ++pOutTab->nwave;
 
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_t3_record)); /* will reallocate */
-  pOutTab->nwave = pInTab->nwave; /* upper limit */
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
@@ -1197,80 +1357,21 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     v2 = pInTab->record[i].v2coord;
     bas = pow(u1*u1 + v1*v1, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue; /* skip record as projected baseline out of range */
+      continue; /* skip record as projected baseline ab out of range */
     bas = pow(u2*u2 + v2*v2, 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue; /* skip record as projected baseline out of range */
+      continue; /* skip record as projected baseline bc out of range */
     bas = pow((u1+u2)*(u1+u2) + (v1+v2)*(v1+v2), 0.5);
     if(bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue; /* skip record as projected baseline out of range */
-    /* Apply accept_flagged after filtering individual channels */
+      continue; /* skip record as projected baseline ac out of range */
+    if(!pFilter->accept_flagged &&
+       !any_t3_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
+      continue; /* filter out all-flagged record */
     
     /* Create output record */
-    memcpy(&pOutTab->record[nrec], &pInTab->record[i], sizeof(oi_t3_record));
-    if(pFilter->target_id >= 0)
-      pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].t3amp = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].t3amperr = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].t3phi = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].t3phierr = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].flag = malloc(pOutTab->nwave*sizeof(char));
-    k = 0;
-    someUnflagged = FALSE;
-    for(j=0; j<pInTab->nwave; j++) {
-      if(useWave[j]) {
-	if (pFilter->accept_t3amp) {
-	  pOutTab->record[nrec].t3amp[k] = pInTab->record[i].t3amp[j];
-	} else {
-	  pOutTab->record[nrec].t3amp[k] = nan;
-	}
-	pOutTab->record[nrec].t3amperr[k] = pInTab->record[i].t3amperr[j];
-	if (pFilter->accept_t3phi) {
-	  pOutTab->record[nrec].t3phi[k] = pInTab->record[i].t3phi[j];
-	} else {
-	  pOutTab->record[nrec].t3phi[k] = nan;
-	}
-	pOutTab->record[nrec].t3phierr[k] = pInTab->record[i].t3phierr[j];
-	snrAmp = pInTab->record[i].t3amp[j]/pInTab->record[i].t3amperr[j];
-	snrPhi = RAD2DEG/pInTab->record[i].t3phierr[j];
-	if(pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
-				     snrAmp > pFilter->snr_range[1])) {
-	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
-	}
-	else if(pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
-					  snrPhi > pFilter->snr_range[1])) {
-	  pOutTab->record[nrec].flag[k] = 1; /* SNR out of range, flag datum */
-	} else {
-	  pOutTab->record[nrec].flag[k] = pInTab->record[i].flag[j];
-	}
-        if(!pOutTab->record[nrec].flag[k]) someUnflagged = TRUE;
-	++k;
-      }
-    }
-    if(!someUnflagged && !pFilter->accept_flagged) {
-      free(pOutTab->record[nrec].t3amp);
-      free(pOutTab->record[nrec].t3amperr);
-      free(pOutTab->record[nrec].t3phi);
-      free(pOutTab->record[nrec].t3phierr);
-      free(pOutTab->record[nrec].flag);
-    } else {
-      if(nrec == 0 && k < pOutTab->nwave) {
-        /* For 1st output record, length of vectors wasn't known when
-           originally allocated, so reallocate */
-        pOutTab->nwave = k;
-        pOutTab->record[nrec].t3amp = realloc(pOutTab->record[nrec].t3amp,
-                                              k*sizeof(DATA));
-        pOutTab->record[nrec].t3amperr = realloc(pOutTab->record[nrec].t3amperr,
-                                                 k*sizeof(DATA));
-        pOutTab->record[nrec].t3phi = realloc(pOutTab->record[nrec].t3phi,
-                                              k*sizeof(DATA));
-        pOutTab->record[nrec].t3phierr = realloc(pOutTab->record[nrec].t3phierr,
-                                                 k*sizeof(DATA));
-        pOutTab->record[nrec].flag = realloc(pOutTab->record[nrec].flag,
-                                             k*sizeof(char));
-      }
-      ++nrec;
-    }
+    filter_oi_t3_record(&pInTab->record[i], pFilter, useWave,
+                        pInTab->nwave, pOutTab->nwave,
+                        &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_t3_record));
@@ -1314,8 +1415,48 @@ void filter_all_oi_spectrum(const oi_fits *pInput,
 	++pOutput->numSpectrum;
       } else {
 	g_warning("Empty OI_SPECTRUM table removed from filter output");
+        g_debug("Removed empty OI_SPECTRUM with DATE-OBS=%s INSNAME=%s",
+                pOutTab->date_obs, pOutTab->insname);
 	free(pOutTab);
       }
+    }
+  }
+}
+
+/**
+ * Filter OI_SPECTRUM table row by wavelength and SNR.
+ */
+static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
+                                      const oi_filter_spec *pFilter,
+                                      const char *useWave,
+                                      int nwaveIn, int nwaveOut,
+                                      oi_spectrum_record *pOutRec)
+{
+  int j, k;
+  double nan;
+  float snr;
+
+  /* Make a NaN, for fluxdata rejected on SNR */
+  nan = 0.0;
+  nan /= nan;
+
+  memcpy(pOutRec, pInRec, sizeof(oi_spectrum_record));
+  if (pFilter->target_id >= 0)
+    pOutRec->target_id = 1;
+  pOutRec->fluxdata = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->fluxerr = malloc(nwaveOut*sizeof(DATA));
+  k = 0;
+  for (j=0; j<nwaveIn; j++) {
+    if (useWave[j]) {
+      snr = pInRec->fluxdata[j]/pInRec->fluxerr[j];
+      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
+        /* SNR out of range, null datum */
+        pOutRec->fluxdata[k] = nan;
+      } else {
+        pOutRec->fluxdata[k] = pInRec->fluxdata[j];
+      }
+      pOutRec->fluxerr[k] = pInRec->fluxerr[j];
+      ++k;
     }
   }
 }
@@ -1332,22 +1473,18 @@ void filter_oi_spectrum(const oi_spectrum *pInTab,
                         const oi_filter_spec *pFilter,
                         const char *useWave, oi_spectrum *pOutTab)
 {
-  int i, j, k, nrec;
-  double nan;
-  float snr;
-
-  /* Make a NaN, for fluxdata rejected on SNR */
-  nan = 0.0;
-  nan /= nan;
+  int i, j, nrec;
 
   /* Copy table header items */
   memcpy(pOutTab, pInTab, sizeof(oi_spectrum));
+  pOutTab->nwave = 0;
+  for(j=0; j<pInTab->nwave; j++)
+    if(useWave[j]) ++pOutTab->nwave;
 
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
     malloc(pInTab->numrec*sizeof(oi_spectrum_record)); /* will reallocate */
-  pOutTab->nwave = pInTab->nwave; /* upper limit */
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
        pInTab->record[i].target_id != pFilter->target_id)
@@ -1357,36 +1494,9 @@ void filter_oi_spectrum(const oi_spectrum *pInTab,
       continue; /* skip record as MJD out of range */
     
     /* Create output record */
-    memcpy(&pOutTab->record[nrec], &pInTab->record[i],
-           sizeof(oi_spectrum_record));
-    if(pFilter->target_id >= 0)
-      pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].fluxdata = malloc(pOutTab->nwave*sizeof(DATA));
-    pOutTab->record[nrec].fluxerr = malloc(pOutTab->nwave*sizeof(DATA));
-    k = 0;
-    for(j=0; j<pInTab->nwave; j++) {
-      if(useWave[j]) {
-	snr = pInTab->record[i].fluxdata[j]/pInTab->record[i].fluxerr[j];
-	if(snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
-          /* SNR out of range, null datum */
-	  pOutTab->record[nrec].fluxdata[k] = nan;
-	} else {
-          pOutTab->record[nrec].fluxdata[k] = pInTab->record[i].fluxdata[j];
-        }
-	pOutTab->record[nrec].fluxerr[k] = pInTab->record[i].fluxerr[j];
-	++k;
-      }
-    }
-    if(nrec == 0 && k < pOutTab->nwave) {
-      /* For 1st output record, length of vectors wasn't known when
-         originally allocated, so reallocate */
-      pOutTab->nwave = k;
-      pOutTab->record[nrec].fluxdata = realloc(pOutTab->record[nrec].fluxdata,
-                                               k*sizeof(DATA));
-      pOutTab->record[nrec].fluxerr = realloc(pOutTab->record[nrec].fluxerr,
-                                              k*sizeof(DATA));
-    }
-    ++nrec;
+    filter_oi_spectrum_record(&pInTab->record[i], pFilter, useWave,
+                              pInTab->nwave, pOutTab->nwave,
+                              &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_spectrum_record));
