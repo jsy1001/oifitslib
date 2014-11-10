@@ -1209,6 +1209,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
 {
   const char function[] = "read_next_oi_spectrum";
   char comment[FLEN_COMMENT];
+  bool correlated;
   char keyval[FLEN_VALUE];
   int nullint = 0;
   double nulldouble = 0.0;
@@ -1238,6 +1239,15 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "CORRNAME", pSpectrum->corrname, comment,
+                pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+    pSpectrum->corrname[0] = '\0';
+    *pStatus = 0;
+    correlated = FALSE;
+  } else {
+    correlated = TRUE;
+  }
   fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, comment, pStatus);
   fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus); //:BUG: buffer overrun
   fits_read_key(fptr, TSTRING, "CALSTAT", keyval, comment, pStatus);
@@ -1275,6 +1285,14 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
 		  &pSpectrum->record[irow-1].sta_index, &anynull, pStatus);
+
+    /* read optional columns */
+    if (correlated) {
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_FLUXDATA", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pSpectrum->record[irow-1].corrindx_fluxdata,
+                    &anynull, pStatus);
+    }
   }
 
  except:

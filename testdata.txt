@@ -62,10 +62,10 @@ eff_band 250.0e-9
 OI_CORR
 
 corrname TEST
-ndata 6
+ndata 8
 ncorr 3
 iindx     1     1     2
-jindx     2     6     6
+jindx     2     8     8
 corr  0.123 0.345 0.056
 
 
@@ -213,6 +213,7 @@ OI_SPECTRUM
 date-obs 2000-10-19
 arrname COAST
 insname COAST_NICMOS
+corrname TEST
 fov 0.5
 fovtype RADIUS
 calstat U
@@ -223,6 +224,7 @@ mjd 51836.972222
 int_time 100.0
 fluxdata 1.2678
 fluxerr 0.0134
+corrindx_fluxdata 7
 sta_index 1
 
 target_id 1
@@ -230,4 +232,5 @@ mjd 51836.101222
 int_time 100.0
 fluxdata 1.3781
 fluxerr 0.0635
+corrindx_fluxdata 8
 sta_index 1

@@ -338,6 +338,7 @@ void demo_write(void)
   /* Read info for OI_SPECTRUM table */
   fscanf(fp, "OI_SPECTRUM date-obs %70s ", spectrum.date_obs);
   fscanf(fp, "arrname %70s insname %70s ", spectrum.arrname, spectrum.insname);
+  fscanf(fp, "corrname %70s ", spectrum.corrname);
   fscanf(fp, "fov %lf fovtype %6s ", &spectrum.fov, spectrum.fovtype);
   fscanf(fp, "calstat %c ", &spectrum.calstat);
   fscanf(fp, "numrec %ld ", &spectrum.numrec);
@@ -357,6 +358,8 @@ void demo_write(void)
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &spectrum.record[irec].fluxerr[iwave]);
     }
+    fscanf(fp, "corrindx_fluxdata %d ",
+           &spectrum.record[irec].corrindx_fluxdata);
     fscanf(fp, "sta_index %d ", &spectrum.record[irec].sta_index);
   }
   spectrum.revision = 1;

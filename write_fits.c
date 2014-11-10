@@ -842,6 +842,7 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   char extname[] = "OI_SPECTRUM";
   char keyval[FLEN_VALUE];
   int revision = 1, irow;
+  bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -851,7 +852,7 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
 		  extname, pStatus);
   free_tform(tform, tfields);
 
-  /* Write keywords */
+  /* Write mandatory keywords */
   if (spectrum.revision != revision) {
     printf("WARNING! spectrum.revision != %d on entry to %s. "
            "Writing revision %d table\n", revision, function, revision);
@@ -877,7 +878,7 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   fits_write_key(fptr, TINT, "EXTVER", &extver,
 		 "ID number of this OI_SPECTRUM", pStatus);
 
-  /* Write columns */
+  /* Write mandatory columns */
   for(irow=1; irow<=spectrum.numrec; irow++) {
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1,
@@ -893,6 +894,23 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
     fits_write_col(fptr, TINT, 6, irow, 1, 1,
                    &spectrum.record[irow-1].sta_index, pStatus);
   }
+
+  /* Write optional keywords */
+  correlated = (strlen(spectrum.corrname) > 0);
+  if (correlated)
+    fits_write_key(fptr, TSTRING, "CORRNAME", &spectrum.corrname,
+		   "Correlated data set name", pStatus);
+
+  /* Write optional columns */
+  if (correlated)
+  {
+    fits_insert_col(fptr, 6, "CORRINDX_FLUXDATA", "J", pStatus);
+    for(irow=1; irow<=spectrum.numrec; irow++) {
+      fits_write_col(fptr, TINT, 6, irow, 1, 1,
+                     &spectrum.record[irow-1].corrindx_fluxdata, pStatus);
+    }
+  }
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);

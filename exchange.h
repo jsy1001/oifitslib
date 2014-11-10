@@ -277,6 +277,7 @@ typedef struct {
   double int_time;
   DATA *fluxdata;
   DATA *fluxerr;
+  int corrindx_fluxdata;
   int sta_index;  /**< -1 means not specified */
 } oi_spectrum_record;
 
@@ -286,6 +287,7 @@ typedef struct {
   char date_obs[FLEN_VALUE];
   char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
   char insname[FLEN_VALUE];
+  char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
   double fov;
   char fovtype[FLEN_VALUE];
   char calstat;  /**< first character of FITS keyword */

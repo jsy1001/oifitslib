@@ -745,27 +745,6 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
     }                                                           \
   }
 
-/** Generate summary string for each oi_vis/vis2/t3/spectrum in GList. */
-#define FORMAT_OI_LIST_SUMMARY_NOCORR(pGStr, list, type)        \
-  {                                                             \
-    int nn = 1;                                                 \
-    GList *link = list;                                         \
-    while(link != NULL) {                                       \
-      g_string_append_printf(                                   \
-        pGStr,                                                  \
-        "    #%-2d DATE_OBS=%s\n"                               \
-        "    INSNAME='%s'  ARRNAME='%s'\n"                      \
-        "     %5ld records x %3d wavebands\n",                  \
-        nn++,                                                   \
-        ((type *) (link->data))->date_obs,                      \
-        ((type *) (link->data))->insname,                       \
-        ((type *) (link->data))->arrname,                       \
-        ((type *) (link->data))->numrec,                        \
-        ((type *) (link->data))->nwave);                        \
-      link = link->next;                                        \
-    }                                                           \
-  }
-
 /**
  * Generate file summary string.
  *
@@ -795,7 +774,7 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
   g_string_append_printf(pGStr, "  %d OI_T3 tables:\n", pOi->numT3);
   FORMAT_OI_LIST_SUMMARY(pGStr, pOi->t3List, oi_t3);
   g_string_append_printf(pGStr, "  %d OI_SPECTRUM tables:\n", pOi->numSpectrum);
-  FORMAT_OI_LIST_SUMMARY_NOCORR(pGStr, pOi->spectrumList, oi_spectrum);
+  FORMAT_OI_LIST_SUMMARY(pGStr, pOi->spectrumList, oi_spectrum);
 
   return pGStr->str;
 }
