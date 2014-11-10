@@ -416,49 +416,92 @@ STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
 }
 
 /**
- * Write OI_VIS optional columns for complex visibility representation.
+ * Write OI_VIS optional content
  */
-static STATUS write_oi_vis_complex(fitsfile *fptr, oi_vis vis, bool correlated,
-                                   STATUS *pStatus)
+static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
 {
   const int tfields = 4;
   char *ttype[] = {"RVIS", "RVISERR", "IVIS", "IVISERR"};
   const char *tformTpl[] = {"?D", "?D", "?D", "?D"};
   char **tform;
   int irow;
+  bool correlated;
+  char keyval[FLEN_VALUE];
 
-  tform = make_tform(tformTpl, tfields, vis.nwave);
-  fits_insert_cols(fptr, 9, tfields, ttype, tform, pStatus);
-  free_tform(tform, tfields);
-  
-  //:TODO: write units
+  /* Write optional keywords */
+  correlated = (strlen(vis.corrname) > 0);
+  if (correlated)
+    fits_write_key(fptr, TSTRING, "CORRNAME", &vis.corrname,
+		   "Correlated data set name", pStatus);
+  if (strlen(vis.amptyp) > 0)
+    fits_write_key(fptr, TSTRING, "AMPTYP", &vis.amptyp,
+		   "Class of amplitude data", pStatus);
+  if (strlen(vis.phityp) > 0)
+    fits_write_key(fptr, TSTRING, "PHITYP", &vis.phityp,
+		   "Class of phase data", pStatus);
+  if (vis.amporder >= 0)
+    fits_write_key(fptr, TINT, "AMPORDER", &vis.amporder,
+		   "Polynomial fit order for differential amp", pStatus);
+  if (vis.phiorder >= 0)
+    fits_write_key(fptr, TINT, "PHIORDER", &vis.phiorder,
+		   "Polynomial fit order for differential phi", pStatus);
 
-  for(irow=1; irow<=vis.numrec; irow++) {
-
-    assert(vis.record[irow-1].rvis != NULL);
-    assert(vis.record[irow-1].rviserr != NULL);
-    assert(vis.record[irow-1].ivis != NULL);
-    assert(vis.record[irow-1].iviserr != NULL);
-    fits_write_col(fptr, TDOUBLE, 9, irow, 1, vis.nwave,
-		   vis.record[irow-1].rvis, pStatus);
-    fits_write_col(fptr, TDOUBLE, 10, irow, 1, vis.nwave,
-		   vis.record[irow-1].rviserr, pStatus);
-    fits_write_col(fptr, TDOUBLE, 11, irow, 1, vis.nwave,
-		   vis.record[irow-1].ivis, pStatus);
-    fits_write_col(fptr, TDOUBLE, 12, irow, 1, vis.nwave,
-		   vis.record[irow-1].iviserr, pStatus);
-  }
-
+  /* Write optional columns */
   if (correlated)
   {
-    fits_insert_col(fptr, 11, "CORRINDX_RVIS", "J", pStatus);
-    fits_insert_col(fptr, 14, "CORRINDX_IVIS", "J", pStatus);
+    fits_insert_col(fptr, 7, "CORRINDX_VISAMP", "J", pStatus);
+    fits_insert_col(fptr, 10, "CORRINDX_VISPHI", "J", pStatus);
+    for(irow=1; irow<=vis.numrec; irow++) {
+      fits_write_col(fptr, TINT, 7, irow, 1, 1,
+                     &vis.record[irow-1].corrindx_visamp, pStatus);
+      fits_write_col(fptr, TINT, 10, irow, 1, 1,
+                     &vis.record[irow-1].corrindx_visphi, pStatus);
+    }
+  }
+  if (vis.usevisrefmap) {
+    snprintf(keyval, FLEN_VALUE, "%dL", vis.nwave*vis.nwave);
+    fits_insert_col(fptr, 11, "VISREFMAP", keyval, pStatus);
+    snprintf(keyval, FLEN_VALUE, "(%d,%d)", vis.nwave, vis.nwave);
+    fits_write_key(fptr, TSTRING, "TDIM11", &keyval,
+                   "Dimensions of field  11", pStatus);
+    for(irow=1; irow<=vis.numrec; irow++) {
+      fits_write_col(fptr, TLOGICAL, 11, irow, 1, vis.nwave*vis.nwave,
+                     vis.record[irow-1].visrefmap, pStatus);
+    }
+  }
+  if (vis.usecomplex) {
+    tform = make_tform(tformTpl, tfields, vis.nwave);
+    fits_insert_cols(fptr, 9, tfields, ttype, tform, pStatus);
+    free_tform(tform, tfields);
+  
+    //:TODO: write units
+
     for(irow=1; irow<=vis.numrec; irow++) {
 
-      fits_write_col(fptr, TINT, 11, irow, 1, 1,
-                     &vis.record[irow-1].corrindx_rvis, pStatus);
-      fits_write_col(fptr, TINT, 14, irow, 1, 1,
-                     &vis.record[irow-1].corrindx_ivis, pStatus);
+      assert(vis.record[irow-1].rvis != NULL);
+      assert(vis.record[irow-1].rviserr != NULL);
+      assert(vis.record[irow-1].ivis != NULL);
+      assert(vis.record[irow-1].iviserr != NULL);
+      fits_write_col(fptr, TDOUBLE, 9, irow, 1, vis.nwave,
+                     vis.record[irow-1].rvis, pStatus);
+      fits_write_col(fptr, TDOUBLE, 10, irow, 1, vis.nwave,
+                     vis.record[irow-1].rviserr, pStatus);
+      fits_write_col(fptr, TDOUBLE, 11, irow, 1, vis.nwave,
+                     vis.record[irow-1].ivis, pStatus);
+      fits_write_col(fptr, TDOUBLE, 12, irow, 1, vis.nwave,
+                     vis.record[irow-1].iviserr, pStatus);
+    }
+    if (correlated)
+    {
+      fits_insert_col(fptr, 11, "CORRINDX_RVIS", "J", pStatus);
+      fits_insert_col(fptr, 14, "CORRINDX_IVIS", "J", pStatus);
+      for(irow=1; irow<=vis.numrec; irow++) {
+
+        fits_write_col(fptr, TINT, 11, irow, 1, 1,
+                       &vis.record[irow-1].corrindx_rvis, pStatus);
+        fits_write_col(fptr, TINT, 14, irow, 1, 1,
+                       &vis.record[irow-1].corrindx_ivis, pStatus);
+      }
     }
   }
   return *pStatus;
@@ -489,9 +532,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		   "\0", "\0", "deg", "deg",
 		   "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
-  char keyval[FLEN_VALUE];
   int revision = 1, irow;
-  bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -546,51 +587,8 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
     fits_write_col(fptr, TLOGICAL, 12, irow, 1, vis.nwave,
 		   vis.record[irow-1].flag, pStatus);
   }
-
-  /* Write optional keywords */
-  correlated = (strlen(vis.corrname) > 0);
-  if (correlated)
-    fits_write_key(fptr, TSTRING, "CORRNAME", &vis.corrname,
-		   "Correlated data set name", pStatus);
-  if (strlen(vis.amptyp) > 0)
-    fits_write_key(fptr, TSTRING, "AMPTYP", &vis.amptyp,
-		   "Class of amplitude data", pStatus);
-  if (strlen(vis.phityp) > 0)
-    fits_write_key(fptr, TSTRING, "PHITYP", &vis.phityp,
-		   "Class of phase data", pStatus);
-  if (vis.amporder >= 0)
-    fits_write_key(fptr, TINT, "AMPORDER", &vis.amporder,
-		   "Polynomial fit order for differential amp", pStatus);
-  if (vis.phiorder >= 0)
-    fits_write_key(fptr, TINT, "PHIORDER", &vis.phiorder,
-		   "Polynomial fit order for differential phi", pStatus);
-
-  /* Write optional columns */
-  if (correlated)
-  {
-    fits_insert_col(fptr, 7, "CORRINDX_VISAMP", "J", pStatus);
-    fits_insert_col(fptr, 10, "CORRINDX_VISPHI", "J", pStatus);
-    for(irow=1; irow<=vis.numrec; irow++) {
-      fits_write_col(fptr, TINT, 7, irow, 1, 1,
-                     &vis.record[irow-1].corrindx_visamp, pStatus);
-      fits_write_col(fptr, TINT, 10, irow, 1, 1,
-                     &vis.record[irow-1].corrindx_visphi, pStatus);
-    }
-  }
-  if (vis.usevisrefmap) {
-    snprintf(keyval, FLEN_VALUE, "%dL", vis.nwave*vis.nwave);
-    fits_insert_col(fptr, 11, "VISREFMAP", keyval, pStatus);
-    snprintf(keyval, FLEN_VALUE, "(%d,%d)", vis.nwave, vis.nwave);
-    fits_write_key(fptr, TSTRING, "TDIM11", &keyval,
-                   "Dimensions of field  11", pStatus);
-    for(irow=1; irow<=vis.numrec; irow++) {
-      fits_write_col(fptr, TLOGICAL, 11, irow, 1, vis.nwave*vis.nwave,
-                     vis.record[irow-1].visrefmap, pStatus);
-    }
-  }
-  if (vis.usecomplex)
-    write_oi_vis_complex(fptr, vis, correlated, pStatus);
-
+  write_oi_vis_opt(fptr, vis, pStatus);
+  
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);

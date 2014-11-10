@@ -705,7 +705,7 @@ STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
 
 
 /**
- * Read OI_VIS optional columns for complex visibility representation.
+ * Read OI_VIS optional columns for complex visibility representation
  */
 static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
                                   bool correlated, STATUS *pStatus)
@@ -713,86 +713,67 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
   int nullint = 0;
   double nulldouble = 0.0;
   int irow, colnum, anynull;
-  
-  for (irow=1; irow<=pVis->numrec; irow++) {
-    pVis->record[irow-1].rvis = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].rviserr = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].ivis = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].iviserr = malloc(pVis->nwave*sizeof(DATA));
-    fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                  &nulldouble, pVis->record[irow-1].rvis, &anynull,
-                  pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "RVISERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                  &nulldouble, pVis->record[irow-1].rviserr, &anynull,
-                  pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "IVIS", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                  &nulldouble, pVis->record[irow-1].ivis, &anynull,
-                  pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "IVISERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                  &nulldouble, pVis->record[irow-1].iviserr, &anynull,
-                  pStatus);
-    if (correlated) {
-      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_RVIS", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                    &pVis->record[irow-1].corrindx_rvis,
-                    &anynull, pStatus);
-      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_IVIS", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                    &pVis->record[irow-1].corrindx_ivis,
-                    &anynull, pStatus);
+
+  fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
+  if (*pStatus == COL_NOT_FOUND) {
+    pVis->usecomplex = FALSE;
+    *pStatus = 0;
+    for (irow=1; irow<=pVis->numrec; irow++) {
+      pVis->record[irow-1].rvis = NULL;
+      pVis->record[irow-1].rviserr = NULL;
+      pVis->record[irow-1].ivis = NULL;
+      pVis->record[irow-1].iviserr = NULL;
+    }
+  } else {
+    pVis->usecomplex = TRUE;
+    for (irow=1; irow<=pVis->numrec; irow++) {
+      pVis->record[irow-1].rvis = malloc(pVis->nwave*sizeof(DATA));
+      pVis->record[irow-1].rviserr = malloc(pVis->nwave*sizeof(DATA));
+      pVis->record[irow-1].ivis = malloc(pVis->nwave*sizeof(DATA));
+      pVis->record[irow-1].iviserr = malloc(pVis->nwave*sizeof(DATA));
+      fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                    &nulldouble, pVis->record[irow-1].rvis, &anynull,
+                    pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "RVISERR", &colnum, pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                    &nulldouble, pVis->record[irow-1].rviserr, &anynull,
+                    pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "IVIS", &colnum, pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                    &nulldouble, pVis->record[irow-1].ivis, &anynull,
+                    pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "IVISERR", &colnum, pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
+                    &nulldouble, pVis->record[irow-1].iviserr, &anynull,
+                    pStatus);
+      if (correlated) {
+        fits_get_colnum(fptr, CASEINSEN, "CORRINDX_RVIS", &colnum, pStatus);
+        fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                      &pVis->record[irow-1].corrindx_rvis,
+                      &anynull, pStatus);
+        fits_get_colnum(fptr, CASEINSEN, "CORRINDX_IVIS", &colnum, pStatus);
+        fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                      &pVis->record[irow-1].corrindx_ivis,
+                      &anynull, pStatus);
+      }
     }
   }
   return *pStatus;
 }
 
 /**
- * Read next OI_VIS fits binary table
- *
- *   @param fptr     see cfitsio documentation
- *   @param pVis     ptr to data struct, see exchange.h
- *   @param pStatus  pointer to status variable
- *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * Read OI_VIS optional content
  */
-STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
+static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
-  const char function[] = "read_next_oi_vis";
   char comment[FLEN_COMMENT];
-  bool correlated;
   char nullchar = 0;
   int nullint = 0;
-  double nulldouble = 0.0;
-  const int revision = 1;
   int irow, colnum, anynull;
-  long repeat;
+  bool correlated;
 
-  if (*pStatus) return *pStatus; /* error flag set - do nothing */
-
-  next_named_hdu(fptr, "OI_VIS", pStatus);
-  if (*pStatus == END_OF_FILE)
-    return *pStatus;
-  else if (*pStatus)
-    goto except;
-
-  /* Read table */
-  //:TODO: split this function
-  fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
-  if (pVis->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_VIS table. Got %d\n", revision, pVis->revision);
-  }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, comment, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
-    pVis->arrname[0] = '\0';
-    *pStatus = 0;
-  }
-  fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, comment, pStatus);
+  /* Read optional keywords */
   fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
     pVis->corrname[0] = '\0';
@@ -821,6 +802,84 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     pVis->phiorder = -1;
     *pStatus = 0;
   }
+
+  /* Read optional columns */
+  if (correlated) {
+    for (irow=1; irow<=pVis->numrec; irow++) {
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISAMP", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis->record[irow-1].corrindx_visamp,
+                    &anynull, pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISPHI", &colnum, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pVis->record[irow-1].corrindx_visphi,
+                    &anynull, pStatus);
+    }
+  }
+  fits_get_colnum(fptr, CASEINSEN, "VISREFMAP", &colnum, pStatus);
+  if (*pStatus == COL_NOT_FOUND) {
+    pVis->usevisrefmap = FALSE;
+    *pStatus = 0;
+    for (irow=1; irow<=pVis->numrec; irow++) {
+      pVis->record[irow-1].visrefmap = NULL;
+    }
+  } else {
+    pVis->usevisrefmap = TRUE;
+    for (irow=1; irow<=pVis->numrec; irow++) {
+      pVis->record[irow-1].visrefmap = malloc(pVis->nwave*pVis->nwave*
+                                              sizeof(BOOL));
+      fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave*pVis->nwave,
+                    &nullchar, pVis->record[irow-1].visrefmap,
+                    &anynull, pStatus);
+    }
+  }
+  read_oi_vis_complex(fptr, pVis, correlated, pStatus);
+
+  return *pStatus;
+}
+
+/**
+ * Read next OI_VIS fits binary table
+ *
+ *   @param fptr     see cfitsio documentation
+ *   @param pVis     ptr to data struct, see exchange.h
+ *   @param pStatus  pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code (also assigned to
+ *           *pStatus). Contents of data struct are undefined
+ */
+STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
+{
+  const char function[] = "read_next_oi_vis";
+  char comment[FLEN_COMMENT];
+  char nullchar = 0;
+  int nullint = 0;
+  double nulldouble = 0.0;
+  const int revision = 1;
+  int irow, colnum, anynull;
+  long repeat;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  next_named_hdu(fptr, "OI_VIS", pStatus);
+  if (*pStatus == END_OF_FILE)
+    return *pStatus;
+  else if (*pStatus)
+    goto except;
+
+  /* Read table */
+  fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
+  if (pVis->revision != revision) {
+    printf("WARNING! Expecting value %d for OI_REVN keyword in "
+           "OI_VIS table. Got %d\n", revision, pVis->revision);
+  }
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
+    pVis->arrname[0] = '\0';
+    *pStatus = 0;
+  }
+  fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, comment, pStatus);
   /* get number of rows */
   fits_get_num_rows(fptr, &pVis->numrec, pStatus);
   pVis->record = malloc(pVis->numrec*sizeof(oi_vis_record));
@@ -876,44 +935,8 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
     fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave, &nullchar,
 		  pVis->record[irow-1].flag, &anynull, pStatus);
-
-    /* read optional columns */
-    if (correlated) {
-      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISAMP", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                    &pVis->record[irow-1].corrindx_visamp,
-                    &anynull, pStatus);
-      fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISPHI", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                    &pVis->record[irow-1].corrindx_visphi,
-                    &anynull, pStatus);
-    }
-    fits_get_colnum(fptr, CASEINSEN, "VISREFMAP", &colnum, pStatus);
-    if(*pStatus == COL_NOT_FOUND) {
-      pVis->usevisrefmap = FALSE;
-      *pStatus = 0;
-      pVis->record[irow-1].visrefmap = NULL;
-    } else {
-      pVis->usevisrefmap = TRUE;
-      pVis->record[irow-1].visrefmap = malloc(pVis->nwave*pVis->nwave*
-                                              sizeof(BOOL));
-      fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave*pVis->nwave,
-                    &nullchar, pVis->record[irow-1].visrefmap,
-                    &anynull, pStatus);
-    }
-    fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
-    if(*pStatus == COL_NOT_FOUND) {
-      pVis->usecomplex = FALSE;
-      *pStatus = 0;
-      pVis->record[irow-1].rvis = NULL;
-      pVis->record[irow-1].rviserr = NULL;
-      pVis->record[irow-1].ivis = NULL;
-      pVis->record[irow-1].iviserr = NULL;
-    } else {
-      pVis->usecomplex = TRUE;
-      read_oi_vis_complex(fptr, pVis, correlated, pStatus);
-    }
   }
+  read_oi_vis_opt(fptr, pVis, pStatus);
 
  except:
   if (*pStatus && !oi_hush_errors) {
