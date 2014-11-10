@@ -162,7 +162,7 @@ void demo_write(void)
   fscanf(fp, "OI_POLAR date-obs %70s ", polar.date_obs);
   fscanf(fp, "npol %d ", &polar.npol);
   fscanf(fp, "arrname %70s ", polar.arrname);
-  fscanf(fp, "orientation %70s ", polar.orientation);
+  fscanf(fp, "orient %70s ", polar.orient);
   fscanf(fp, "model %70s ", polar.model);
   fscanf(fp, "numrec %ld ", &polar.numrec);
   polar.record = malloc(polar.numrec*sizeof(oi_polar_record));

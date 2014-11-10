@@ -74,7 +74,7 @@ OI_POLAR
 date-obs 2000-10-19
 npol 1
 arrname COAST
-orientation LABORATORY
+orient LABORATORY
 model NOMINAL
 numrec 5
 

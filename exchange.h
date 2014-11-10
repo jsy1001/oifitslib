@@ -170,7 +170,7 @@ typedef struct {
   char date_obs[FLEN_VALUE];
   int npol;
   char arrname[FLEN_VALUE];
-  char orientation[FLEN_VALUE];
+  char orient[FLEN_VALUE];
   char model[FLEN_VALUE];
   long numrec;
   int nwave;

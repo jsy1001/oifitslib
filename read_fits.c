@@ -328,8 +328,7 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   fits_read_key(fptr, TINT, "NPOL", &pPolar->npol, comment, pStatus);
   /* note ARRNAME is mandatory */
   fits_read_key(fptr, TSTRING, "ARRNAME", pPolar->arrname, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "ORIENTATION", pPolar->orientation, comment,
-                pStatus);
+  fits_read_key(fptr, TSTRING, "ORIENT", pPolar->orient, comment, pStatus);
   fits_read_key(fptr, TSTRING, "MODEL", pPolar->model, comment, pStatus);
   /* get number of rows */
   fits_get_num_rows(fptr, &pPolar->numrec, pStatus);

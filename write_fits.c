@@ -379,8 +379,8 @@ STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
   /* note ARRNAME is mandatory */
   fits_write_key(fptr, TSTRING, "ARRNAME", &polar.arrname,
                  "Array name", pStatus);
-  fits_write_key(fptr, TSTRING, "ORIENTATION", &polar.orientation,
-		 "Orientation of the Jones matrix L..", pStatus);
+  fits_write_key(fptr, TSTRING, "ORIENT", &polar.orient,
+                 "Orientation of the Jones matrix L..", pStatus);
   fits_write_key(fptr, TSTRING, "MODEL", &polar.model,
 		 "How Jones matrix L.. was estimated", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
