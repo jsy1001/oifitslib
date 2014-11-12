@@ -1404,7 +1404,7 @@ void filter_all_oi_spectrum(const oi_fits *pInput,
     /* If applicable, check whether INSNAME, ARRNAME, CORRNAME match */
     if(!ACCEPT_INSNAME(pInTab, pFilter)) continue;
     if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
-    /* OI_SPECTRUM does not use CORRNAME */
+    if(!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
