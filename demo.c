@@ -432,6 +432,7 @@ void demo_read(void)
   oi_array array;
   oi_target targets;
   oi_wavelength wave;
+  oi_corr corr;
   oi_polar polar;
   oi_vis vis;
   oi_vis2 vis2;
@@ -457,9 +458,8 @@ void demo_read(void)
      without losing place in file */
   fits_open_file(&fptr2, filename, READONLY, &status);
 
-  //:TODO: read OI_CORR tables referenced by data tables
-
-  /* Read all OI_VIS tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
+  /* Read all OI_VIS tables & corresponding
+     OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   while (1==1) {
     if (read_next_oi_vis(fptr, &vis, &status)) break; /* no more OI_VIS */
     printf("Read OI_VIS      with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
@@ -469,18 +469,25 @@ void demo_read(void)
          Note we may have read it previously */
       read_oi_array(fptr2, vis.arrname, &array, &status);
     }
+    if (strlen(vis.corrname) > 0) {
+      /* if CORRNAME specified, read corresponding OI_CORR
+         Note we may have read it previously */
+      read_oi_corr(fptr2, vis.corrname, &corr, &status);
+    }
     read_oi_wavelength(fptr2, vis.insname, &wave, &status);
     if (!status) {
       /* Free storage ready to reuse structs for next table */
       free_oi_wavelength(&wave);
       if (strlen(vis.arrname) > 0) free_oi_array(&array);
+      if (strlen(vis.corrname) > 0) free_oi_corr(&corr);
       free_oi_vis(&vis);
     }
   }
   if (status != END_OF_FILE) goto except;
   status = 0;
 
-  /* Read all OI_VIS2 tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
+  /* Read all OI_VIS2 tables & corresponding
+     OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_vis2(fptr, &vis2, &status)) break; /* no more OI_VIS2 */
@@ -490,18 +497,25 @@ void demo_read(void)
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, vis2.arrname, &array, &status);
     }
+    if (strlen(vis2.corrname) > 0) {
+      /* if CORRNAME specified, read corresponding OI_CORR
+         Note we may have read it previously */
+      read_oi_corr(fptr2, vis2.corrname, &corr, &status);
+    }
     read_oi_wavelength(fptr2, vis2.insname, &wave, &status);
     if (!status) {
       /* Free storage ready to reuse structs for next table */
       free_oi_wavelength(&wave);
       if (strlen(vis2.arrname) > 0) free_oi_array(&array);
+      if (strlen(vis2.corrname) > 0) free_oi_corr(&corr);
       free_oi_vis2(&vis2);
     }
   }
   if (status != END_OF_FILE) goto except;
   status = 0;
 
-  /* Read all OI_T3 tables & corresponding OI_ARRAY/OI_WAVELENGTH tables */
+  /* Read all OI_T3 tables & corresponding
+     OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_t3(fptr, &t3, &status)) break; /* no more OI_T3 */
@@ -511,11 +525,17 @@ void demo_read(void)
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, t3.arrname, &array, &status);
     }
+    if (strlen(t3.corrname) > 0) {
+      /* if CORRNAME specified, read corresponding OI_CORR
+         Note we may have read it previously */
+      read_oi_corr(fptr2, t3.corrname, &corr, &status);
+    }
     read_oi_wavelength(fptr2, t3.insname, &wave, &status);
     if (!status) {
       /* Free storage ready to reuse structs for next table */
       free_oi_wavelength(&wave);
       if (strlen(t3.arrname) > 0) free_oi_array(&array);
+      if (strlen(t3.corrname) > 0) free_oi_corr(&corr);
       free_oi_t3(&t3);
     }
   }
@@ -523,21 +543,27 @@ void demo_read(void)
   status = 0;
 
   /* Read all OI_SPECTRUM tables & corresponding
-   * OI_ARRAY/OI_WAVELENGTH tables */
+     OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
     if (read_next_oi_spectrum(fptr, &spectrum, &status)) break;
-    printf("Read OI_SPECTRUM with  ARRNAME=%s INSNAME=%s\n",
-	   spectrum.arrname, spectrum.insname);
+    printf("Read OI_SPECTRUM with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
+	   spectrum.arrname, spectrum.insname, spectrum.corrname);
     if (strlen(spectrum.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, spectrum.arrname, &array, &status);
+    }
+    if (strlen(spectrum.corrname) > 0) {
+      /* if CORRNAME specified, read corresponding OI_CORR
+         Note we may have read it previously */
+      read_oi_corr(fptr2, spectrum.corrname, &corr, &status);
     }
     read_oi_wavelength(fptr2, spectrum.insname, &wave, &status);
     if (!status) {
       /* Free storage ready to reuse structs for next table */
       free_oi_wavelength(&wave);
       if (strlen(spectrum.arrname) > 0) free_oi_array(&array);
+      if (strlen(spectrum.corrname) > 0) free_oi_corr(&corr);
       free_oi_spectrum(&spectrum);
     }
   }
