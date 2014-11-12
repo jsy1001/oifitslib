@@ -427,7 +427,7 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 
   /* Note all header keywords (except SIMPLE etc.) are optional in OIFITS v1 */
   read_key_opt_string(fptr, "ORIGIN", pHeader->origin, pStatus);
-  read_key_opt_string(fptr, "DATE_OBS", pHeader->date_obs, pStatus);
+  read_key_opt_string(fptr, "DATE-OBS", pHeader->date_obs, pStatus);
   read_key_opt_string(fptr, "TELESCOP", pHeader->telescop, pStatus);
   read_key_opt_string(fptr, "INSTRUME", pHeader->instrume, pStatus);
   read_key_opt_string(fptr, "INSMODE", pHeader->insmode, pStatus);
