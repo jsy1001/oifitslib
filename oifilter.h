@@ -108,6 +108,7 @@ GOptionGroup *get_oi_filter_option_group(void);
 oi_filter_spec *get_user_oi_filter(void);
 void apply_user_oi_filter(const oi_fits *, oi_fits *);
 #endif
+void filter_oi_header(const oi_header *, const oi_filter_spec *, oi_header *);
 void filter_oi_target(const oi_target *, const oi_filter_spec *, oi_target *);
 void filter_all_oi_array(const oi_fits *, const oi_filter_spec *, oi_fits *);
 GHashTable *filter_all_oi_wavelength(const oi_fits *, const oi_filter_spec *,

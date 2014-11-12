@@ -72,7 +72,7 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 OITABLE = liboitable.a demo
 EXES = oifits-check oifits-merge oifits-filter 
-TEST_EXES = utest_oicheck utest_oimerge utest_oifilter
+TEST_EXES = utest_oifile utest_oicheck utest_oimerge utest_oifilter
 LIBRARIES = liboifits.a
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
@@ -106,6 +106,7 @@ oifile.o: oifile.c oifile.h exchange.h glib-2.0.libexists
 oifilter.o: oifilter.c oifilter.h oifile.h exchange.h glib-2.0.libexists
 oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 oimerge.o: oimerge.c oimerge.h oifile.h exchange.h glib-2.0.libexists
+utest_oifile.o: utest_oifile.c oifile.h exchange.h glib-2.0.libexists
 utest_oicheck.o: utest_oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 utest_oimerge.o: utest_oimerge.c oimerge.h oifile.h oicheck.h exchange.h glib-2.0.libexists
 utest_oifilter.o: utest_oifilter.c oifilter.h oifile.h oicheck.h exchange.h glib-2.0.libexists
@@ -117,6 +118,9 @@ oifits-check: oifits-check.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 oifits-merge: oifits-merge.o liboifits.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
+
+utest_oifile: utest_oifile.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 utest_oicheck: utest_oicheck.o liboifits.a
@@ -137,6 +141,7 @@ _%module.so: %_wrap.o liboifits.a
 	$(CC) $(SHAREDFLAGS) $^ `$(PYTHON)-config --ldflags` $(LDLIBS) $(LDLIBS_GLIB) -o $@
 
 test: $(TEST_EXES) $(PYTHONMODULES)
+	./utest_oifile
 	./utest_oicheck	
 	./utest_oimerge
 	./utest_oifilter

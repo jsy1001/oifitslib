@@ -68,6 +68,55 @@ static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
  * Public functions
  */
 
+/** Merge specified primary header keyword */
+#define MERGE_HEADER_KEY(inList, keyattr, pOutput)                      \
+  {                                                                     \
+    int nuniq;                                                          \
+    const GList *link;                                                  \
+    oi_header *pInHeader;                                               \
+    nuniq = 0;                                                          \
+    link = inList;                                                      \
+    while (link != NULL) {                                              \
+      pInHeader = &((oi_fits *) link->data)->header;                    \
+      if (strlen(pInHeader->keyattr) > 0 &&                             \
+          strcmp(pInHeader->keyattr, pOutput->header.keyattr) != 0)     \
+      {                                                                 \
+        if (++nuniq > 1)                                                \
+          break;                                                        \
+        g_strlcpy(pOutput->header.keyattr, pInHeader->keyattr,          \
+                  FLEN_VALUE);                                          \
+      }                                                                 \
+      link = link->next;                                                \
+    }                                                                   \
+    if (nuniq > 1)                                                      \
+      g_strlcpy(pOutput->header.keyattr, "MULTIPLE", FLEN_VALUE);       \
+  }
+
+/**
+ * Merge primary header keywords
+ *
+ * @param inList   linked list of oi_fits structs to merge
+ * @param pOutput  pointer to initialised struct to write merged data to
+ */
+void merge_oi_header(const GList *inList, oi_fits *pOutput)
+{
+  assert(pOutput->header.origin[0] == '\0');
+
+  //:TODO: write mean DATE-OBS
+  g_strlcpy(pOutput->header.date_obs, "2000-01-01", FLEN_VALUE);
+
+  /* Copy unique keywords or replace with "MULTIPLE" */
+  MERGE_HEADER_KEY(inList, origin, pOutput);  //:TODO: MULTIPLE ok for ORIGIN?
+  MERGE_HEADER_KEY(inList, telescop, pOutput);
+  MERGE_HEADER_KEY(inList, instrume, pOutput);
+  MERGE_HEADER_KEY(inList, insmode, pOutput);
+  MERGE_HEADER_KEY(inList, object, pOutput);
+  MERGE_HEADER_KEY(inList, referenc, pOutput);
+  MERGE_HEADER_KEY(inList, prog_id, pOutput);
+  MERGE_HEADER_KEY(inList, procsoft, pOutput);
+  MERGE_HEADER_KEY(inList, obstech, pOutput);
+}
+
 /**
  * Copy records for uniquely-named targets into output target table
  *
@@ -465,6 +514,7 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
   GList *insnameHashList, *corrnameHashList, *link;
 
   init_oi_fits(pOutput);
+  merge_oi_header(inList, pOutput);
   targetIdHash = merge_oi_target(inList, pOutput);
   insnameHashList = merge_all_oi_wavelength(inList, pOutput);
   corrnameHashList = merge_all_oi_corr(inList, pOutput);

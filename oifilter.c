@@ -547,6 +547,19 @@ void print_oi_filter(oi_filter_spec *pFilter)
     g_pattern_match_string((pFilter)->corrname_pttn, (pObject)->corrname) )
 
 /**
+ * Filter primary header keywords.
+ *
+ * @param pInHeader   pointer to input oi_header
+ * @param pFilter     pointer to filter specification
+ * @param pOutHeader  pointer to oi_header to write filtered keywords to
+ */
+void filter_oi_header(const oi_header *pInHeader,
+		      const oi_filter_spec *pFilter, oi_header *pOutHeader)
+{
+  memcpy(pOutHeader, pInHeader, sizeof(*pInHeader));
+}
+
+/**
  * Filter OI_TARGET table.
  *
  * @param pInTargets   pointer to input oi_target
@@ -1524,6 +1537,9 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   pFilter->insname_pttn = g_pattern_spec_new(pFilter->insname);
   g_assert(pFilter->corrname_pttn == NULL);
   pFilter->corrname_pttn = g_pattern_spec_new(pFilter->corrname);
+
+  /* Filter primary header keywords */
+  filter_oi_header(&pInput->header, pFilter, &pOutput->header);
 
   /* Filter OI_TARGET, OI_ARRAY, and OI_CORR tables */
   filter_oi_target(&pInput->targets, pFilter, &pOutput->targets);

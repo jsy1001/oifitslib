@@ -73,6 +73,7 @@ typedef struct {
   int numVis2;               /**< Length of vis2List */
   int numT3;                 /**< Length of t3List */
   int numSpectrum;           /**< Length of spectrumList */
+  oi_header header;          /**< oi_header struct */
   oi_target targets;         /**< oi_target struct */
   GList *arrayList;          /**< Linked list of oi_array structs */
   GList *wavelengthList;     /**< Linked list of oi_wavelength structs */

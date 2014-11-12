@@ -220,6 +220,22 @@ static void format_polar_list_summary(GString *pGStr, GList *polarList)
  */
 void init_oi_fits(oi_fits *pOi)
 {
+  pOi->header.origin[0] = '\0';
+  pOi->header.date_obs[0] = '\0';
+  pOi->header.telescop[0] = '\0';
+  pOi->header.instrume[0] = '\0';
+  pOi->header.insmode[0] = '\0';
+  pOi->header.object[0] = '\0';
+  pOi->header.referenc[0] = '\0';
+  pOi->header.prog_id[0] = '\0';
+  pOi->header.procsoft[0] = '\0';
+  pOi->header.obstech[0] = '\0';
+
+  pOi->targets.revision = 1;
+  pOi->targets.ntarget = 0;
+  pOi->targets.targ = NULL;
+  pOi->targets.usecategory = FALSE;
+
   pOi->numArray = 0;
   pOi->numWavelength = 0;
   pOi->numCorr = 0;
@@ -334,6 +350,9 @@ STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
   fits_create_file(&fptr, filename, pStatus);
   if(*pStatus) goto except;
 
+  /* Write primary header keywords */
+  write_oi_header(fptr, oi.header, pStatus);
+
   /* Write OI_TARGET table */
   write_oi_target(fptr, oi.targets, pStatus);
 
@@ -417,6 +436,9 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->vis2List = NULL;
   pOi->t3List = NULL;
   pOi->spectrumList = NULL;
+
+  /* Read primary header keywords */
+  read_oi_header(fptr, &pOi->header, pStatus);
 
   /* Read compulsory OI_TARGET table */
   read_oi_target(fptr, &pOi->targets, pStatus);
@@ -731,7 +753,7 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
     while(link != NULL) {                                       \
       g_string_append_printf(                                   \
         pGStr,                                                  \
-        "    #%-2d DATE_OBS=%s\n"                               \
+        "    #%-2d DATE-OBS=%s\n"                               \
         "    INSNAME='%s'  ARRNAME='%s'  CORRNAME='%s'\n"       \
         "     %5ld records x %3d wavebands\n",                  \
         nn++,                                                   \
@@ -758,6 +780,12 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
     pGStr = g_string_sized_new(512);
 
   g_string_printf(pGStr, "OIFITS data:\n");
+  g_string_append_printf(pGStr, "  DATE-OBS=%s  OBJECT='%s'\n",
+                         pOi->header.date_obs, pOi->header.object);
+  g_string_append_printf(pGStr, "  TELESCOP='%s'  INSTRUME='%s'\n",
+                         pOi->header.telescop, pOi->header.instrume);
+  g_string_append_printf(pGStr, "  INSMODE='%s'  OBSTECH='%s'\n\n",
+                         pOi->header.insmode, pOi->header.obstech);
   g_string_append_printf(pGStr, "  %d OI_ARRAY tables:\n", pOi->numArray);
   format_array_list_summary(pGStr, pOi->arrayList);
   g_string_append_printf(pGStr, "  %d OI_WAVELENGTH tables:\n",

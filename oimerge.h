@@ -53,6 +53,7 @@
 /*
  * Function prototypes
  */
+void merge_oi_header(const GList *, oi_fits *);
 GHashTable *merge_oi_target(const GList *, oi_fits *);
 GList *merge_all_oi_wavelength(const GList *, oi_fits *);
 GList *merge_all_oi_corr(const GList *, oi_fits *);
