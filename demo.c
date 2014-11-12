@@ -54,6 +54,7 @@ static bool scan_opt_int(FILE *fp, const char *format, int *dest, int nullval)
  */
 void demo_write(void)
 {
+  oi_header header;
   oi_array array;
   oi_target targets;
   oi_wavelength wave;
@@ -374,6 +375,18 @@ void demo_write(void)
 
   fclose(fp);
 
+  /* Set header keywords */
+  strcpy(header.origin, "ESO");
+  strncpy(header.date_obs, vis.date_obs, FLEN_VALUE);
+  strncpy(header.telescop, array.arrname, FLEN_VALUE);
+  strncpy(header.instrume, wave.insname, FLEN_VALUE);
+  strcpy(header.insmode, "SCAN");
+  strncpy(header.object, targets.targ[0].target, FLEN_VALUE);
+  header.referenc[0] = '\0';
+  header.prog_id[0] = '\0';
+  header.procsoft[0] = '\0';
+  header.obstech[0] = '\0';
+
   /* Write out FITS file */
   printf("Enter output OIFITS filename: ");
   fgets(filename, FLEN_FILENAME, stdin);
@@ -385,6 +398,7 @@ void demo_write(void)
     fits_report_error(stderr, status);
     exit(EXIT_FAILURE);
   }
+  write_oi_header(fptr, header, &status);
   write_oi_target(fptr, targets, &status);
   write_oi_vis(fptr, vis, 1, &status);
   write_oi_vis2(fptr, vis2, 1, &status);
@@ -429,6 +443,7 @@ void demo_write(void)
  */
 void demo_read(void)
 {
+  oi_header header;
   oi_array array;
   oi_target targets;
   oi_wavelength wave;
@@ -452,6 +467,7 @@ void demo_read(void)
     fits_report_error(stderr, status);
     goto except;
   }
+  read_oi_header(fptr, &header, &status);
   read_oi_target(fptr, &targets, &status);
   if (status) goto except;
   /* open 2nd connection to read referenced OI_ARRAY and OI_WAVELENGTH tables

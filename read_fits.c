@@ -111,6 +111,25 @@ static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
 }
 
 /**
+ * Read optional header keyword.
+ *
+ * @return TRUE if keyword present, FALSE otherwise.
+ */
+static bool read_key_opt_string(fitsfile *fptr, char *keyname,
+                                char *keyval, STATUS *pStatus)
+{
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  if (fits_read_key(fptr, TSTRING, keyname, keyval, NULL, pStatus)) {
+    *pStatus = 0;
+    keyval[0] = '\0';
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Read OI_ARRAY fits binary table at current HDU.
  *
  *   @param fptr     see cfitsio documentation
@@ -384,6 +403,47 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
 /*
  * Public functions
  */
+
+/**
+ * Read OIFITS primary header keywords.
+ *
+ * Moves to primary HDU.
+ *
+ *   @param fptr     see cfitsio documentation
+ *   @param pHeader  ptr to header data struct, see exchange.h
+ *   @param pStatus  pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code (also assigned to
+ *           *pStatus). Contents of header data struct are undefined
+ */
+STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
+{
+  const char function[] = "read_oi_header";
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  /* Move to primary HDU */
+  fits_movabs_hdu(fptr, 1, NULL, pStatus);
+
+  /* Note all header keywords (except SIMPLE etc.) are optional in OIFITS v1 */
+  read_key_opt_string(fptr, "ORIGIN", pHeader->origin, pStatus);
+  read_key_opt_string(fptr, "DATE_OBS", pHeader->date_obs, pStatus);
+  read_key_opt_string(fptr, "TELESCOP", pHeader->telescop, pStatus);
+  read_key_opt_string(fptr, "INSTRUME", pHeader->instrume, pStatus);
+  read_key_opt_string(fptr, "INSMODE", pHeader->insmode, pStatus);
+  read_key_opt_string(fptr, "OBJECT", pHeader->object, pStatus);
+
+  read_key_opt_string(fptr, "REFERENC", pHeader->referenc, pStatus);
+  read_key_opt_string(fptr, "PROG_ID", pHeader->prog_id, pStatus);
+  read_key_opt_string(fptr, "PROCSOFT", pHeader->procsoft, pStatus);
+  read_key_opt_string(fptr, "OBSTECH", pHeader->obstech, pStatus);
+
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
 
 /**
  * Read OI_TARGET fits binary table. Moves to first matching HDU

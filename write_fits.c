@@ -79,6 +79,71 @@ void free_tform(char **tform, int n)
  */
 
 /**
+ * Write primary header keywords
+ *
+ * Moves to primary HDU. A zero-size primary array is created if necessary.
+ *
+ *   @param fptr    see cfitsio documentation
+ *   @param header  header data struct, see exchange.h
+ *   @param pStatus pointer to status variable
+ *
+ *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ */
+STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
+{
+  const char function[] = "write_oi_header";
+  int nhdu;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  /* Move to primary HDU */
+  if (fits_get_num_hdus(fptr, &nhdu, pStatus) == 0) {
+    /* primary HDU doesn't exist, so create it */
+    fits_create_img(fptr, 16, 0, NULL, pStatus);
+  } else {
+    fits_movabs_hdu(fptr, 1, NULL, pStatus);
+  }
+
+  /* Write mandatory keywords */
+  fits_write_key(fptr, TSTRING, "ORIGIN", header.origin,
+		 "Institution", pStatus);
+  //:TODO: write DATE
+  fits_write_key(fptr, TSTRING, "DATE-OBS", header.date_obs,
+		 "Mean UTC date of observation", pStatus);
+  fits_write_key(fptr, TSTRING, "TELESCOP", header.telescop,
+		 "ARRNAME", pStatus);
+  fits_write_key(fptr, TSTRING, "INSTRUME", header.instrume,
+		 "INSNAME", pStatus);
+  fits_write_key(fptr, TSTRING, "PRODCATG", "SCIENCE.OIFITS2",
+		 "Product category", pStatus);
+  fits_write_key(fptr, TSTRING, "INSMODE", header.insmode,
+		 "Instrument mode", pStatus);
+  fits_write_key(fptr, TSTRING, "OBJECT", header.object,
+		 "Object identifier", pStatus);
+
+  /* Write optional keywords */
+  if (strlen(header.referenc) > 0)
+    fits_write_key(fptr, TSTRING, "REFERENC", header.referenc,
+                   "Bibliographic reference", pStatus);
+  if (strlen(header.prog_id) > 0)
+    fits_write_key(fptr, TSTRING, "PROG_ID", header.prog_id,
+                   "Programme ID", pStatus);
+  if (strlen(header.procsoft) > 0)
+    fits_write_key(fptr, TSTRING, "PROCSOFT", header.procsoft,
+                   "Versioned DRS", pStatus);
+  if (strlen(header.obstech) > 0)
+    fits_write_key(fptr, TSTRING, "OBSTECH", header.obstech,
+                   "Observation technique", pStatus);
+
+  if (*pStatus && !oi_hush_errors) {
+    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fits_report_error(stderr, *pStatus);
+  }
+  return *pStatus;
+}
+
+
+/**
  * Write OI_ARRAY fits binary table
  *
  *   @param fptr    see cfitsio documentation

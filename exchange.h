@@ -83,6 +83,22 @@ extern int oi_hush_errors; /**< If TRUE, don't report I/O errors to stderr */
  */
 /* NB must allow for final null when dimensioning character arrays */
 
+/** FITS primary HDU header keywords. */
+typedef struct {
+  /* mandatory keywords */
+  char origin[FLEN_VALUE];
+  char date_obs[FLEN_VALUE];
+  char telescop[FLEN_VALUE];
+  char instrume[FLEN_VALUE];
+  char insmode[FLEN_VALUE];
+  char object[FLEN_VALUE];
+  /* optional keywords */
+  char referenc[FLEN_VALUE];
+  char prog_id[FLEN_VALUE];
+  char procsoft[FLEN_VALUE];
+  char obstech[FLEN_VALUE];
+} oi_header;
+
 /** Array element. Corresponds to one row of an OI_ARRAY FITS table. */
 typedef struct {
   char tel_name[17];
@@ -305,6 +321,7 @@ typedef struct {
  */
 
 /* Functions from write_fits.c */
+STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus);
 STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
                       STATUS *pStatus);
 STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus);
@@ -321,6 +338,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus);
 STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
                          STATUS *pStatus);
 /* Functions from read_fits.c */
+STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus);
 STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus);
 STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
                      STATUS *pStatus);
