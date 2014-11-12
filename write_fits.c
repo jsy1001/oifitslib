@@ -473,8 +473,14 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
     tform = make_tform(tformTpl, tfields, vis.nwave);
     fits_insert_cols(fptr, 9, tfields, ttype, tform, pStatus);
     free_tform(tform, tfields);
-  
-    //:TODO: write units
+    fits_write_key(fptr, TSTRING, "TUNIT9", &vis.complexunit,
+                   "Units of field  9", pStatus);
+    fits_write_key(fptr, TSTRING, "TUNIT10", &vis.complexunit,
+                   "Units of field 10", pStatus);
+    fits_write_key(fptr, TSTRING, "TUNIT11", &vis.complexunit,
+                   "Units of field 11", pStatus);
+    fits_write_key(fptr, TSTRING, "TUNIT12", &vis.complexunit,
+                   "Units of field 12", pStatus);
 
     for(irow=1; irow<=vis.numrec; irow++) {
 
@@ -541,6 +547,12 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
   free_tform(tform, tfields);
+  if(strcmp(vis.amptyp, "correlated flux") == 0) {
+    fits_write_key(fptr, TSTRING, "TUNIT5", &vis.ampunit,
+                   "Units of field  5", pStatus);
+    fits_write_key(fptr, TSTRING, "TUNIT6", &vis.ampunit,
+                   "Units of field  6", pStatus);
+  }
 
   /* Write keywords */
   if (vis.revision != revision) {
@@ -836,7 +848,6 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   const char *tformTpl[] = {"I", "D", "D",
 			    "?D", "?D", "I"};
   char **tform;
-  //:TODO: flux units from struct?
   char *tunit[] = {"\0", "day", "s",
 		   "\0", "\0", "\0"};
   char extname[] = "OI_SPECTRUM";
@@ -851,6 +862,8 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
   free_tform(tform, tfields);
+  fits_write_key(fptr, TSTRING, "TUNIT4", &spectrum.fluxunit,
+                 "Units of field  4", pStatus);
 
   /* Write mandatory keywords */
   if (spectrum.revision != revision) {
@@ -867,8 +880,8 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   fits_write_key(fptr, TSTRING, "INSNAME", &spectrum.insname,
 		 "Detector name", pStatus);
   fits_write_key(fptr, TDOUBLE, "FOV", &spectrum.fov,
-                 "[arcsec] Field Of View on sky for FLUXDATA", pStatus);
-  //:TODO: alt function to write unit?
+                 "Field Of View on sky for FLUXDATA", pStatus);
+  fits_write_key_unit(fptr, "FOV", "arcsec", pStatus);
   fits_write_key(fptr, TSTRING, "FOVTYPE", &spectrum.fovtype,
                  "Model for FOV", pStatus);
   keyval[0] = spectrum.calstat;

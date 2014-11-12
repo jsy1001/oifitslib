@@ -206,6 +206,7 @@ void demo_write(void)
   fscanf(fp, "OI_VIS date-obs %70s ", vis.date_obs);
   fscanf(fp, "arrname %70s insname %70s ", vis.arrname, vis.insname);
   fscanf(fp, "corrname %70s ", vis.corrname);
+  //:TODO: can't scan "correlated flux" due to space
   scan_opt_string(fp, "amptyp %70s", vis.amptyp);
   scan_opt_string(fp, " phityp %70s", vis.phityp);
   scan_opt_int(fp, " amporder %d", &vis.amporder, -1);
@@ -251,7 +252,12 @@ void demo_write(void)
   vis.revision = 1;
   vis.nwave = wave.nwave;
   vis.usevisrefmap = FALSE;
-  vis.usecomplex = FALSE;
+  vis.usecomplex = FALSE;  /* hence complexunit not used */
+  vis.complexunit[0] = '\0';
+  if (strcmp(vis.amptyp, "correlated flux") == 0)
+    strcpy(vis.ampunit, "Jy");
+  else
+    vis.ampunit[0] = '\0';
 
   /* Read info for OI_VIS2 table */
   fscanf(fp, "OI_VIS2 date-obs %70s ", vis2.date_obs);
@@ -363,6 +369,7 @@ void demo_write(void)
     fscanf(fp, "sta_index %d ", &spectrum.record[irec].sta_index);
   }
   spectrum.revision = 1;
+  strcpy(spectrum.fluxunit, "Jy");
   spectrum.nwave = wave.nwave;
 
   fclose(fp);

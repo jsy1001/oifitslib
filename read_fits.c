@@ -709,6 +709,8 @@ STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
 static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
                                   bool correlated, STATUS *pStatus)
 {
+  char comment[FLEN_COMMENT];
+  char keyval[FLEN_VALUE];
   int nullint = 0;
   double nulldouble = 0.0;
   int irow, colnum, anynull;
@@ -717,6 +719,7 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
   if (*pStatus == COL_NOT_FOUND) {
     pVis->usecomplex = FALSE;
     *pStatus = 0;
+    pVis->complexunit[0] = '\0';
     for (irow=1; irow<=pVis->numrec; irow++) {
       pVis->record[irow-1].rvis = NULL;
       pVis->record[irow-1].rviserr = NULL;
@@ -725,6 +728,11 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
     }
   } else {
     pVis->usecomplex = TRUE;
+    /* read unit (mandatory if RVIS present) */
+    fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
+    snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
+    fits_read_key(fptr, TSTRING, keyval, pVis->complexunit, comment, pStatus);
+
     for (irow=1; irow<=pVis->numrec; irow++) {
       pVis->record[irow-1].rvis = malloc(pVis->nwave*sizeof(DATA));
       pVis->record[irow-1].rviserr = malloc(pVis->nwave*sizeof(DATA));
@@ -851,6 +859,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis";
   char comment[FLEN_COMMENT];
+  char keyval[FLEN_VALUE];
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
@@ -887,6 +896,13 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   fits_get_colnum(fptr, CASEINSEN, "VISAMP", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   pVis->nwave = repeat;
+  /* read VISAMP unit (optional) */
+  snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
+  fits_read_key(fptr, TSTRING, keyval, pVis->ampunit, comment, pStatus);
+  if (*pStatus == KEY_NO_EXIST) {
+    pVis->ampunit[0] = '\0';
+    *pStatus = 0;
+  }
   /* read rows */
   for (irow=1; irow<=pVis->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -1260,6 +1276,10 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   pSpectrum->nwave = repeat;
+  /* read unit (mandatory) */
+  snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
+  fits_read_key(fptr, TSTRING, keyval, pSpectrum->fluxunit, comment, pStatus);
+    
   /* read rows */
   for (irow=1; irow<=pSpectrum->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);

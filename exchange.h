@@ -211,6 +211,8 @@ typedef struct {
   int phiorder;              /**< -1 means not specified */
   BOOL usevisrefmap;         /**< is oi_vis_record::visrefmap being used? */
   BOOL usecomplex;           /**< are oi_vis_record::rvis etc. being used? */
+  char complexunit[FLEN_VALUE];  /**< TUNITn for RVIS/RVISERR/IVIS/IVISERR */
+  char ampunit[FLEN_VALUE];   /**< TUNITn for VISAMP/VISAMPERR */
   long numrec;
   int nwave;
   oi_vis_record *record;
@@ -291,6 +293,7 @@ typedef struct {
   double fov;
   char fovtype[FLEN_VALUE];
   char calstat;  /**< first character of FITS keyword */
+  char fluxunit[FLEN_VALUE];  /**< TUNITn for FLUXDATA/FLUXERR */
   long numrec;
   int nwave;
   oi_spectrum_record *record;
