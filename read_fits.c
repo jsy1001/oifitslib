@@ -36,6 +36,46 @@
  * Private functions
  */
 
+/**
+ * Verify current HDU against CHECKSUM and DATASUM keywords.
+ *
+ * The checksum keyword convention is described at
+ * http://fits.gsfc.nasa.gov/registry/checksum.html
+ *
+ * The function writes a message to stdout if either checksum is
+ * incorrect. Any missing checksum keyword is silently ignored.
+ */
+static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
+{
+  int dataok, hduok;
+  char extname[FLEN_VALUE];
+  int hdunum, extver;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  fits_verify_chksum(fptr, &dataok, &hduok, pStatus);
+  if (dataok == -1 || hduok == -1) {
+    fits_get_hdu_num(fptr, &hdunum);
+    fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
+    if (*pStatus) {
+      if (*pStatus == KEY_NO_EXIST)
+        *pStatus = 0;
+      extname[0] = '\0';
+      extver = 0;
+    } else {
+      fits_read_key(fptr, TINT, "EXTVER", &extver, NULL, pStatus);
+    }
+    if (dataok == -1)
+      printf("WARNING! Data checksum verification failed "
+              "for HDU #%d (EXTNAME='%s' EXTVER=%d)\n",
+              hdunum, extname, extver);
+    if (hduok == -1)
+      printf("WARNING! HDU checksum verification failed "
+              "for HDU #%d (EXTNAME='%s' EXTVER=%d)\n",
+              hdunum, extname, extver);
+  }
+  return *pStatus;
+}
 
 /**
  * Move to next binary table HDU with specified EXTNAME.
@@ -424,6 +464,7 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 
   /* Move to primary HDU */
   fits_movabs_hdu(fptr, 1, NULL, pStatus);
+  verify_chksum(fptr, pStatus);
 
   /* Note all header keywords (except SIMPLE etc.) are optional in OIFITS v1 */
   read_key_opt_string(fptr, "ORIGIN", pHeader->origin, pStatus);
@@ -471,6 +512,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
+  verify_chksum(fptr, pStatus);
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, comment, pStatus);
   if (pTargets->revision != revision) {
     printf("WARNING! Expecting value %d for OI_REVN keyword in "
@@ -585,6 +627,7 @@ STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   specific_named_hdu(fptr, "OI_ARRAY", "ARRNAME", arrname, pStatus);
+  verify_chksum(fptr, pStatus);
   read_oi_array_chdu(fptr, pArray, arrname, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -612,6 +655,7 @@ STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
 
   next_named_hdu(fptr, "OI_ARRAY", pStatus);
   if (*pStatus == END_OF_FILE) return *pStatus;
+  verify_chksum(fptr, pStatus);
   read_oi_array_chdu(fptr, pArray, NULL, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -641,6 +685,7 @@ STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   specific_named_hdu(fptr, "OI_WAVELENGTH", "INSNAME", insname, pStatus);
+  verify_chksum(fptr, pStatus);
   read_oi_wavelength_chdu(fptr, pWave, insname, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -669,6 +714,7 @@ STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
 
   next_named_hdu(fptr, "OI_WAVELENGTH", pStatus);
   if (*pStatus == END_OF_FILE) return *pStatus;
+  verify_chksum(fptr, pStatus);
   read_oi_wavelength_chdu(fptr, pWave, NULL, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -698,6 +744,7 @@ STATUS read_oi_corr(fitsfile *fptr, char *corrname, oi_corr *pCorr,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   specific_named_hdu(fptr, "OI_CORR", "CORRNAME", corrname, pStatus);
+  verify_chksum(fptr, pStatus);
   read_oi_corr_chdu(fptr, pCorr, corrname, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -725,6 +772,7 @@ STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
 
   next_named_hdu(fptr, "OI_CORR", pStatus);
   if (*pStatus == END_OF_FILE) return *pStatus;
+  verify_chksum(fptr, pStatus);
   read_oi_corr_chdu(fptr, pCorr, NULL, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -753,6 +801,7 @@ STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
 
   next_named_hdu(fptr, "OI_POLAR", pStatus);
   if (*pStatus == END_OF_FILE) return *pStatus;
+  verify_chksum(fptr, pStatus);
   read_oi_polar_chdu(fptr, pPolar, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
@@ -934,6 +983,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     return *pStatus;
   else if (*pStatus)
     goto except;
+  verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
@@ -1051,6 +1101,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     return *pStatus;
   else if (*pStatus)
     goto except;
+  verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, comment, pStatus);
@@ -1166,6 +1217,7 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     return *pStatus;
   else if (*pStatus)
     goto except;
+  verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, comment, pStatus);
@@ -1300,6 +1352,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     return *pStatus;
   else if (*pStatus)
     goto except;
+  verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, comment, pStatus);

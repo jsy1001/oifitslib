@@ -135,6 +135,8 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
     fits_write_key(fptr, TSTRING, "OBSTECH", header.obstech,
                    "Observation technique", pStatus);
 
+  fits_write_chksum(fptr, pStatus);
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -202,6 +204,9 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
     fits_write_col(fptr, TDOUBLE, 5, irow, 1, 3, &array.elem[irow-1].staxyz,
 		   pStatus);
   }
+
+  fits_write_chksum(fptr, pStatus);
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -296,6 +301,8 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
     }
   }
 
+  fits_write_chksum(fptr, pStatus);
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -340,6 +347,8 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
 		 "ID number of this OI_WAVELENGTH", pStatus);
   fits_write_col(fptr, TFLOAT, 1, 1, 1, wave.nwave, wave.eff_wave, pStatus);
   fits_write_col(fptr, TFLOAT, 2, 1, 1, wave.nwave, wave.eff_band, pStatus);
+
+  fits_write_chksum(fptr, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
@@ -387,6 +396,8 @@ STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
   fits_write_col(fptr, TINT, 1, 1, 1, corr.ncorr, corr.iindx, pStatus);
   fits_write_col(fptr, TINT, 2, 1, 1, corr.ncorr, corr.jindx, pStatus);
   fits_write_col(fptr, TDOUBLE, 3, 1, 1, corr.ncorr, corr.corr, pStatus);
+
+  fits_write_chksum(fptr, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
@@ -473,6 +484,9 @@ STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
     fits_write_col(fptr, TINT, 9, irow, 1, 2, polar.record[irow-1].sta_index,
 		   pStatus);
   }
+
+  fits_write_chksum(fptr, pStatus);
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -665,6 +679,8 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		   vis.record[irow-1].flag, pStatus);
   }
   write_oi_vis_opt(fptr, vis, pStatus);
+
+  fits_write_chksum(fptr, pStatus);
   
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
@@ -767,6 +783,8 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
                      &vis2.record[irow-1].corrindx_vis2data, pStatus);
     }
   }
+
+  fits_write_chksum(fptr, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
@@ -884,6 +902,8 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
     }
   }
 
+  fits_write_chksum(fptr, pStatus);
+
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -988,6 +1008,8 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
                      &spectrum.record[irow-1].corrindx_fluxdata, pStatus);
     }
   }
+
+  fits_write_chksum(fptr, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);

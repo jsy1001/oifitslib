@@ -86,6 +86,7 @@ static long mid_mjd(const GList *list)
       if (mjd > maxMjd)
         maxMjd = mjd;
     }
+    //:TODO: handle files without DATE-OBS
     link = link->next;
   }
   return (minMjd + maxMjd)/2;
