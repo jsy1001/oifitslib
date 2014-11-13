@@ -24,6 +24,7 @@
  */
 
 #include "oimerge.h"
+#include "datemjd.h"
 
 #include <string.h>
 #include <assert.h>
@@ -63,6 +64,33 @@ static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
   return NULL;
 }
 
+/**
+ * Return midpoint of primary header DATE-OBS range in @a list as MJD.
+ */
+static long mid_mjd(const GList *list)
+{
+  const GList *link;
+  oi_header *pHeader;
+  long year, month, day, mjd, minMjd, maxMjd;
+
+  minMjd = 100000;
+  maxMjd = 0;
+  link = list;
+  while (link != NULL) {
+    pHeader = &((oi_fits *) link->data)->header;
+    if (sscanf(pHeader->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3)
+    {
+      mjd = date2mjd(year, month, day);
+      if (mjd < minMjd)
+        minMjd = mjd;
+      if (mjd > maxMjd)
+        maxMjd = mjd;
+    }
+    link = link->next;
+  }
+  return (minMjd + maxMjd)/2;
+}
+
 
 /*
  * Public functions
@@ -100,10 +128,13 @@ static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
  */
 void merge_oi_header(const GList *inList, oi_fits *pOutput)
 {
+  long year, month, day;
+
   assert(pOutput->header.origin[0] == '\0');
 
-  //:TODO: write mean DATE-OBS
-  g_strlcpy(pOutput->header.date_obs, "2000-01-01", FLEN_VALUE);
+  mjd2date(mid_mjd(inList), &year, &month, &day);
+  g_snprintf(pOutput->header.date_obs, FLEN_VALUE,
+             "%4ld-%02ld-%02ld", year, month, day);
 
   /* Copy unique keywords or replace with "MULTIPLE" */
   MERGE_HEADER_KEY(inList, origin, pOutput);  //:TODO: MULTIPLE ok for ORIGIN?

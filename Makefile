@@ -72,7 +72,8 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 OITABLE = liboitable.a demo
 EXES = oifits-check oifits-merge oifits-filter 
-TEST_EXES = utest_oifile utest_oicheck utest_oimerge utest_oifilter
+TEST_EXES = utest_datemjd utest_oifile \
+ utest_oicheck utest_oimerge utest_oifilter
 LIBRARIES = liboifits.a
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
@@ -99,13 +100,15 @@ demo.o: demo.c exchange.h
 #
 # Targets requiring GLib
 #
-liboifits.a: read_fits.o write_fits.o free_fits.o oifile.o \
+liboifits.a: read_fits.o write_fits.o free_fits.o datemjd.o oifile.o \
  oifilter.o oicheck.o oimerge.o
 	$(AR) -ruc $@ $^
+datemjd.o: datemjd.c datemjd.h
 oifile.o: oifile.c oifile.h exchange.h glib-2.0.libexists
 oifilter.o: oifilter.c oifilter.h oifile.h exchange.h glib-2.0.libexists
 oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
-oimerge.o: oimerge.c oimerge.h oifile.h exchange.h glib-2.0.libexists
+oimerge.o: oimerge.c oimerge.h oifile.h exchange.h datemjd.h glib-2.0.libexists
+utest_datemjd.o: utest_datemjd.c datemjd.h glib-2.0.libexists
 utest_oifile.o: utest_oifile.c oifile.h exchange.h glib-2.0.libexists
 utest_oicheck.o: utest_oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 utest_oimerge.o: utest_oimerge.c oimerge.h oifile.h oicheck.h exchange.h glib-2.0.libexists
@@ -118,6 +121,9 @@ oifits-check: oifits-check.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 oifits-merge: oifits-merge.o liboifits.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
+
+utest_datemjd: utest_datemjd.o datemjd.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 utest_oifile: utest_oifile.o liboifits.a
