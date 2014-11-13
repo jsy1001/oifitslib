@@ -83,7 +83,9 @@ static GOptionEntry filterEntries[] = {
    "If non-zero, accept triple amplitudes (default 1)", "0/1" },
   {"accept-t3phi", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3phi,
    "If non-zero, accept closure phases (default 1)", "0/1" },
-   {"accept-flagged", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flagged,
+  {"accept-spectrum", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_spectrum,
+   "If non-zero, accept spectra (default 1)", "0/1" },
+  {"accept-flagged", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flagged,
    "If non-zero, accept records with all data flagged (default 1)", "0/1" },
  { NULL }
 };
@@ -463,6 +465,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->accept_vis2 = 1;
   pFilter->accept_t3amp = 1;
   pFilter->accept_t3phi = 1;
+  pFilter->accept_spectrum = 1;
   pFilter->accept_flagged = 1;
 
   pFilter->arrname_pttn = NULL;
@@ -515,6 +518,10 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
     g_string_append_printf(pGStr, "  OI_T3 T3PHI (closure phases)\n");
   else
     g_string_append_printf(pGStr, "  [OI_T3 T3PHI not accepted]\n");
+  if(pFilter->accept_spectrum)
+    g_string_append_printf(pGStr, "  OI_SPECTRUM (incoherent spectra)\n");
+  else
+    g_string_append_printf(pGStr, "  [OI_SPECTRUM not accepted]\n");
   if(pFilter->accept_flagged)
     g_string_append_printf(pGStr, "  All-flagged records\n");
   else
@@ -1406,6 +1413,8 @@ void filter_all_oi_spectrum(const oi_fits *pInput,
   GList *link;
   oi_spectrum *pInTab, *pOutTab;
   char *useWave;
+
+  if(!pFilter->accept_spectrum) return; /* don't copy any spectra */
 
   /* Filter OI_SPECTRUM tables in turn */
   link = pInput->spectrumList;

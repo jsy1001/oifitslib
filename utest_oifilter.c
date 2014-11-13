@@ -472,6 +472,16 @@ static void test_t3(TestFixture *fix, gconstpointer userData)
 }
 
 
+static void test_spectrum(TestFixture *fix, gconstpointer userData)
+{
+  fix->filter.accept_spectrum = FALSE;
+  apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
+  check(&fix->outData);
+  g_assert_cmpint(fix->inData.numSpectrum, >, 0);
+  g_assert_cmpint(fix->outData.numSpectrum, ==, 0);
+}
+
+
 int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
@@ -506,6 +516,8 @@ int main(int argc, char *argv[])
              setup_fixture, test_vis2, teardown_fixture);
   g_test_add("/oifitslib/oifilter/t3", TestFixture, NULL,
              setup_fixture, test_t3, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/spectrum", TestFixture, NULL,
+             setup_fixture, test_spectrum, teardown_fixture);
 
   return g_test_run();
 }
