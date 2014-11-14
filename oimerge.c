@@ -34,6 +34,67 @@
  * Private functions
  */
 
+
+/**
+ * Lookup array element corresponding to specified STA_INDEX.
+ *
+ *   @param pArray    pointer to array data struct, see exchange.h
+ *   @param staIndex  value of STA_INDEX to match
+ *
+ *   @return ptr to 1st element struct matching staIndex, or NULL if no match
+ */
+static element *lookup_element(const oi_array *pArray, int staIndex)
+{
+  int i;
+  
+  /* We don't assume records are ordered by STA_INDEX */
+  for(i=0; i<pArray->nelement; i++) {
+    if(pArray->elem[i].sta_index == staIndex)
+      return &pArray->elem[i];
+  }
+  return NULL;
+}
+
+/**
+ * Return pointer to first oi_array in list that contains identical
+ * coordinates and station indices to pArray.
+ *
+ * Coordinates must match for the array centre and all stations in
+ * pArray (extra stations are allowed in the matching array
+ * table). Array, station and telescope names are ignored.
+ */
+static oi_array *match_oi_array(const oi_array *pArray,
+                                const GList *list)
+{
+  const GList *link;
+  oi_array *pCmp;
+  element *pCmpEl;
+  const double tol = 1e-10;
+  int i;
+
+  link = list;
+  while(link != NULL) {
+    pCmp = (oi_array *) link->data;
+    link = link->next;  /* follow link now so we can use continue statements */
+
+    if(fabs(pArray->arrayx - pCmp->arrayx) > tol) continue;
+    if(fabs(pArray->arrayy - pCmp->arrayy) > tol) continue;
+    if(fabs(pArray->arrayz - pCmp->arrayz) > tol) continue;
+    
+    for(i=0; i<pArray->nelement; i++) {
+      pCmpEl = lookup_element(pCmp, pArray->elem[i].sta_index);
+      if(pCmpEl == NULL) continue;
+      if(fabs(pArray->elem[i].staxyz[0] - pCmpEl->staxyz[0]) > tol) break;
+      if(fabs(pArray->elem[i].staxyz[1] - pCmpEl->staxyz[1]) > tol) break;
+      if(fabs(pArray->elem[i].staxyz[2] - pCmpEl->staxyz[2]) > tol) break;
+      //:TODO: compare diameter and (optional) fov?
+    }
+    if(i == pArray->nelement) 
+      return pCmp;  /* all elements match */
+  }
+  return NULL;
+}
+
 /**
  * Return pointer to first oi_wavelength in list that contains
  * identical wavebands (in same order) to pWave.
@@ -43,7 +104,7 @@ static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
 {
   const GList *link;
   oi_wavelength *pCmp;
-  double tol = 1e-10;
+  const double tol = 1e-10;
   int i;
 
   link = list;
@@ -112,6 +173,64 @@ GHashTable *merge_oi_target(const GList *inList, oi_fits *pOutput)
 }
 
 /**
+ * Copy unique array tables into output dataset
+ *
+ * @param inList   linked list of oi_fits structs to merge
+ * @param pOutput  pointer to oi_fits struct to write merged data to
+ *
+ * @return Linked list of hash tables, giving mapping from old to new
+ *         ARRNAMEs for each input dataset
+ */
+GList *merge_all_oi_array(const GList *inList, oi_fits *pOutput)
+{
+  GList *arrnameHashList;
+  const GList *arrayList, *ilink, *jlink;
+  GHashTable *hash;
+  oi_array *pInTab, *pOutTab;
+  char newName[FLEN_VALUE];
+  
+  arrnameHashList = NULL;
+  assert(pOutput->arrayList == NULL);
+  
+  /* Loop over input datasets */
+  ilink = inList;
+  while(ilink != NULL) {
+    /* Append hash table for this dataset to output list */
+    hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+    arrnameHashList = g_list_append(arrnameHashList, hash);
+    arrayList = ((oi_fits *) ilink->data)->arrayList;
+    /* Loop over array tables in current dataset */
+    jlink = arrayList;
+    while(jlink != NULL) {
+      pInTab = (oi_array *) jlink->data;
+      pOutTab = match_oi_array(pInTab, pOutput->arrayList);
+      if (pOutTab == NULL) {
+	/* Add copy of pInTab to output, changing ARRNAME if it clashes */
+	pOutTab = dup_oi_array(pInTab);
+	if (g_hash_table_lookup(pOutput->arrayHash,
+				pOutTab->arrname) != NULL) {
+          /* Avoid truncation at FLEN_VALUE - 1 */
+          if(strlen(pOutTab->arrname) < (FLEN_VALUE - 5))
+            g_snprintf(newName, FLEN_VALUE,
+                       "%s_%03d", pOutTab->arrname, pOutput->numArray + 1);
+          else
+            g_snprintf(newName, FLEN_VALUE,
+                       "array%03d", pOutput->numArray + 1);
+          g_strlcpy(pOutTab->arrname, newName, FLEN_VALUE);
+	}
+	g_hash_table_insert(pOutput->arrayHash, pOutTab->arrname, pOutTab);
+	pOutput->arrayList = g_list_append(pOutput->arrayList, pOutTab);
+	++pOutput->numArray;
+      }
+      g_hash_table_insert(hash, pInTab->arrname, pOutTab->arrname);
+      jlink = jlink->next;
+    }
+    ilink = ilink->next;
+  }
+  return arrnameHashList;
+}
+
+/**
  * Copy unique wavelength tables into output dataset
  *
  * @param inList   linked list of oi_fits structs to merge
@@ -171,59 +290,70 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
   return insnameHashList;
 }
 
-/** Replace ARRNAME with empty string */
-#define UNSET_ARRNAME(pTab) { pTab->arrname[0] = '\0'; }
+/** Replace ARRNAME with string from hash table */
+#define REPLACE_ARRNAME(pTab, oldArrname, arrnameHash) \
+  {                                                                     \
+    (void) g_strlcpy(pTab->arrname,                                     \
+                     g_hash_table_lookup(arrnameHash, oldArrname),      \
+                     FLEN_VALUE);                                       \
+  }
 
 /** Replace INSNAME with string from hash table */
-#define REPLACE_INSNAME(pTab, oldInsname, insnameHash) \
-{ \
-  (void) g_strlcpy(pTab->insname, \
-		   g_hash_table_lookup(insnameHash, oldInsname), \
-		   FLEN_VALUE); \
-}
+#define REPLACE_INSNAME(pTab, oldInsname, insnameHash)                  \
+  {                                                                     \
+    (void) g_strlcpy(pTab->insname,                                     \
+                     g_hash_table_lookup(insnameHash, oldInsname),      \
+                     FLEN_VALUE);                                       \
+  }
 
 /** Replace TARGET_IDs with values from hash table */
-#define REPLACE_TARGET_ID(pTab, pInOi, targetIdHash) \
-{ \
-  int ii; \
-  for(ii=0; ii<pTab->numrec; ii++) { \
-    /* hash table is indexed by target name */ \
-    pTab->record[ii].target_id = \
-      *((int *) g_hash_table_lookup( \
-        targetIdHash, \
-	oi_fits_lookup_target(pInOi, \
-                              pTab->record[ii].target_id)->target)); \
-  } \
-}
+#define REPLACE_TARGET_ID(pTab, pInOi, targetIdHash)                    \
+  {                                                                     \
+    int ii;                                                             \
+    for(ii=0; ii<pTab->numrec; ii++) {                                  \
+      /* hash table is indexed by target name */                        \
+      pTab->record[ii].target_id =                                      \
+      *((int *) g_hash_table_lookup(                                    \
+          targetIdHash,                                                 \
+          oi_fits_lookup_target(pInOi,                                  \
+                                pTab->record[ii].target_id)->target));  \
+    }                                                                   \
+  }
 
 /**
- * Copy all input OI_VIS tables into output dataset. Modifies INSNAME and
- * TARGET_ID to maintain correct cross-references.
+ * Copy all input OI_VIS tables into output dataset. Modifies ARRNAME,
+ * INSNAME and TARGET_ID to maintain correct cross-references.
  *
  * @param inList        linked list of oi_fits structs to merge
  * @param targetIdHash  hash table giving new TARGET_ID indexed by target name
- * @param insnameHashList list of hash tables giving new INSNAME indexed by old
+ * @param arrnameHashList  list of hash tables giving new ARRNAME
+ *                         indexed by old
+ * @param insnameHashList  list of hash tables giving new INSNAME
+ *                         indexed by old
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
 void merge_all_oi_vis(const GList *inList, GHashTable *targetIdHash,
-		      const GList *insnameHashList, oi_fits *pOutput)
+		      const GList *arrnameHashList,
+                      const GList *insnameHashList, oi_fits *pOutput)
 {
-  const GList *ilink, *jlink, *hashListLink;
+  const GList *ilink, *jlink, *arrHashLink, *insHashLink;
   oi_fits *pInput;
   oi_vis *pOutTab;
-  GHashTable *insnameHash;
+  GHashTable *arrnameHash, *insnameHash;
   
   /* Loop over input datasets */
   ilink = inList;
-  hashListLink = insnameHashList;
+  arrHashLink = arrnameHashList;
+  insHashLink = insnameHashList;
   while(ilink != NULL) {
-    insnameHash = (GHashTable *) hashListLink->data;
+    arrnameHash = (GHashTable *) arrHashLink->data;
+    insnameHash = (GHashTable *) insHashLink->data;
     pInput = (oi_fits *) ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->visList;
     while(jlink != NULL) {
       pOutTab = dup_oi_vis((oi_vis *) jlink->data);
-      UNSET_ARRNAME(pOutTab);
+      REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
@@ -232,38 +362,46 @@ void merge_all_oi_vis(const GList *inList, GHashTable *targetIdHash,
       jlink = jlink->next;
     }
     ilink = ilink->next;
-    hashListLink = hashListLink->next;
+    arrHashLink = arrHashLink->next;
+    insHashLink = insHashLink->next;
   }
 }
 
 /**
- * Copy all input OI_VIS2 tables into output dataset. Modifies INSNAME and
- * TARGET_ID to maintain correct cross-references.
+ * Copy all input OI_VIS2 tables into output dataset. Modifies
+ * ARRNAME, INSNAME and TARGET_ID to maintain correct
+ * cross-references.
  *
  * @param inList        linked list of oi_fits structs to merge
  * @param targetIdHash  hash table giving new TARGET_ID indexed by target name
- * @param insnameHashList list of hash tables giving new INSNAME indexed by old
+ * @param arrnameHashList  list of hash tables giving new ARRNAME
+ *                         indexed by old
+ * @param insnameHashList  list of hash tables giving new INSNAME
+ *                         indexed by old
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
 void merge_all_oi_vis2(const GList *inList, GHashTable *targetIdHash,
-		       const GList *insnameHashList, oi_fits *pOutput)
+		       const GList *arrnameHashList,
+                       const GList *insnameHashList, oi_fits *pOutput)
 {
-  const GList *ilink, *jlink, *hashListLink;
+  const GList *ilink, *jlink, *arrHashLink, *insHashLink;
   oi_fits *pInput;
   oi_vis2 *pOutTab;
-  GHashTable *insnameHash;
+  GHashTable *arrnameHash, *insnameHash;
   
   /* Loop over input datasets */
   ilink = inList;
-  hashListLink = insnameHashList;
+  arrHashLink = arrnameHashList;
+  insHashLink = insnameHashList;
   while(ilink != NULL) {
-    insnameHash = (GHashTable *) hashListLink->data;
+    arrnameHash = (GHashTable *) arrHashLink->data;
+    insnameHash = (GHashTable *) insHashLink->data;
     pInput = (oi_fits *) ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->vis2List;
     while(jlink != NULL) {
       pOutTab = dup_oi_vis2((oi_vis2 *) jlink->data);
-      UNSET_ARRNAME(pOutTab);
+      REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
@@ -272,38 +410,45 @@ void merge_all_oi_vis2(const GList *inList, GHashTable *targetIdHash,
       jlink = jlink->next;
     }
     ilink = ilink->next;
-    hashListLink = hashListLink->next;
+    arrHashLink = arrHashLink->next;
+    insHashLink = insHashLink->next;
   }
 }
 
 /**
- * Copy all input OI_T3 tables into output dataset. Modifies INSNAME and
- * TARGET_ID to maintain correct cross-references.
+ * Copy all input OI_T3 tables into output dataset. Modifies ARRNAME,
+ * INSNAME and TARGET_ID to maintain correct cross-references.
  *
  * @param inList        linked list of oi_fits structs to merge
  * @param targetIdHash  hash table giving new TARGET_ID indexed by target name
- * @param insnameHashList list of hash tables giving new INSNAME indexed by old
+ * @param arrnameHashList  list of hash tables giving new ARRNAME
+ *                         indexed by old
+ * @param insnameHashList  list of hash tables giving new INSNAME
+ *                         indexed by old
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
 void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
-		     const GList *insnameHashList, oi_fits *pOutput)
+		     const GList *arrnameHashList,
+                     const GList *insnameHashList, oi_fits *pOutput)
 {
-  const GList *ilink, *jlink, *hashListLink;
+  const GList *ilink, *jlink, *arrHashLink, *insHashLink;
   oi_fits *pInput;
   oi_t3 *pOutTab;
-  GHashTable *insnameHash;
+  GHashTable *arrnameHash, *insnameHash;
   
   /* Loop over input datasets */
   ilink = inList;
-  hashListLink = insnameHashList;
+  arrHashLink = arrnameHashList;
+  insHashLink = insnameHashList;
   while(ilink != NULL) {
-    insnameHash = (GHashTable *) hashListLink->data;
+    arrnameHash = (GHashTable *) arrHashLink->data;
+    insnameHash = (GHashTable *) insHashLink->data;
     pInput = (oi_fits *) ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->t3List;
     while(jlink != NULL) {
       pOutTab = dup_oi_t3((oi_t3 *) jlink->data);
-      UNSET_ARRNAME(pOutTab);
+      REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
@@ -312,7 +457,8 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
       jlink = jlink->next;
     }
     ilink = ilink->next;
-    hashListLink = hashListLink->next;
+    arrHashLink = arrHashLink->next;
+    insHashLink = insHashLink->next;
   }
 }
 
@@ -325,16 +471,26 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
 void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
 {
   GHashTable *targetIdHash;
-  GList *insnameHashList, *link;
+  GList *arrnameHashList, *insnameHashList, *link;
 
   init_oi_fits(pOutput);
   targetIdHash = merge_oi_target(inList, pOutput);
+  arrnameHashList = merge_all_oi_array(inList, pOutput);
   insnameHashList = merge_all_oi_wavelength(inList, pOutput);
-  merge_all_oi_vis(inList, targetIdHash, insnameHashList, pOutput);
-  merge_all_oi_vis2(inList, targetIdHash, insnameHashList, pOutput);
-  merge_all_oi_t3(inList, targetIdHash, insnameHashList, pOutput);
+  merge_all_oi_vis(inList, targetIdHash,
+                   arrnameHashList, insnameHashList, pOutput);
+  merge_all_oi_vis2(inList, targetIdHash,
+                    arrnameHashList, insnameHashList, pOutput);
+  merge_all_oi_t3(inList, targetIdHash,
+                  arrnameHashList, insnameHashList, pOutput);
 
   g_hash_table_destroy(targetIdHash);
+  link = arrnameHashList;
+  while(link != NULL) {
+    g_hash_table_destroy((GHashTable *) link->data);
+    link = link->next;
+  }
+  g_list_free(arrnameHashList);
   link = insnameHashList;
   while(link != NULL) {
     g_hash_table_destroy((GHashTable *) link->data);
