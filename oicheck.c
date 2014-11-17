@@ -172,7 +172,7 @@ oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
     }
   } else {
     g_snprintf(location, FLEN_VALUE, "Table revision numbers do not match "
-               "either v1 or v2 of the OIFITS standard");
+               "either v1 or v2 of the OIFITS std");
     set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
   }
   return pResult->level;
@@ -341,6 +341,8 @@ oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
 /**
  * Check all referenced array elements are present.
  *
+ * If OIFITS v2, complains if ARRNAME is not present.
+ *
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
@@ -350,14 +352,17 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   int i, j;
+  int requireArrname;
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
   oi_spectrum *pSpectrum;
   const char desc[] = "Reference to missing array element";
+  const char desc2[] = "ARRNAME missing";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
+  requireArrname = is_oi_fits_two(pOi);
 
   //:TODO: check OI_POLAR tables?
 
@@ -376,6 +381,10 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
 	  }
 	}
       }
+    } else if(requireArrname) {
+      g_snprintf(location, FLEN_VALUE, "OI_VIS #%d",
+                 g_list_position(pOi->visList, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
@@ -395,6 +404,10 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
 	  }
 	}
       }
+    } else if(requireArrname) {
+      g_snprintf(location, FLEN_VALUE, "OI_VIS2 #%d",
+                 g_list_position(pOi->vis2List, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
@@ -414,6 +427,10 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
 	  }
 	}
       }
+    } else if(requireArrname) {
+      g_snprintf(location, FLEN_VALUE, "OI_T3 #%d",
+                 g_list_position(pOi->t3List, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
@@ -432,6 +449,10 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
           set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
         }
       }
+    } else if(requireArrname) {
+      g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
+                 g_list_position(pOi->spectrumList, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
