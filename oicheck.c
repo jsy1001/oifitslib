@@ -223,6 +223,89 @@ oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
 }
 
 /**
+ * Check string keywords have allowed values.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
+{
+  GList *link;
+  oi_array *pArray;
+  oi_vis *pVis;
+  oi_spectrum *pSpectrum;
+  const char desc[] = "Invalid keyword value";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+
+  /* Check OI_ARRAY keywords */
+  link = pOi->arrayList;
+  while(link != NULL) {
+    pArray = link->data;
+    if(strcmp(pArray->frame, "GEOCENTRIC") != 0 &&
+       strcmp(pArray->frame, "SKY") != 0) {
+      g_snprintf(location, FLEN_VALUE,
+                 "OI_ARRAY #%d FRAME='%s' ('GEOCENTRIC'/'SKY')",
+                 g_list_position(pOi->arrayList, link)+1, pArray->frame);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  /* Check OI_VIS keywords */
+  link = pOi->visList;
+  while(link != NULL) {
+    pVis = link->data;
+    if(strlen(pVis->amptyp) > 0 &&
+       strcmp(pVis->amptyp, "absolute") != 0 &&
+       strcmp(pVis->amptyp, "differential") != 0 &&
+       strcmp(pVis->amptyp, "correlated flux") != 0) {
+      g_snprintf(location, FLEN_VALUE, "OI_VIS #%d AMPTYP='%s' "
+                 "('absolute'/'differential'/'correlated flux')",
+                 g_list_position(pOi->visList, link)+1, pVis->amptyp);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pVis->phityp) > 0 &&
+       strcmp(pVis->phityp, "absolute") != 0 &&
+       strcmp(pVis->phityp, "differential") != 0) {
+      g_snprintf(location, FLEN_VALUE,
+                 "OI_VIS #%d PHITYP='%s' ('absolute'/'differential')",
+                 g_list_position(pOi->visList, link)+1, pVis->phityp);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  /* Check OI_SPECTRUM keywords */
+  link = pOi->spectrumList;
+  while(link != NULL) {
+    pSpectrum = link->data;
+    if(pSpectrum->calstat != 'C' && pSpectrum->calstat != 'U') {
+      g_snprintf(location, FLEN_VALUE,
+                 "OI_SPECTRUM #%d CALSTAT='%c' ('C'/'U')",
+                 g_list_position(pOi->spectrumList, link)+1,
+                 pSpectrum->calstat);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pSpectrum->fovtype) > 0 &&
+       strcmp(pSpectrum->fovtype, "FWHM") != 0 &&
+       strcmp(pSpectrum->fovtype, "RADIUS") != 0) {
+      g_snprintf(location, FLEN_VALUE,
+                 "OI_SPECTRUM #%d FOVTYPE='%s' ('FWHM', 'RADIUS')",
+                 g_list_position(pOi->spectrumList, link)+1,
+                 pSpectrum->fovtype);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  return pResult->level;
+}
+
+/**
  * Check targets have unique identifiers.
  *
  * @param pOi      pointer to oi_fits struct to check
