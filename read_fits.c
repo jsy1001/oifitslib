@@ -516,7 +516,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, comment, pStatus);
   if (pTargets->revision != revision) {
     printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_TARGETS table. Got %d\n", revision, pTargets->revision);
+           "OI_TARGET table. Got %d\n", revision, pTargets->revision);
   }
   /* get number of rows */
   fits_get_num_rows(fptr, &repeat, pStatus);

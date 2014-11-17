@@ -2,7 +2,7 @@
  * @file
  * Command-line OIFITS conformity check utility.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2014 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 {
   /** Checking functions to call */
   check_func checks[] = {
+    check_tables,
     check_unique_targets,
     check_targets_present,
     check_elements_present,

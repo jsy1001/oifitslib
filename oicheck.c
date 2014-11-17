@@ -135,18 +135,45 @@ void print_check_result(oi_check_result *pResult)
  */
 oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
 {
-  const char desc[] = "Mandatory table missing or mixed table revisions";
+  const char desc1[] = "Mandatory table missing";
+  const char desc2[] = "Mixed table revisions";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
   if(is_oi_fits_one(pOi)) {
-    //:TODO: check mandatory OIFITS v1 tables present
+
+    if(pOi->numWavelength == 0) {
+      g_snprintf(location, FLEN_VALUE, "No OI_WAVELENGTH table - "
+                 "at least one required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
+    if(pOi->numVis == 0 && pOi->numVis2 == 0 && pOi->numT3 == 0) {
+      g_snprintf(location, FLEN_VALUE, "No data table - "
+                 "at least one OI_VIS/VIS2/T3 required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
   } else if(is_oi_fits_two(pOi)) {
-    //:TODO: check mandatory OIFITS v2 tables present
+
+    if(pOi->numArray == 0) {
+      g_snprintf(location, FLEN_VALUE, "No OI_ARRAY table - "
+                 "at least one required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
+    if(pOi->numWavelength == 0) {
+      g_snprintf(location, FLEN_VALUE, "No OI_WAVELENGTH table - "
+                 "at least one required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
+    if(pOi->numVis == 0 && pOi->numVis2 == 0 && pOi->numT3 == 0 &&
+       pOi->numSpectrum ==0) {
+      g_snprintf(location, FLEN_VALUE, "No data table - "
+                 "at least one OI_VIS/VIS2/T3/SPECTRUM required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
   } else {
     g_snprintf(location, FLEN_VALUE, "Table revision numbers do not match "
                "either v1 or v2 of the OIFITS standard");
-    set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
   }
   return pResult->level;
 }
