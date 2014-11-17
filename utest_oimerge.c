@@ -46,13 +46,13 @@ typedef struct {
 
 static const TestCase cases[] = {
   {DIR "Mystery--AMBER--LowH.fits", DIR "alp_aur--COAST_NICMOS.fits",
-   NULL, 0, 2},
+   NULL, 2, 2},
   {DIR "Mystery--AMBER--LowH.fits", DIR "alp_aur--COAST_NICMOS.fits",
-   DIR "Bin_Ary--MIRC_H.fits", 0, 3},
+   DIR "Bin_Ary--MIRC_H.fits", 3, 3},
   {DIR "Mystery--AMBER--LowH.fits", DIR "Mystery--AMBER--MedH.fits",
-   NULL, 0, 2},
-  {DIR "Alp_Vic--MIRC_H.fits", DIR "Alp_Vic--MIRC_K.fits", NULL, 0, 2},
-  {DIR "Alp_Vic--MIRC_H.fits", DIR "Bin_Ary--MIRC_H.fits", NULL, 0, 1}
+   NULL, 1, 2},
+  {DIR "Alp_Vic--MIRC_H.fits", DIR "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+  {DIR "Alp_Vic--MIRC_H.fits", DIR "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
 };
 
 static const int numCases = sizeof(cases)/sizeof(cases[0]);

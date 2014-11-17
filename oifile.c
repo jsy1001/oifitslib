@@ -679,7 +679,7 @@ oi_array *oi_fits_lookup_array(const oi_fits *pOi, const char *arrname)
  *   @param arrname   value of ARRNAME keyword
  *   @param staIndex  value of STA_INDEX from data table
  *
- *   @return ptr to 1st target struct matching targetId, or NULL if no match
+ *   @return ptr to 1st element struct matching staIndex, or NULL if no match
  */
 element *oi_fits_lookup_element(const oi_fits *pOi,
 				const char *arrname, int staIndex)
