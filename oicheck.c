@@ -25,11 +25,12 @@
 
 /* :TODO: integrate fitsverify? */
 
+#include "oicheck.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "oicheck.h"
+#include <math.h>
 
 
 /** Internal use GString, defined in oifile.c */
@@ -609,5 +610,75 @@ oi_breach_level check_waveorder(oi_fits *pOi, oi_check_result *pResult)
     link = link->next;
   }
 
+  return pResult->level;
+}
+
+/**
+ * Check for non-zero TIME values in OI_VIS/VIS2/T3.
+ *
+ * Use of TIME is deprecated in OIFITS v2.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_time(oi_fits *pOi, oi_check_result *pResult)
+{
+  GList *link;
+  int i;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  const double tol = 1e-10;
+  const char desc[] = "Non-zero TIME values in OIFITS v2 data table";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+
+  if(is_oi_fits_two(pOi))
+  {
+    /* Check OI_VIS tables */
+    link = pOi->visList;
+    while(link != NULL) {
+      pVis = link->data;
+      for(i=0; i<pVis->numrec; i++) {
+        if(fabs(pVis->record[i].time) > tol) {
+          g_snprintf(location, FLEN_VALUE, "OI_VIS #%d record %d",
+                     g_list_position(pOi->visList, link)+1, i+1);
+          set_result(pResult, OI_BREACH_WARNING, desc, location);
+        }
+      }
+      link = link->next;
+    }
+
+    /* Check OI_VIS2 tables */
+    link = pOi->vis2List;
+    while(link != NULL) {
+      pVis2 = link->data;
+      for(i=0; i<pVis2->numrec; i++) {
+        if(fabs(pVis2->record[i].time) > tol) {
+          g_snprintf(location, FLEN_VALUE, "OI_VIS2 #%d record %d",
+                     g_list_position(pOi->vis2List, link)+1, i+1);
+          set_result(pResult, OI_BREACH_WARNING, desc, location);
+        }
+      }
+      link = link->next;
+    }
+
+    /* Check OI_T3 tables */
+    link = pOi->t3List;
+    while(link != NULL) {
+      pT3 = link->data;
+      for(i=0; i<pT3->numrec; i++) {
+        if(fabs(pT3->record[i].time) > tol) {
+          g_snprintf(location, FLEN_VALUE, "OI_T3 #%d record %d",
+                     g_list_position(pOi->t3List, link)+1, i+1);
+          set_result(pResult, OI_BREACH_WARNING, desc, location);
+        }
+      }
+      link = link->next;
+    }
+  }
   return pResult->level;
 }

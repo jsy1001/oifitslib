@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     check_flagging,
     check_t3amp,
     check_waveorder,
+    check_time,
     NULL
   };
   oi_fits oi;

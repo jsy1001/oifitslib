@@ -111,6 +111,7 @@ oi_breach_level check_elements_present(oi_fits *, oi_check_result *);
 oi_breach_level check_flagging(oi_fits *, oi_check_result *);
 oi_breach_level check_t3amp(oi_fits *, oi_check_result *);
 oi_breach_level check_waveorder(oi_fits *, oi_check_result *);
+oi_breach_level check_time(oi_fits *, oi_check_result *);
 
 #endif /* #ifndef OICHECK_H */
 
