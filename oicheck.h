@@ -104,6 +104,7 @@ void free_check_result(oi_check_result *);
 char *format_check_result(oi_check_result *);
 void print_check_result(oi_check_result *);
 oi_breach_level check_tables(oi_fits *, oi_check_result *);
+oi_breach_level check_header(oi_fits *, oi_check_result *);
 oi_breach_level check_unique_targets(oi_fits *, oi_check_result *);
 oi_breach_level check_targets_present(oi_fits *, oi_check_result *);
 oi_breach_level check_elements_present(oi_fits *, oi_check_result *);

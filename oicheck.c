@@ -179,6 +179,49 @@ oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
 }
 
 /**
+ * Check mandatory primary header keywords are present.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
+{
+  const char desc[] = "Missing or blank mandatory primary header keyword";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+  if(is_oi_fits_two(pOi)) {
+    if(strlen(pOi->header.origin) == 0) {
+      g_snprintf(location, FLEN_VALUE, "ORIGIN missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pOi->header.date_obs) == 0) {
+      g_snprintf(location, FLEN_VALUE, "DATE-OBS missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pOi->header.telescop) == 0) {
+      g_snprintf(location, FLEN_VALUE, "TELESCOP missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pOi->header.instrume) == 0) {
+      g_snprintf(location, FLEN_VALUE, "INSTRUME missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pOi->header.insmode) == 0) {
+      g_snprintf(location, FLEN_VALUE, "INSMODE missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pOi->header.object) == 0) {
+      g_snprintf(location, FLEN_VALUE, "OBJECT missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+  }
+  return pResult->level;
+}
+
+/**
  * Check targets have unique identifiers.
  *
  * @param pOi      pointer to oi_fits struct to check
