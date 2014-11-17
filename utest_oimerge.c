@@ -142,7 +142,7 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
 static void test_merge(void)
 {
-  int i;
+  int i, numCorr;
   oi_fits outData, inData1, inData2, inData3;
   int status;
   DataCount inCount, outCount;
@@ -153,16 +153,20 @@ static void test_merge(void)
 
     /* Read files to merge */
     status = 0;
+    numCorr = 0;
     read_oi_fits(cases[i].filename1, &inData1, &status);
     g_assert(!status);
     check(&inData1);
+    numCorr += inData1.numCorr;
     read_oi_fits(cases[i].filename2, &inData2, &status);
     g_assert(!status);
     check(&inData2);
+    numCorr += inData2.numCorr;
     if(cases[i].filename3 != NULL) {
       read_oi_fits(cases[i].filename3, &inData3, &status);
       g_assert(!status);
       check(&inData3);
+      numCorr += inData3.numCorr;
     }
 
     /* Merge datasets */
@@ -175,6 +179,9 @@ static void test_merge(void)
     /* Compare number of OI_ARRAY and OI_WAVELENGTH tables */
     g_assert_cmpint(outData.numArray, ==, cases[i].numArray);
     g_assert_cmpint(outData.numWavelength, ==, cases[i].numWavelength);
+
+    /* Compare number of OI_CORR tables */
+    g_assert_cmpint(outData.numCorr, ==, numCorr);
 
     /* Compare number of data */
     zero_count(&inCount);
