@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     check_tables,
     check_header,
     check_keywords,
+    check_visrefmap,
     check_unique_targets,
     check_targets_present,
     check_elements_present,

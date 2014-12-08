@@ -232,6 +232,7 @@ oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
  */
 oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
 {
+  int ver2;
   GList *link;
   oi_array *pArray;
   oi_vis *pVis;
@@ -240,6 +241,8 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
+
+  ver2 = is_oi_fits_two(pOi);
 
   /* Check OI_ARRAY keywords */
   link = pOi->arrayList;
@@ -259,7 +262,7 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
   link = pOi->visList;
   while(link != NULL) {
     pVis = link->data;
-    if(strlen(pVis->amptyp) > 0 &&
+    if(ver2 &&
        strcmp(pVis->amptyp, "absolute") != 0 &&
        strcmp(pVis->amptyp, "differential") != 0 &&
        strcmp(pVis->amptyp, "correlated flux") != 0) {
@@ -268,7 +271,7 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
                  g_list_position(pOi->visList, link)+1, pVis->amptyp);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
-    if(strlen(pVis->phityp) > 0 &&
+    if(ver2 &&
        strcmp(pVis->phityp, "absolute") != 0 &&
        strcmp(pVis->phityp, "differential") != 0) {
       g_snprintf(location, FLEN_VALUE,
@@ -298,6 +301,54 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
                  g_list_position(pOi->spectrumList, link)+1,
                  pSpectrum->fovtype);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  return pResult->level;
+}
+
+/**
+ * Check optional OI_VIS VISREFMAP column present when needed.
+ *
+ * @sa check_keywords() which checks that AMPTYP and PHITYP each have
+ * an allowed value.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
+{
+  GList *link;
+  oi_vis *pVis;
+  const char desc1[] = "VISREFMAP missing for differential visibilities";
+  const char desc2[] = "VISREFMAP present for absolute visibilities";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+
+  /* Check OI_VIS keywords */
+  link = pOi->visList;
+  while(link != NULL) {
+    pVis = link->data;
+    if(strcmp(pVis->amptyp, "differential") == 0 ||
+       strcmp(pVis->phityp, "differential") == 0)
+    {
+      if(!pVis->usevisrefmap) {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_VIS #%d has AMPTYP='%s' PHITYP='%s' but no VISREFMAP",
+                   g_list_position(pOi->visList, link)+1,
+                   pVis->amptyp, pVis->phityp);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+      } else {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_VIS #%d has AMPTYP='%s' PHITYP='%s' and VISREFMAP",
+                   g_list_position(pOi->visList, link)+1,
+                   pVis->amptyp, pVis->phityp);
+        set_result(pResult, OI_BREACH_WARNING, desc2, location);
+      }
     }
     link = link->next;
   }
