@@ -255,14 +255,15 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
                  g_list_position(pOi->arrayList, link)+1, pArray->frame);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
+    //:TODO: warn if SKY used in revision 1
     link = link->next;
   }
 
-  /* Check OI_VIS keywords */
+  /* Check optional OI_VIS keywords */
   link = pOi->visList;
   while(link != NULL) {
     pVis = link->data;
-    if(ver2 &&
+    if(ver2 && strlen(pVis->amptyp) > 0 &&
        strcmp(pVis->amptyp, "absolute") != 0 &&
        strcmp(pVis->amptyp, "differential") != 0 &&
        strcmp(pVis->amptyp, "correlated flux") != 0) {
@@ -271,7 +272,7 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
                  g_list_position(pOi->visList, link)+1, pVis->amptyp);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
-    if(ver2 &&
+    if(ver2 && strlen(pVis->phityp) > 0 &&
        strcmp(pVis->phityp, "absolute") != 0 &&
        strcmp(pVis->phityp, "differential") != 0) {
       g_snprintf(location, FLEN_VALUE,
