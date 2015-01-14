@@ -2,7 +2,7 @@
  * @file
  * Example program - uses oitable API to write and read a OIFITS file.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -91,9 +91,11 @@ void demo_write(void)
     fscanf(fp, "staxyz %lf %lf %lf diameter %f ", &array.elem[i].staxyz[0],
 	   &array.elem[i].staxyz[1], &array.elem[i].staxyz[2],
 	   &array.elem[i].diameter);
+    fscanf(fp, "fov %lf fovtype %s ",
+           &array.elem[i].fov, array.elem[i].fovtype);
     array.elem[i].sta_index = i+1;
   }
-  array.revision = 1;
+  array.revision = 2;
 
   /* Read info for OI_TARGET table */
   fscanf(fp, "OI_TARGET ntarget %d ", &targets.ntarget);
@@ -121,7 +123,7 @@ void demo_write(void)
       targets.usecategory = TRUE;
     fscanf(fp, " ");
   }
-  targets.revision = 1;
+  targets.revision = 2;
 
   /* Read info for OI_WAVELENGTH table */
   fscanf(fp, "OI_WAVELENGTH insname %70s ", wave.insname);
@@ -136,7 +138,7 @@ void demo_write(void)
   for(i=0; i<wave.nwave; i++) {
     fscanf(fp, "%f ", &wave.eff_band[i]);
   }
-  wave.revision = 1;
+  wave.revision = 2;
 
   /* Read info for OI_CORR table */
   fscanf(fp, "OI_CORR corrname %70s ", corr.corrname);
@@ -250,7 +252,7 @@ void demo_write(void)
       vis.record[irec].flag[iwave] = FALSE;
     }
   }
-  vis.revision = 1;
+  vis.revision = 2;
   vis.nwave = wave.nwave;
   vis.usevisrefmap = FALSE;
   vis.usecomplex = FALSE;  /* hence complexunit not used */
@@ -291,7 +293,7 @@ void demo_write(void)
       vis2.record[irec].flag[iwave] = FALSE;
     }
   }
-  vis2.revision = 1;
+  vis2.revision = 2;
   vis2.nwave = wave.nwave;
 
   /* Read info for OI_T3 table */
@@ -339,7 +341,7 @@ void demo_write(void)
       t3.record[irec].flag[iwave] = FALSE;
     }
   }
-  t3.revision = 1;
+  t3.revision = 2;
   t3.nwave = wave.nwave;
 
   /* Read info for OI_SPECTRUM table */

@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Implementation of file-level API for OIFITS data.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -231,7 +231,7 @@ void init_oi_fits(oi_fits *pOi)
   pOi->header.procsoft[0] = '\0';
   pOi->header.obstech[0] = '\0';
 
-  pOi->targets.revision = 1;
+  pOi->targets.revision = 2;
   pOi->targets.ntarget = 0;
   pOi->targets.targ = NULL;
   pOi->targets.usecategory = FALSE;

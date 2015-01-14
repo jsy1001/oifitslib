@@ -4,7 +4,7 @@
  * Implementation of functions to write FITS tables from data structures
  * in memory.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -159,13 +159,14 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
                       STATUS *pStatus)
 {
   const char function[] = "write_oi_array";
-  const int tfields = 5;
-  char *ttype[] = {"TEL_NAME", "STA_NAME", "STA_INDEX", "DIAMETER", "STAXYZ"};
-  char *tform[] = {"16A", "16A", "I", "E", "3D"};
-  char *tunit[] = {"\0", "\0", "\0", "m", "m"};
+  const int tfields = 7;
+  char *ttype[] = {"TEL_NAME", "STA_NAME", "STA_INDEX", "DIAMETER", "STAXYZ",
+                   "FOV", "FOVTYPE"};
+  char *tform[] = {"16A", "16A", "I", "E", "3D", "D", "6A"};
+  char *tunit[] = {"\0", "\0", "\0", "m", "m", "arcsec", ""};
   char extname[] = "OI_ARRAY";
   char *str;
-  int revision = 1, irow;
+  int revision = 2, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -203,6 +204,10 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
 		   pStatus);
     fits_write_col(fptr, TDOUBLE, 5, irow, 1, 3, &array.elem[irow-1].staxyz,
 		   pStatus);
+    fits_write_col(fptr, TDOUBLE, 6, irow, 1, 1, &array.elem[irow-1].fov,
+		   pStatus);
+    str = array.elem[irow-1].fovtype;
+    fits_write_col(fptr, TSTRING, 7, irow, 1, 1, &str, pStatus);
   }
 
   fits_write_chksum(fptr, pStatus);
@@ -242,7 +247,7 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
 		   "deg", "deg", "\0"};
   char extname[] = "OI_TARGET";
   char *str;
-  int revision = 1, irow;
+  int revision = 2, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -330,7 +335,7 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
   char *tform[] = {"E", "E"};
   char *tunit[] = {"m", "m"};
   char extname[] = "OI_WAVELENGTH";
-  int revision = 1;
+  int revision = 2;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -617,7 +622,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		   "\0", "\0", "deg", "deg",
 		   "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
-  int revision = 1, irow;
+  int revision = 2, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -715,7 +720,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 		   "\0", "\0", "m", "m",
 		   "\0", "\0"};
   char extname[] = "OI_VIS2";
-  int revision = 1, irow;
+  int revision = 2, irow;
   bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
@@ -822,7 +827,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 		   "m", "m", "m", "m",
 		   "\0", "\0"};
   char extname[] = "OI_T3";
-  int revision = 1, irow;
+  int revision = 2, irow;
   bool correlated;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */

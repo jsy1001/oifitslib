@@ -4,7 +4,7 @@
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -188,12 +188,16 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   char nullstring[] = "NULL";
   int nullint = 0;
   float nullfloat = 0.0F;
-  double nulldouble = 0.0;
+  double nan, nulldouble = 0.0;
   const int revision = 1;
   int irow, colnum, anynull;
   long repeat;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  /* Make a NaN */
+  nan = 0.0;
+  nan /= nan;
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, comment, pStatus);
@@ -234,6 +238,18 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
     fits_get_colnum(fptr, CASEINSEN, "STAXYZ", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 3, &nulldouble,
 		  &pArray->elem[irow-1].staxyz, &anynull, pStatus);
+    if (pArray->revision >= 2) {
+      fits_get_colnum(fptr, CASEINSEN, "FOV", &colnum, pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+                    &pArray->elem[irow-1].fov, &anynull, pStatus);
+      fits_get_colnum(fptr, CASEINSEN, "FOVTYPE", &colnum, pStatus);
+      p = pArray->elem[irow-1].fovtype;
+      fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
+                    &anynull, pStatus);
+    } else {
+      pArray->elem[irow-1].fov = nan;
+      strncpy(pArray->elem[irow-1].fovtype, "FWHM", 7);
+    }
     /*printf("%8s  %8s  %d  %5f  %10f %10f %10f\n",
 	   pArray->elem[irow-1].tel_name,
 	   pArray->elem[irow-1].sta_name, pArray->elem[irow-1].sta_index,

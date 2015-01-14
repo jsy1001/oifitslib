@@ -11,21 +11,29 @@ tel_name TEL2
 sta_name C
 staxyz 0.000 0.000 0.000
 diameter 0.400
+fov 0.5
+fovtype RADIUS
 
 tel_name TEL4
 sta_name W4
 staxyz 4.474 -9.605 -3.481
 diameter 0.400
+fov 0.5
+fovtype RADIUS
 
 tel_name TEL3
 sta_name E3
 staxyz 3.632 +8.434 -2.816
 diameter 0.400
+fov 0.5
+fovtype RADIUS
 
 tel_name TEL1
 sta_name N3
 staxyz -11.24 +0.307 8.727
 diameter 0.400
+fov 0.5
+fovtype RADIUS
 
 
 OI_TARGET
