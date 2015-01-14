@@ -602,19 +602,21 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   }
 
   /* Read optional column */
-  fits_get_colnum(fptr, CASEINSEN, "CATEGORY", &colnum, pStatus);
-  if(*pStatus == COL_NOT_FOUND) {
-    pTargets->usecategory = FALSE;
-    *pStatus = 0;
-    //:TODO: set to -1?
-  } else {
-    pTargets->usecategory = TRUE;
-    for (irow=1; irow<=pTargets->ntarget; irow++) {
-      p = pTargets->targ[irow-1].category;
-      fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-                    &anynull, pStatus);
+  pTargets->usecategory = FALSE;  /* default */
+  if (pTargets->revision >= 2) {
+    fits_get_colnum(fptr, CASEINSEN, "CATEGORY", &colnum, pStatus);
+    if(*pStatus == COL_NOT_FOUND) {
+      *pStatus = 0;
+    } else {
+      pTargets->usecategory = TRUE;
+      for (irow=1; irow<=pTargets->ntarget; irow++) {
+        p = pTargets->targ[irow-1].category;
+        fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
+                      &anynull, pStatus);
+      }
     }
   }
+  
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
@@ -895,7 +897,7 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
 }
 
 /**
- * Read OI_VIS optional content
+ * Read OI_VIS optional content.
  */
 static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
@@ -904,6 +906,15 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   int nullint = 0;
   int irow, colnum, anynull;
   bool correlated;
+
+  if (pVis->revision == 1) {
+    pVis->corrname[0] = '\0';
+    pVis->amptyp[0] = '\0';
+    pVis->phityp[0] = '\0';
+    pVis->amporder = -1;
+    pVis->phiorder = -1;
+    return;
+  }
 
   /* Read optional keywords */
   fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, comment, pStatus);
@@ -1132,14 +1143,18 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, comment, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
-    pVis2->corrname[0] = '\0';
-    *pStatus = 0;
-    correlated = FALSE;
-  } else {
-    correlated = TRUE;
+
+  correlated = FALSE;  /* default */
+  pVis2->corrname[0] = '\0';
+  if (pVis2->revision >= 2) {
+    fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, comment, pStatus);
+    if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+      *pStatus = 0;
+    } else {
+      correlated = TRUE;
+    }
   }
+  
   /* get number of rows */
   fits_get_num_rows(fptr, &pVis2->numrec, pStatus);
   pVis2->record = malloc(pVis2->numrec*sizeof(oi_vis2_record));
@@ -1248,14 +1263,18 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     *pStatus = 0;
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, comment, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
-    pT3->corrname[0] = '\0';
-    *pStatus = 0;
-    correlated = FALSE;
-  } else {
-    correlated = TRUE;
+
+  correlated = FALSE;  /* default */
+  pT3->corrname[0] = '\0';
+  if (pT3->revision >= 2) {
+    fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, comment, pStatus);
+    if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+      *pStatus = 0;
+    } else {
+      correlated = TRUE;
+    }
   }
+
   /* get number of rows & allocate storage */
   fits_get_num_rows(fptr, &pT3->numrec, pStatus);
   pT3->record = malloc(pT3->numrec*sizeof(oi_t3_record));
