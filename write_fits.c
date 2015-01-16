@@ -611,6 +611,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_vis";
   const int tfields = 12;
+  double zerotime = 0.0;
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
                    "VISAMP", "VISAMPERR", "VISPHI", "VISPHIERR",
 		   "UCOORD", "VCOORD", "STA_INDEX", "FLAG"};
@@ -660,8 +661,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &vis.record[irow-1].target_id,
 		   pStatus);
-    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &vis.record[irow-1].time,
-		   pStatus);
+    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &zerotime, pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1, &vis.record[irow-1].mjd,
 		   pStatus);
     fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1, &vis.record[irow-1].int_time,
@@ -709,6 +709,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_vis2";
   const int tfields = 10;  /* mandatory columns */
+  double zerotime = 0.0;
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		   "VIS2DATA", "VIS2ERR", "UCOORD", "VCOORD",
 		   "STA_INDEX", "FLAG"};
@@ -753,8 +754,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &vis2.record[irow-1].target_id,
 		   pStatus);
-    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &vis2.record[irow-1].time,
-		   pStatus);
+    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &zerotime, pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1, &vis2.record[irow-1].mjd,
 		   pStatus);
     fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1, &vis2.record[irow-1].int_time,
@@ -813,6 +813,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_t3";
   const int tfields = 14;
+  double zerotime = 0.0;
   char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
 		   "T3AMP", "T3AMPERR", "T3PHI", "T3PHIERR",
 		   "U1COORD", "V1COORD", "U2COORD", "V2COORD", 
@@ -860,8 +861,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &t3.record[irow-1].target_id,
 		   pStatus);
-    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &t3.record[irow-1].time,
-		   pStatus);
+    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &zerotime, pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1, &t3.record[irow-1].mjd,
 		   pStatus);
     fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1, &t3.record[irow-1].int_time,
