@@ -3,7 +3,7 @@
  * @ingroup oifilter
  * Implementation of OIFITS filter.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -937,6 +937,7 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
                                  const oi_filter_spec *pFilter,
                                  const char *useWave,
                                  int nwaveIn, int nwaveOut,
+                                 BOOL usevisrefmap, BOOL usecomplex,
                                  oi_vis_record *pOutRec)
 {
   bool someUnflagged;
@@ -951,14 +952,20 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
   pOutRec->visphi = malloc(nwaveOut*sizeof(DATA));
   pOutRec->visphierr = malloc(nwaveOut*sizeof(DATA));
   pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
-  //:TODO: pass usevisrefmap, usecomplex instead?
-  if (pInRec->visrefmap != NULL)
+  if (usevisrefmap)
     pOutRec->visrefmap = malloc(nwaveOut*nwaveOut*sizeof(BOOL));
-  if (pInRec->rvis != NULL) {
+  else
+    pOutRec->visrefmap = NULL;
+  if (usecomplex) {
     pOutRec->rvis = malloc(nwaveOut*sizeof(DATA));
     pOutRec->rviserr = malloc(nwaveOut*sizeof(DATA));
     pOutRec->ivis = malloc(nwaveOut*sizeof(DATA));
     pOutRec->iviserr = malloc(nwaveOut*sizeof(DATA));
+  } else {
+    pOutRec->rvis = NULL;
+    pOutRec->rviserr = NULL;
+    pOutRec->ivis = NULL;
+    pOutRec->iviserr = NULL;
   }
   k = 0;
   someUnflagged = FALSE;
@@ -978,7 +985,7 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
         pOutRec->flag[k] = pInRec->flag[j];
       }
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
-      if (pInRec->visrefmap != NULL) {
+      if (usevisrefmap) {
         m = 0;
         for (l=0; l<nwaveIn; l++) {
           if (useWave[l]) {
@@ -987,7 +994,7 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
           }
         }
       }
-      if (pInRec->rvis != NULL) {
+      if (usecomplex) {
         pOutRec->rvis[k] = pInRec->rvis[j];
         pOutRec->rviserr[k] = pInRec->rviserr[j];
         pOutRec->ivis[k] = pInRec->ivis[j];
@@ -1042,6 +1049,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     /* Create output record */
     filter_oi_vis_record(&pInTab->record[i], pFilter, useWave,
                          pInTab->nwave, pOutTab->nwave,
+                         pInTab->usevisrefmap, pInTab->usecomplex,
                          &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;

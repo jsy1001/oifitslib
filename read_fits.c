@@ -913,6 +913,8 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     pVis->phityp[0] = '\0';
     pVis->amporder = -1;
     pVis->phiorder = -1;
+    pVis->usevisrefmap = FALSE;
+    pVis->usecomplex = FALSE;
     return;
   }
 
