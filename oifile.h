@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for file-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -95,8 +95,9 @@ typedef struct {
  */
 void init_oi_fits(oi_fits *);
 //:TODO: return a boolean type? stdbool.h already used internally
-int is_oi_fits_one(oi_fits *);
-int is_oi_fits_two(oi_fits *);
+int is_oi_fits_one(const oi_fits *);
+int is_oi_fits_two(const oi_fits *);
+void set_oi_header(oi_fits *);
 STATUS write_oi_fits(const char *, oi_fits, STATUS *);
 STATUS read_oi_fits(const char *, oi_fits *, STATUS *);
 void free_oi_fits(oi_fits *);

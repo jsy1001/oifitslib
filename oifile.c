@@ -282,7 +282,7 @@ void init_oi_fits(oi_fits *pOi)
  *
  *   @return TRUE if OIFITS v1, FALSE otherwise.
  */
-int is_oi_fits_one(oi_fits *pOi)
+int is_oi_fits_one(const oi_fits *pOi)
 {
   g_assert(pOi != NULL);
   if (pOi->targets.revision != 1) return FALSE;
@@ -301,9 +301,10 @@ int is_oi_fits_one(oi_fits *pOi)
  *
  *   @return TRUE if OIFITS v2, FALSE otherwise.
  */
-int is_oi_fits_two(oi_fits *pOi)
+int is_oi_fits_two(const oi_fits *pOi)
 {
   g_assert(pOi != NULL);
+  //:TODO: also check PRODCATG from primary header?
   if (pOi->targets.revision != 2) return FALSE;
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->arrayList, oi_array, 2, FALSE);
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->wavelengthList, oi_wavelength, 2, FALSE);
@@ -326,6 +327,47 @@ int is_oi_fits_two(oi_fits *pOi)
     write_func(fptr, *((type *) link->data), extver++, pStatus); \
     link = link->next; \
   }
+
+/**
+ * Set primary header keywords from table contents.
+ *
+ * Sets values for DATE-OBS, TELESCOP, INSTRUME and OBJECT from
+ * existing data.  Note that the mandatory keywords ORIGIN and INSMODE
+ * are not set.
+ *
+ *   @param pOi  pointer to file data struct, see oifile.h
+ */
+void set_oi_header(oi_fits *pOi)
+{
+  const char multiple[] = "MULTIPLE";
+  oi_array *pArray;
+  oi_wavelength *pWave;
+
+  /* Set TELESCOP */
+  if (pOi->numArray == 1) {
+    pArray = pOi->arrayList->data;
+    strncpy(pOi->header.telescop, pArray->arrname, FLEN_VALUE);
+  } else {
+    strncpy(pOi->header.telescop, multiple, FLEN_VALUE);
+  }
+
+  /* Set INSTRUME */
+  if (pOi->numWavelength == 1) {
+    pWave = pOi->wavelengthList->data;
+    strncpy(pOi->header.instrume, pWave->insname, FLEN_VALUE);
+  } else {
+    strncpy(pOi->header.instrume, multiple, FLEN_VALUE);
+  }
+
+  /* Set OBJECT */
+  if (pOi->targets.ntarget == 1) {
+    strncpy(pOi->header.object, pOi->targets.targ[0].target, FLEN_VALUE);
+  } else {
+    strncpy(pOi->header.object, multiple, FLEN_VALUE);
+  }
+    
+  //:TODO: set DATE-OBS
+}
 
 /**
  * Write OIFITS tables to new FITS file.
@@ -603,6 +645,9 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pSpectrum);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+
+  //if (is_oi_fits_one(pOi)) //:BUG: ?
+    set_oi_header(pOi);
 
   fits_close_file(fptr, pStatus);
 
