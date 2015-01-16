@@ -646,7 +646,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
 
-  //if (is_oi_fits_one(pOi)) //:BUG: ?
+  if (is_oi_fits_one(pOi))
     set_oi_header(pOi);
 
   fits_close_file(fptr, pStatus);
