@@ -915,7 +915,7 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     pVis->phiorder = -1;
     pVis->usevisrefmap = FALSE;
     pVis->usecomplex = FALSE;
-    return;
+    return *pStatus;
   }
 
   /* Read optional keywords */
