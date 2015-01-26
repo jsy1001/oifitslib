@@ -104,7 +104,7 @@ liboifits.a: read_fits.o write_fits.o free_fits.o datemjd.o oifile.o \
  oifilter.o oicheck.o oimerge.o
 	$(AR) -ruc $@ $^
 datemjd.o: datemjd.c datemjd.h
-oifile.o: oifile.c oifile.h exchange.h glib-2.0.libexists
+oifile.o: oifile.c oifile.h exchange.h datemjd.h glib-2.0.libexists
 oifilter.o: oifilter.c oifilter.h oifile.h exchange.h glib-2.0.libexists
 oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 oimerge.o: oimerge.c oimerge.h oifile.h exchange.h datemjd.h glib-2.0.libexists
