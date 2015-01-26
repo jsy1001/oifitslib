@@ -126,31 +126,26 @@ static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
 }
 
 /**
- * Return midpoint of primary header DATE-OBS range in @a list as MJD.
+ * Return earliest of primary header DATE-OBS values in @a list as MJD.
  */
-static long mid_mjd(const GList *list)
+static long files_min_mjd(const GList *list)
 {
   const GList *link;
   oi_header *pHeader;
-  long year, month, day, mjd, minMjd, maxMjd;
+  long year, month, day, mjd, minMjd;
 
   minMjd = 100000;
-  maxMjd = 0;
   link = list;
   while (link != NULL) {
     pHeader = &((oi_fits *) link->data)->header;
-    if (sscanf(pHeader->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3)
-    {
-      mjd = date2mjd(year, month, day);
-      if (mjd < minMjd)
-        minMjd = mjd;
-      if (mjd > maxMjd)
-        maxMjd = mjd;
-    }
-    //:TODO: handle files without DATE-OBS
+    if (sscanf(pHeader->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
+        && (mjd = date2mjd(year, month, day)) < minMjd)
+      minMjd = mjd;
+
+    /* note DATE-OBS is set from file contents when reading v1 files */
     link = link->next;
   }
-  return (minMjd + maxMjd)/2;
+  return minMjd;
 }
 
 
@@ -194,7 +189,7 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
 
   assert(pOutput->header.origin[0] == '\0');
 
-  mjd2date(mid_mjd(inList), &year, &month, &day);
+  mjd2date(files_min_mjd(inList), &year, &month, &day);
   g_snprintf(pOutput->header.date_obs, FLEN_VALUE,
              "%4ld-%02ld-%02ld", year, month, day);
 
