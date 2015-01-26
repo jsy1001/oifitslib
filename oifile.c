@@ -23,11 +23,13 @@
  * http://www.gnu.org/licenses/
  */
 
+#include "oifile.h"
+#include "datemjd.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include <fitsio.h>
-#include "oifile.h"
 
 
 /** GLib expanding string buffer, for use within OIFITSlib. */
@@ -208,6 +210,54 @@ static void format_polar_list_summary(GString *pGStr, GList *polarList)
   }
 }    
 
+/**
+ * Return earliest of binary table DATE-OBS values as MJD.
+ */
+static long min_mjd(const oi_fits *pOi)
+{
+  const GList *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
+  long year, month, day, mjd, minMjd;
+
+  minMjd = 100000;
+  link = pOi->visList;
+  while (link != NULL) {
+    pVis = link->data;
+    if (sscanf(pVis->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
+        && (mjd = date2mjd(year, month, day)) < minMjd)
+      minMjd = mjd;
+    link = link->next;
+  }
+  link = pOi->vis2List;
+  while (link != NULL) {
+    pVis2 = link->data;
+    if (sscanf(pVis2->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
+        && (mjd = date2mjd(year, month, day)) < minMjd)
+      minMjd = mjd;
+    link = link->next;
+  }
+  link = pOi->t3List;
+  while (link != NULL) {
+    pT3 = link->data;
+    if (sscanf(pT3->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
+        && (mjd = date2mjd(year, month, day)) < minMjd)
+      minMjd = mjd;
+    link = link->next;
+  }
+  link = pOi->spectrumList;
+  while (link != NULL) {
+    pSpectrum = link->data;
+    if (sscanf(pSpectrum->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
+        && (mjd = date2mjd(year, month, day)) < minMjd)
+      minMjd = mjd;
+    link = link->next;
+  }
+  return minMjd;
+}
+
 
 /*
  * Public functions
@@ -342,6 +392,7 @@ void set_oi_header(oi_fits *pOi)
   const char multiple[] = "MULTIPLE";
   oi_array *pArray;
   oi_wavelength *pWave;
+  long year, month, day;
 
   /* Set TELESCOP */
   if (pOi->numArray == 1) {
@@ -365,8 +416,11 @@ void set_oi_header(oi_fits *pOi)
   } else {
     strncpy(pOi->header.object, multiple, FLEN_VALUE);
   }
-    
-  //:TODO: set DATE-OBS
+
+  /* Set DATE-OBS */
+  mjd2date(min_mjd(pOi), &year, &month, &day);
+  g_snprintf(pOi->header.date_obs, FLEN_VALUE,
+             "%4ld-%02ld-%02ld", year, month, day);
 }
 
 /**
