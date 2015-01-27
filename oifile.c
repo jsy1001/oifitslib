@@ -397,24 +397,24 @@ void set_oi_header(oi_fits *pOi)
   /* Set TELESCOP */
   if (pOi->numArray == 1) {
     pArray = pOi->arrayList->data;
-    strncpy(pOi->header.telescop, pArray->arrname, FLEN_VALUE);
+    g_strlcpy(pOi->header.telescop, pArray->arrname, FLEN_VALUE);
   } else {
-    strncpy(pOi->header.telescop, multiple, FLEN_VALUE);
+    g_strlcpy(pOi->header.telescop, multiple, FLEN_VALUE);
   }
 
   /* Set INSTRUME */
   if (pOi->numWavelength == 1) {
     pWave = pOi->wavelengthList->data;
-    strncpy(pOi->header.instrume, pWave->insname, FLEN_VALUE);
+    g_strlcpy(pOi->header.instrume, pWave->insname, FLEN_VALUE);
   } else {
-    strncpy(pOi->header.instrume, multiple, FLEN_VALUE);
+    g_strlcpy(pOi->header.instrume, multiple, FLEN_VALUE);
   }
 
   /* Set OBJECT */
   if (pOi->targets.ntarget == 1) {
-    strncpy(pOi->header.object, pOi->targets.targ[0].target, FLEN_VALUE);
+    g_strlcpy(pOi->header.object, pOi->targets.targ[0].target, FLEN_VALUE);
   } else {
-    strncpy(pOi->header.object, multiple, FLEN_VALUE);
+    g_strlcpy(pOi->header.object, multiple, FLEN_VALUE);
   }
 
   /* Set DATE-OBS */
