@@ -71,7 +71,7 @@ LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
 
 OITABLE = liboitable.a demo
-EXES = oifits-check oifits-merge oifits-filter 
+EXES = oifits-check oifits-merge oifits-filter oifits-upgrade
 TEST_EXES = utest_datemjd utest_oifile \
  utest_oicheck utest_oimerge utest_oifilter
 LIBRARIES = liboifits.a
@@ -121,6 +121,9 @@ oifits-check: oifits-check.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 oifits-merge: oifits-merge.o liboifits.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
+
+oifits-upgrade: oifits-upgrade.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 utest_datemjd: utest_datemjd.o datemjd.o
