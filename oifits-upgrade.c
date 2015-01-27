@@ -24,59 +24,53 @@
 
 #include "oifile.h"
 
+#include <stdio.h>
+
 
 /**
  * Main function for command-line upgrade utility.
  */
 int main(int argc, char *argv[]) 
 {
-  GError *error;
-  GOptionContext *context;
-  char inFilename[FLEN_FILENAME], outFilename[FLEN_FILENAME];
-  oi_fits data;
+  const char *inFilename, *outFilename, *origin, *insmode;
+  oi_fits oi;
   int status;
 
   /* Parse command-line */
-  error = NULL;
-  context = g_option_context_new("INFILE OUTFILE - "
-                                 "upgrade OIFITS to latest version");
-  //g_option_context_set_main_group(context, get_oi_filter_option_group());
-  g_option_context_parse(context, &argc, &argv, &error);
-  if(error != NULL) {
-    printf("Error parsing command-line options: %s\n", error->message);
-    g_error_free(error);
+  if(argc < 5) {
+    printf("Usage:\n%s INFILE OUTFILE ORIGIN INSMODE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
-  if(argc != 3) {
-    printf("Wrong number of command-line arguments\n"
-	   "Enter '%s --help' for usage information\n", argv[0]);
-    exit(2);
-  }
-  g_strlcpy(inFilename, argv[1], FLEN_FILENAME);
-  g_strlcpy(outFilename, argv[2], FLEN_FILENAME);
+  inFilename = argv[1];
+  outFilename = argv[2];
+  origin = argv[3];
+  insmode = argv[4];
 
   /* Read FITS file */
   status = 0;
-  read_oi_fits(inFilename, &data, &status);
+  read_oi_fits(inFilename, &oi, &status);
   if(status) goto except;
 
-  /* :TODO: Set additional header keywords */
-  g_strlcpy(data.header.origin, "ESO", FLEN_VALUE);
-  g_strlcpy(data.header.insmode, "SCAN", FLEN_VALUE);
+  if(is_oi_fits_two(&oi))
+  {
+    printf("Input datafile is already latest OIFITS version\n");
+    goto except;
+  }
+
+  /* Set additional header keywords from command-line arguments */
+  g_strlcpy(oi.header.origin, origin, FLEN_VALUE);
+  g_strlcpy(oi.header.insmode, insmode, FLEN_VALUE);
 
   /* Display summary info */
   printf("=== INPUT DATA: ===\n");
-  print_oi_fits_summary(&data);
-
-  //:TODO: check isn't already latest version
+  print_oi_fits_summary(&oi);
 
   /* Write out data (automatically uses latest format) */
   //:TODO: suppress version warnings?
-  write_oi_fits(outFilename, data, &status);
+  write_oi_fits(outFilename, oi, &status);
   if(status) goto except;
 
-  free_oi_fits(&data);
-  g_option_context_free(context);
+  free_oi_fits(&oi);
   exit(EXIT_SUCCESS);
 
  except:
