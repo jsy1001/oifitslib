@@ -56,6 +56,11 @@ int main(int argc, char *argv[])
     printf("Input datafile is already latest OIFITS version\n");
     goto except;
   }
+  if(oi.numArray == 0)
+  {
+    printf("Input datafile has no OI_ARRAY table - cannot convert\n");
+    goto except;
+  }
 
   /* Set additional header keywords from command-line arguments */
   g_strlcpy(oi.header.origin, origin, FLEN_VALUE);
