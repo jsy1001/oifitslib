@@ -395,7 +395,9 @@ void set_oi_header(oi_fits *pOi)
   long year, month, day;
 
   /* Set TELESCOP */
-  if (pOi->numArray == 1) {
+  if (pOi->numArray == 0) {
+    g_strlcpy(pOi->header.telescop, "UNKNOWN", FLEN_VALUE);
+  } else if (pOi->numArray == 1) {
     pArray = pOi->arrayList->data;
     g_strlcpy(pOi->header.telescop, pArray->arrname, FLEN_VALUE);
   } else {
