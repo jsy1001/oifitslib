@@ -189,7 +189,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   int nullint = 0;
   float nullfloat = 0.0F;
   double nan, nulldouble = 0.0;
-  const int revision = 1;
+  const int revision = 2;
   int irow, colnum, anynull;
   long repeat;
 
@@ -201,9 +201,9 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, comment, pStatus);
-  if (pArray->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword "
-           "in OI_ARRAY table. Got %d\n", revision, pArray->revision);
+  if (pArray->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_ARRAY table. Got %d\n",
+           revision, pArray->revision);
   }
   if (arrname == NULL) {
     fits_read_key(fptr, TSTRING, "ARRNAME", name, comment, pStatus);
@@ -276,7 +276,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 {
   char comment[FLEN_COMMENT], name[FLEN_VALUE];
   float nullfloat = 0.0F;
-  const int revision = 1;
+  const int revision = 2;
   int colnum, anynull;
   long repeat;
 
@@ -284,9 +284,9 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, comment, pStatus);
-  if (pWave->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_WAVELENGTH table. Got %d\n", revision, pWave->revision);
+  if (pWave->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_WAVELENGTH table. Got %d\n",
+           revision, pWave->revision);
   }
   if (insname == NULL) {
     fits_read_key(fptr, TSTRING, "INSNAME", name, comment, pStatus);
@@ -336,9 +336,9 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, comment, pStatus);
-  if (pCorr->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_CORR table. Got %d\n", revision, pCorr->revision);
+  if (pCorr->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_CORR table. Got %d\n",
+           revision, pCorr->revision);
   }
   if (corrname == NULL) {
     fits_read_key(fptr, TSTRING, "CORRNAME", name, comment, pStatus);
@@ -395,9 +395,9 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pPolar->revision, comment, pStatus);
-  if (pPolar->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_POLAR table. Got %d\n", revision, pPolar->revision);
+  if (pPolar->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_POLAR table. Got %d\n",
+           revision, pPolar->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pPolar->date_obs, comment, pStatus);
   fits_read_key(fptr, TINT, "NPOL", &pPolar->npol, comment, pStatus);
@@ -521,7 +521,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   int nullint = 0;
   float nullfloat = 0.0F;
   double nulldouble = 0.0;
-  const int revision = 1;
+  const int revision = 2;
   int irow, colnum, anynull;
   long repeat;
 
@@ -530,9 +530,9 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
   verify_chksum(fptr, pStatus);
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, comment, pStatus);
-  if (pTargets->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_TARGET table. Got %d\n", revision, pTargets->revision);
+  if (pTargets->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_TARGET table. Got %d\n",
+           revision, pTargets->revision);
   }
   /* get number of rows */
   fits_get_num_rows(fptr, &repeat, pStatus);
@@ -1001,7 +1001,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
-  const int revision = 1;
+  const int revision = 2;
   int irow, colnum, anynull;
   long repeat;
 
@@ -1016,9 +1016,9 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
-  if (pVis->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_VIS table. Got %d\n", revision, pVis->revision);
+  if (pVis->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_VIS table. Got %d\n",
+           revision, pVis->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, comment, pStatus);
@@ -1119,7 +1119,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
-  const int revision = 1;
+  const int revision = 2;
   int irow, colnum, anynull;
   long repeat;
 
@@ -1134,9 +1134,9 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, comment, pStatus);
-  if (pVis2->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_VIS2 table. Got %d\n", revision, pVis2->revision);
+  if (pVis2->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_VIS2 table. Got %d\n",
+           revision, pVis2->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis2->date_obs, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ARRNAME", pVis2->arrname, comment, pStatus);
@@ -1239,7 +1239,7 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
-  const int revision = 1;
+  const int revision = 2;
   int irow, colnum, anynull;
   long repeat;
 
@@ -1254,9 +1254,9 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, comment, pStatus);
-  if (pT3->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_T3 table. Got %d\n", revision, pT3->revision);
+  if (pT3->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_T3 table. Got %d\n",
+           revision, pT3->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pT3->date_obs, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ARRNAME", pT3->arrname, comment, pStatus);
@@ -1393,9 +1393,9 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, comment, pStatus);
-  if (pSpectrum->revision != revision) {
-    printf("WARNING! Expecting value %d for OI_REVN keyword in "
-           "OI_SPECTRUM table. Got %d\n", revision, pSpectrum->revision);
+  if (pSpectrum->revision > revision) {
+    printf("WARNING! Expecting OI_REVN < %d in OI_SPECTRUM table. Got %d\n",
+           revision, pSpectrum->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs,
                 comment, pStatus);
