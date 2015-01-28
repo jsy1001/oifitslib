@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Unit tests of OIFITSlib merge component.
  *
- * Copyright (C) 2014 John Young
+ * Copyright (C) 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -27,7 +27,8 @@
 #include "oifile.h"
 #include "oicheck.h"
 
-#define DIR "test/OIFITS1/"
+#define DIR1 "test/OIFITS1/"
+#define DIR2 "test/OIFITS2/"
 
 typedef struct {
   const char *filename1;
@@ -38,24 +39,48 @@ typedef struct {
 } TestCase;
 
 typedef struct {
+  int numCases;
+  const TestCase *cases;
+} TestSet;
+
+typedef struct {
   int numVis;
   int numVis2;
   int numT3;
 } DataCount;
 
 
-static const TestCase cases[] = {
-  {DIR "Mystery--AMBER--LowH.fits", DIR "alp_aur--COAST_NICMOS.fits",
+static const TestCase v1Cases[] = {
+  {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "alp_aur--COAST_NICMOS.fits",
    NULL, 2, 2},
-  {DIR "Mystery--AMBER--LowH.fits", DIR "alp_aur--COAST_NICMOS.fits",
-   DIR "Bin_Ary--MIRC_H.fits", 3, 3},
-  {DIR "Mystery--AMBER--LowH.fits", DIR "Mystery--AMBER--MedH.fits",
+  {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "alp_aur--COAST_NICMOS.fits",
+   DIR1 "Bin_Ary--MIRC_H.fits", 3, 3},
+  {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "Mystery--AMBER--MedH.fits",
    NULL, 1, 2},
-  {DIR "Alp_Vic--MIRC_H.fits", DIR "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
-  {DIR "Alp_Vic--MIRC_H.fits", DIR "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
+  {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+  {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
 };
 
-static const int numCases = sizeof(cases)/sizeof(cases[0]);
+static const TestCase v2Cases[] = {
+  {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
+   NULL, 2, 2},
+  {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
+   DIR2 "Bin_Ary--MIRC_H.fits", 3, 3},
+  {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits",
+   NULL, 1, 2},
+  {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+  {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
+};
+
+static const TestSet v1Set = {
+  sizeof(v1Cases)/sizeof(v1Cases[0]),
+  v1Cases
+};
+
+static const TestSet v2Set = {
+  sizeof(v2Cases)/sizeof(v2Cases[0]),
+  v2Cases
+};
 
 
 static void check(oi_fits *pData)
@@ -140,45 +165,48 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
   }
 }
 
-static void test_merge(void)
+static void test_merge(gconstpointer userData)
 {
   int i, numCorr;
   oi_fits outData, inData1, inData2, inData3;
   int status;
   DataCount inCount, outCount;
 
-  for (i = 0; i < numCases; i++) {
+  const TestSet *pSet = userData;
+
+  for (i = 0; i < pSet->numCases; i++) {
     g_message("\nMerging [%s\n         %s\n         %s]",
-              cases[i].filename1, cases[i].filename2, cases[i].filename3);
+              pSet->cases[i].filename1, pSet->cases[i].filename2,
+              pSet->cases[i].filename3);
 
     /* Read files to merge */
     status = 0;
     numCorr = 0;
-    read_oi_fits(cases[i].filename1, &inData1, &status);
+    read_oi_fits(pSet->cases[i].filename1, &inData1, &status);
     g_assert(!status);
     check(&inData1);
     numCorr += inData1.numCorr;
-    read_oi_fits(cases[i].filename2, &inData2, &status);
+    read_oi_fits(pSet->cases[i].filename2, &inData2, &status);
     g_assert(!status);
     check(&inData2);
     numCorr += inData2.numCorr;
-    if(cases[i].filename3 != NULL) {
-      read_oi_fits(cases[i].filename3, &inData3, &status);
+    if(pSet->cases[i].filename3 != NULL) {
+      read_oi_fits(pSet->cases[i].filename3, &inData3, &status);
       g_assert(!status);
       check(&inData3);
       numCorr += inData3.numCorr;
     }
 
     /* Merge datasets */
-    if (cases[i].filename3 != NULL)
+    if (pSet->cases[i].filename3 != NULL)
       merge_oi_fits(&outData, &inData1, &inData2, &inData3, NULL);
     else
       merge_oi_fits(&outData, &inData1, &inData2, NULL);
     check(&outData);
 
     /* Compare number of OI_ARRAY and OI_WAVELENGTH tables */
-    g_assert_cmpint(outData.numArray, ==, cases[i].numArray);
-    g_assert_cmpint(outData.numWavelength, ==, cases[i].numWavelength);
+    g_assert_cmpint(outData.numArray, ==, pSet->cases[i].numArray);
+    g_assert_cmpint(outData.numWavelength, ==, pSet->cases[i].numWavelength);
 
     /* Compare number of OI_CORR tables */
     g_assert_cmpint(outData.numCorr, ==, numCorr);
@@ -187,7 +215,7 @@ static void test_merge(void)
     zero_count(&inCount);
     add_count(&inCount, &inData1);
     add_count(&inCount, &inData2);
-    if (cases[i].filename3 != NULL)
+    if (pSet->cases[i].filename3 != NULL)
       add_count(&inCount, &inData3);
     zero_count(&outCount);
     add_count(&outCount, &outData);
@@ -199,7 +227,7 @@ static void test_merge(void)
     free_oi_fits(&outData);
     free_oi_fits(&inData1);
     free_oi_fits(&inData2);
-    if (cases[i].filename3 != NULL)
+    if (pSet->cases[i].filename3 != NULL)
       free_oi_fits(&inData3);
   }
 }
@@ -209,7 +237,8 @@ int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_func("/oifitslib/oimerge/all", test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver1", &v1Set, test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver2", &v2Set, test_merge);
 
   return g_test_run();
 }

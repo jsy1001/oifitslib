@@ -3,7 +3,7 @@
  * @ingroup oicheck
  * Unit tests of OIFITS conformity checker.
  *
- * Copyright (C) 2014 John Young
+ * Copyright (C) 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -26,7 +26,8 @@
 #include "oicheck.h"
 #include "oifile.h"
 
-#define DIR "test/OIFITS1/"
+#define DIR1 "test/OIFITS1/"
+#define DIR2 "test/OIFITS1/"
 
 typedef struct {
   char filename[FLEN_VALUE];
@@ -41,21 +42,33 @@ typedef struct {
 
 
 static const TestCase passCases[] = {
-  {DIR "Mystery--AMBER--LowH.fits", check_unique_targets,   OI_BREACH_NONE},
-  {DIR "Mystery--AMBER--LowH.fits", check_targets_present,  OI_BREACH_NONE},
-  {DIR "Mystery--AMBER--LowH.fits", check_elements_present, OI_BREACH_NONE},
-  {DIR "Mystery--AMBER--LowH.fits", check_flagging,         OI_BREACH_NONE},
-  {DIR "Mystery--AMBER--LowH.fits", check_t3amp,            OI_BREACH_NONE},
-  {DIR "Mystery--AMBER--LowH.fits", check_waveorder,        OI_BREACH_NONE}
+  {DIR1 "Mystery--AMBER--LowH.fits", check_unique_targets,   OI_BREACH_NONE},
+  {DIR1 "Mystery--AMBER--LowH.fits", check_targets_present,  OI_BREACH_NONE},
+  {DIR1 "Mystery--AMBER--LowH.fits", check_elements_present, OI_BREACH_NONE},
+  {DIR1 "Mystery--AMBER--LowH.fits", check_flagging,         OI_BREACH_NONE},
+  {DIR1 "Mystery--AMBER--LowH.fits", check_t3amp,            OI_BREACH_NONE},
+  {DIR1 "Mystery--AMBER--LowH.fits", check_waveorder,        OI_BREACH_NONE},
+  {DIR2 "Mystery--AMBER--LowH.fits", check_unique_targets,   OI_BREACH_NONE},
+  {DIR2 "Mystery--AMBER--LowH.fits", check_targets_present,  OI_BREACH_NONE},
+  {DIR2 "Mystery--AMBER--LowH.fits", check_elements_present, OI_BREACH_NONE},
+  {DIR2 "Mystery--AMBER--LowH.fits", check_flagging,         OI_BREACH_NONE},
+  {DIR2 "Mystery--AMBER--LowH.fits", check_t3amp,            OI_BREACH_NONE},
+  {DIR2 "Mystery--AMBER--LowH.fits", check_waveorder,        OI_BREACH_NONE}
 };
 
 static const TestCase failCases[] = {
-  {DIR "bad_dup_target.fits",      check_unique_targets,   OI_BREACH_WARNING},
-  {DIR "bad_missing_target.fits",  check_targets_present,  OI_BREACH_NOT_OIFITS},
-  {DIR "bad_missing_element.fits", check_elements_present, OI_BREACH_NOT_OIFITS},
-  {DIR "bad_neg_error.fits",       check_flagging,         OI_BREACH_NOT_OIFITS},
-  {DIR "bad_big_t3amp.fits",       check_t3amp,            OI_BREACH_NOT_OIFITS},
-  {DIR "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING}
+  {DIR1 "bad_dup_target.fits",      check_unique_targets,   OI_BREACH_WARNING},
+  {DIR1 "bad_missing_target.fits",  check_targets_present,  OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_missing_element.fits", check_elements_present, OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_neg_error.fits",       check_flagging,         OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_big_t3amp.fits",       check_t3amp,            OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING},
+  {DIR2 "bad_dup_target.fits",      check_unique_targets,   OI_BREACH_WARNING},
+  {DIR2 "bad_missing_target.fits",  check_targets_present,  OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_element.fits", check_elements_present, OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_neg_error.fits",       check_flagging,         OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_big_t3amp.fits",       check_t3amp,            OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING}
 };
 
 static const TestSet passSet = {
