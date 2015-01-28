@@ -3,7 +3,7 @@
  * @ingroup oifilter
  * Unit tests of OIFITS filter.
  *
- * Copyright (C) 2014 John Young
+ * Copyright (C) 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -94,9 +94,10 @@ static void check(oi_fits *pData)
 static void setup_fixture(TestFixture *fix, gconstpointer userData)
 {
   int status;
+  const char *filename = userData;
 
   status = 0;
-  read_oi_fits(FILENAME, &fix->inData, &status);
+  read_oi_fits(filename, &fix->inData, &status);
   g_assert(!status);
   check(&fix->inData);
   init_oi_filter(&fix->filter);
@@ -153,6 +154,8 @@ static void test_parse(TestFixture *fix, gconstpointer userData)
 static void test_default(TestFixture *fix, gconstpointer userData)
 {
   int status;
+  char outFilename[FLEN_FILENAME];
+  const char *filename = userData;
 
   (void) format_oi_filter(&fix->filter);
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
@@ -166,8 +169,9 @@ static void test_default(TestFixture *fix, gconstpointer userData)
   g_assert_cmpint(fix->outData.numSpectrum, ==, fix->inData.numSpectrum);
 
   status = 0;
-  g_assert(write_oi_fits("utest_" FILENAME, fix->outData, &status) == 0);
-  unlink("utest_" FILENAME);
+  g_snprintf(outFilename, FLEN_FILENAME, "utest_%s", filename);
+  g_assert(write_oi_fits(outFilename, fix->outData, &status) == 0);
+  unlink(outFilename);
 }
 
 static void test_arrname(TestFixture *fix, gconstpointer userData)
@@ -486,37 +490,37 @@ int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add("/oifitslib/oifilter/parse", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/parse", TestFixture, FILENAME,
              setup_fixture, test_parse, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/default", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/default", TestFixture, FILENAME,
              setup_fixture, test_default, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/arrname", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/arrname", TestFixture, FILENAME,
              setup_fixture, test_arrname, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/insname", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/insname", TestFixture, FILENAME,
              setup_fixture, test_insname, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/corrname", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/corrname", TestFixture, FILENAME,
              setup_fixture, test_corrname, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/target", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/target", TestFixture, FILENAME,
              setup_fixture, test_target, teardown_fixture);
 
-  g_test_add("/oifitslib/oifilter/wave", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/wave", TestFixture, FILENAME,
              setup_fixture, test_wave, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/mjd", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/mjd", TestFixture, FILENAME,
              setup_fixture, test_mjd, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/prune", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/prune", TestFixture, FILENAME,
              setup_fixture, test_prune, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/bas", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/bas", TestFixture, FILENAME,
              setup_fixture, test_bas, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/snr", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/snr", TestFixture, FILENAME,
              setup_fixture, test_snr, teardown_fixture);
 
-  g_test_add("/oifitslib/oifilter/vis", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/vis", TestFixture, FILENAME,
              setup_fixture, test_vis, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/vis2", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/vis2", TestFixture, FILENAME,
              setup_fixture, test_vis2, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/t3", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/t3", TestFixture, FILENAME,
              setup_fixture, test_t3, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/spectrum", TestFixture, NULL,
+  g_test_add("/oifitslib/oifilter/spectrum", TestFixture, FILENAME,
              setup_fixture, test_spectrum, teardown_fixture);
 
   return g_test_run();
