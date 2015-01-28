@@ -29,7 +29,7 @@
 #include <math.h>
 #include <unistd.h>  /* unlink() */
 
-#define FILENAME "bigtest2.fits"
+#define FILENAME "test/OIFITS2/bigtest2.fits"
 #define RAD2DEG (180.0/3.14159)
 
 typedef struct {
@@ -150,7 +150,7 @@ static void test_parse(TestFixture *fix, gconstpointer userData)
 static void test_default(TestFixture *fix, gconstpointer userData)
 {
   int status;
-  char outFilename[FLEN_FILENAME];
+  char *basename, *outFilename;
   const char *filename = userData;
 
   (void) format_oi_filter(&fix->filter);
@@ -165,9 +165,12 @@ static void test_default(TestFixture *fix, gconstpointer userData)
   g_assert_cmpint(fix->outData.numSpectrum, ==, fix->inData.numSpectrum);
 
   status = 0;
-  g_snprintf(outFilename, FLEN_FILENAME, "utest_%s", filename);
+  basename = g_path_get_basename(filename);
+  outFilename = g_strdup_printf("utest_%s", basename);
+  g_free(basename);
   g_assert(write_oi_fits(outFilename, fix->outData, &status) == 0);
   unlink(outFilename);
+  g_free(outFilename);
 }
 
 static void test_arrname(TestFixture *fix, gconstpointer userData)
