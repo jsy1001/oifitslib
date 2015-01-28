@@ -112,9 +112,6 @@ static void teardown_fixture(TestFixture *fix, gconstpointer userData)
 
 static void test_parse(TestFixture *fix, gconstpointer userData)
 {
-#ifndef HAVE_G_OPTION_GROUP
-  g_message("Need GLib >= 2.6 to test apply_user_oi_filter()");
-#else
   char *args[] = {
     "utest_oifilter",
     "--insname=IOTA_IONIC_PICNIC",
@@ -148,7 +145,6 @@ static void test_parse(TestFixture *fix, gconstpointer userData)
   g_assert_cmpint(fix->outData.numVis, ==, 1);
   g_assert_cmpint(fix->outData.numVis2, ==, 0);
   g_assert_cmpint(fix->outData.numT3, ==, 1);
-#endif /* #ifndef HAVE_G_OPTION_GROUP */
 }
 
 static void test_default(TestFixture *fix, gconstpointer userData)

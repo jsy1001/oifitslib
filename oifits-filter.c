@@ -2,7 +2,7 @@
  * @file
  * Command-line OIFITS filter utility.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -30,10 +30,6 @@
  */
 int main(int argc, char *argv[]) 
 {
-#ifndef HAVE_G_OPTION_GROUP
-  printf("Need GLib >= 2.6\n");
-#else
-
   GError *error;
   GOptionContext *context;
   char inFilename[FLEN_FILENAME], outFilename[FLEN_FILENAME];
@@ -86,5 +82,4 @@ int main(int argc, char *argv[])
 
  except:
   exit(EXIT_FAILURE);
-#endif /* #ifndef HAVE_G_OPTION_GROUP */
 }

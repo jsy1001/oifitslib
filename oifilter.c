@@ -36,8 +36,6 @@ extern GString *pGStr;
 
 #define RAD2DEG (180.0/3.14159)
 
-#ifdef HAVE_G_OPTION_GROUP
-
 #define UNSET -9999.9
 
 
@@ -141,8 +139,6 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
   parsedFilter.snr_range[1] = (float) atof(snrMaxStr);
   return TRUE;
 }
-
-#endif /* #ifdef HAVE_G_OPTION_GROUP */
 
 /**
  * Return new linked list of ARRNAMEs referenced by the
@@ -395,8 +391,6 @@ static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
  * Public functions
  */
 
-#ifdef HAVE_G_OPTION_GROUP
-
 /**
  * Return a GOptionGroup for the filtering command-line options
  * recognized by oifitslib.
@@ -439,8 +433,6 @@ void apply_user_oi_filter(const oi_fits *pInput, oi_fits *pOutput)
 {
   apply_oi_filter(pInput, get_user_oi_filter(), pOutput);
 }
-
-#endif /* #ifdef HAVE_G_OPTION_GROUP */
 
 /**
  * Initialise filter specification to accept all data.
