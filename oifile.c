@@ -818,7 +818,7 @@ oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *pOi,
  *   @param pOi       pointer to file data struct, see oifile.h
  *   @param corrname  value of CORRNAME keyword
  *
- *   @return pointer to oi_wavelength matching insname, or NULL if no match
+ *   @return pointer to oi_corr matching corrname, or NULL if no match
  */
 oi_corr *oi_fits_lookup_corr(const oi_fits *pOi, const char *corrname)
 {
