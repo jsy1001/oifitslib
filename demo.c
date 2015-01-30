@@ -382,9 +382,11 @@ void demo_write(void)
   strncpy(header.date_obs, vis.date_obs, FLEN_VALUE);
   strncpy(header.telescop, array.arrname, FLEN_VALUE);
   strncpy(header.instrume, wave.insname, FLEN_VALUE);
-  strcpy(header.insmode, "SCAN");
+  strncpy(header.observer, "Astronomer", FLEN_VALUE);
+  strcpy(header.insmode, "Low_JHK");
   strncpy(header.object, targets.targ[0].target, FLEN_VALUE);
   header.referenc[0] = '\0';
+  header.author[0] = '\0';
   header.prog_id[0] = '\0';
   header.procsoft[0] = '\0';
   header.obstech[0] = '\0';
