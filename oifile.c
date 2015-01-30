@@ -274,9 +274,11 @@ void init_oi_fits(oi_fits *pOi)
   pOi->header.date_obs[0] = '\0';
   pOi->header.telescop[0] = '\0';
   pOi->header.instrume[0] = '\0';
+  pOi->header.observer[0] = '\0';
   pOi->header.insmode[0] = '\0';
   pOi->header.object[0] = '\0';
   pOi->header.referenc[0] = '\0';
+  pOi->header.author[0] = '\0';
   pOi->header.prog_id[0] = '\0';
   pOi->header.procsoft[0] = '\0';
   pOi->header.obstech[0] = '\0';
