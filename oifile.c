@@ -382,8 +382,8 @@ int is_oi_fits_two(const oi_fits *pOi)
  * Set primary header keywords from table contents.
  *
  * Sets values for DATE-OBS, TELESCOP, INSTRUME and OBJECT from
- * existing data.  Note that the mandatory keywords ORIGIN and INSMODE
- * are not set.
+ * existing data.  Note that the mandatory keywords ORIGIN, OBSERVER
+ * and INSMODE are not set.
  *
  *   @param pOi  pointer to file data struct, see oifile.h
  */
