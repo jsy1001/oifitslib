@@ -210,6 +210,10 @@ oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
       g_snprintf(location, FLEN_VALUE, "INSTRUME missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
+    if(strlen(pOi->header.observer) == 0) {
+      g_snprintf(location, FLEN_VALUE, "OBSERVER missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
     if(strlen(pOi->header.insmode) == 0) {
       g_snprintf(location, FLEN_VALUE, "INSMODE missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
