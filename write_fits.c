@@ -109,11 +109,13 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
 		 "Institution", pStatus);
   //:TODO: write DATE
   fits_write_key(fptr, TSTRING, "DATE-OBS", header.date_obs,
-		 "Mean UTC date of observation", pStatus);
+		 "UTC start date of observation", pStatus);
   fits_write_key(fptr, TSTRING, "TELESCOP", header.telescop,
-		 "ARRNAME", pStatus);
+		 "Generic name of the array", pStatus);
   fits_write_key(fptr, TSTRING, "INSTRUME", header.instrume,
-		 "INSNAME", pStatus);
+		 "Generic name of the instrument", pStatus);
+  fits_write_key(fptr, TSTRING, "OBSERVER", header.observer,
+  		 "Who acquired the data", pStatus);
   fits_write_key(fptr, TSTRING, "PRODCATG", "SCIENCE.OIFITS2",
 		 "Product category", pStatus);
   fits_write_key(fptr, TSTRING, "INSMODE", header.insmode,
@@ -125,6 +127,9 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
   if (strlen(header.referenc) > 0)
     fits_write_key(fptr, TSTRING, "REFERENC", header.referenc,
                    "Bibliographic reference", pStatus);
+  if (strlen(header.author) > 0)
+    fits_write_key(fptr, TSTRING, "AUTHOR", header.author,
+                   "Who compiled the data", pStatus);
   if (strlen(header.prog_id) > 0)
     fits_write_key(fptr, TSTRING, "PROG_ID", header.prog_id,
                    "Programme ID", pStatus);

@@ -90,10 +90,12 @@ typedef struct {
   char date_obs[FLEN_VALUE];
   char telescop[FLEN_VALUE];
   char instrume[FLEN_VALUE];
+  char observer[FLEN_VALUE];
   char insmode[FLEN_VALUE];
   char object[FLEN_VALUE];
   /* optional keywords */
   char referenc[FLEN_VALUE];
+  char author[FLEN_VALUE];
   char prog_id[FLEN_VALUE];
   char procsoft[FLEN_VALUE];
   char obstech[FLEN_VALUE];

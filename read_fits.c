@@ -487,10 +487,12 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
   read_key_opt_string(fptr, "DATE-OBS", pHeader->date_obs, pStatus);
   read_key_opt_string(fptr, "TELESCOP", pHeader->telescop, pStatus);
   read_key_opt_string(fptr, "INSTRUME", pHeader->instrume, pStatus);
+  read_key_opt_string(fptr, "OBSERVER", pHeader->observer, pStatus);
   read_key_opt_string(fptr, "INSMODE", pHeader->insmode, pStatus);
   read_key_opt_string(fptr, "OBJECT", pHeader->object, pStatus);
 
   read_key_opt_string(fptr, "REFERENC", pHeader->referenc, pStatus);
+  read_key_opt_string(fptr, "AUTHOR", pHeader->author, pStatus);
   read_key_opt_string(fptr, "PROG_ID", pHeader->prog_id, pStatus);
   read_key_opt_string(fptr, "PROCSOFT", pHeader->procsoft, pStatus);
   read_key_opt_string(fptr, "OBSTECH", pHeader->obstech, pStatus);

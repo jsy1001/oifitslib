@@ -885,6 +885,8 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
                          pOi->header.date_obs, pOi->header.object);
   g_string_append_printf(pGStr, "  TELESCOP='%s'  INSTRUME='%s'\n",
                          pOi->header.telescop, pOi->header.instrume);
+  g_string_append_printf(pGStr, "  OBSERVER='%s'  OBJECT='%s'\n",
+                         pOi->header.observer, pOi->header.object);
   g_string_append_printf(pGStr, "  INSMODE='%s'  OBSTECH='%s'\n\n",
                          pOi->header.insmode, pOi->header.obstech);
   g_string_append_printf(pGStr, "  %d OI_ARRAY tables:\n", pOi->numArray);

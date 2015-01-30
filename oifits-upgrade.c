@@ -32,19 +32,20 @@
  */
 int main(int argc, char *argv[]) 
 {
-  const char *inFilename, *outFilename, *origin, *insmode;
+  const char *inFilename, *outFilename, *origin, *observer, *insmode;
   oi_fits oi;
   int status;
 
   /* Parse command-line */
   if(argc < 5) {
-    printf("Usage:\n%s INFILE OUTFILE ORIGIN INSMODE\n", argv[0]);
+    printf("Usage:\n%s INFILE OUTFILE ORIGIN OBSERVER INSMODE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
   inFilename = argv[1];
   outFilename = argv[2];
   origin = argv[3];
-  insmode = argv[4];
+  observer = argv[4];
+  insmode = argv[5];
 
   /* Read FITS file */
   status = 0;
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
 
   /* Set additional header keywords from command-line arguments */
   g_strlcpy(oi.header.origin, origin, FLEN_VALUE);
+  g_strlcpy(oi.header.observer, observer, FLEN_VALUE);
   g_strlcpy(oi.header.insmode, insmode, FLEN_VALUE);
 
   /* Display summary info */
