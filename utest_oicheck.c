@@ -51,6 +51,7 @@ static const TestCase passCases[] = {
   {DIR2 "Mystery--AMBER--LowH.fits", check_unique_targets,   OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_targets_present,  OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_elements_present, OI_BREACH_NONE},
+  {DIR2 "bigtest2.fits",             check_corr_present,     OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_flagging,         OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_t3amp,            OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_waveorder,        OI_BREACH_NONE}
@@ -66,6 +67,7 @@ static const TestCase failCases[] = {
   {DIR2 "bad_dup_target.fits",      check_unique_targets,   OI_BREACH_WARNING},
   {DIR2 "bad_missing_target.fits",  check_targets_present,  OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_missing_element.fits", check_elements_present, OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_corr.fits",    check_corr_present,     OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_neg_error.fits",       check_flagging,         OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_big_t3amp.fits",       check_t3amp,            OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING}
@@ -82,6 +84,13 @@ static const TestSet failSet = {
 };
 
 
+static gboolean ignoreMissingCorr(const char *logDomain,
+                                  GLogLevelFlags logLevel,
+                                  const char *message, gpointer userData)
+{
+  return (!g_str_has_prefix(message, "Missing OI_CORR"));
+}
+
 static void test_check(gconstpointer userData)
 {
   int i;
@@ -90,6 +99,8 @@ static void test_check(gconstpointer userData)
   oi_check_result result;
 
   const TestSet *pSet = userData;
+
+  g_test_log_set_fatal_handler(ignoreMissingCorr, NULL);
   
   for (i = 0; i < pSet->numCases; i++) {
     status = 0;

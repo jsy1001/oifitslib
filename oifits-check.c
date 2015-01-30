@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     check_unique_targets,
     check_targets_present,
     check_elements_present,
+    check_corr_present,
     check_flagging,
     check_t3amp,
     check_waveorder,

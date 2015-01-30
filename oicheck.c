@@ -339,13 +339,13 @@ oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
     {
       if(!pVis->usevisrefmap) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_VIS #%d has AMPTYP='%s' PHITYP='%s' but no VISREFMAP",
+                   "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has no VISREFMAP",
                    g_list_position(pOi->visList, link)+1,
                    pVis->amptyp, pVis->phityp);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
       } else {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_VIS #%d has AMPTYP='%s' PHITYP='%s' and VISREFMAP",
+                   "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has VISREFMAP",
                    g_list_position(pOi->visList, link)+1,
                    pVis->amptyp, pVis->phityp);
         set_result(pResult, OI_BREACH_WARNING, desc2, location);
@@ -589,6 +589,84 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
       g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
                  g_list_position(pOi->spectrumList, link)+1);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
+    }
+    link = link->next;
+  }
+
+  return pResult->level;
+}
+
+/**
+ * Check all referenced OI_CORR tables are present.
+ *
+ * Does not check OI_CORR contents as insignificant correlations may
+ * be omitted.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_corr_present(oi_fits *pOi, oi_check_result *pResult)
+{
+  GList *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
+  const char desc[] = "Reference to missing OI_CORR table";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+
+  /* Check OI_VIS tables */
+  link = pOi->visList;
+  while(link != NULL) {
+    pVis = link->data;
+    if(strlen(pVis->corrname) > 0 &&
+       oi_fits_lookup_corr(pOi, pVis->corrname) == NULL) {
+      g_snprintf(location, FLEN_VALUE, "OI_VIS #%d",
+                 g_list_position(pOi->visList, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  /* Check OI_VIS2 tables */
+  link = pOi->vis2List;
+  while(link != NULL) {
+    pVis2 = link->data;
+    if(strlen(pVis2->corrname) > 0 &&
+       oi_fits_lookup_corr(pOi, pVis2->corrname) == NULL) {
+      g_snprintf(location, FLEN_VALUE, "OI_VIS2 #%d",
+                 g_list_position(pOi->vis2List, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  /* Check OI_T3 tables */
+  link = pOi->t3List;
+  while(link != NULL) {
+    pT3 = link->data;
+    if(strlen(pT3->corrname) > 0 &&
+       oi_fits_lookup_corr(pOi, pT3->corrname) == NULL) {
+      g_snprintf(location, FLEN_VALUE, "OI_T3 #%d",
+                 g_list_position(pOi->t3List, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    link = link->next;
+  }
+
+  /* Check OI_SPECTRUM tables */
+  link = pOi->spectrumList;
+  while(link != NULL) {
+    pSpectrum = link->data;
+    if(strlen(pSpectrum->corrname) > 0 &&
+       oi_fits_lookup_corr(pOi, pSpectrum->corrname) == NULL) {
+      g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
+                 g_list_position(pOi->spectrumList, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     link = link->next;
   }

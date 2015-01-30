@@ -110,6 +110,7 @@ oi_breach_level check_visrefmap(oi_fits *, oi_check_result *);
 oi_breach_level check_unique_targets(oi_fits *, oi_check_result *);
 oi_breach_level check_targets_present(oi_fits *, oi_check_result *);
 oi_breach_level check_elements_present(oi_fits *, oi_check_result *);
+oi_breach_level check_corr_present(oi_fits *, oi_check_result *);
 oi_breach_level check_flagging(oi_fits *, oi_check_result *);
 oi_breach_level check_t3amp(oi_fits *, oi_check_result *);
 oi_breach_level check_waveorder(oi_fits *, oi_check_result *);
