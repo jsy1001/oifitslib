@@ -3,7 +3,7 @@
  * @ingroup oicheck
  * Implementation of OIFITS conformity checker.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -70,6 +70,8 @@ static void set_result(oi_check_result *pResult, oi_breach_level level,
     pResult->level = level;
   if(pResult->description == NULL)
     pResult->description = g_string_chunk_insert(pResult->chunk, description);
+  else
+    g_assert_cmpstr(description, ==, pResult->description);
   if(++pResult->numBreach < MAX_REPORT) {
     pResult->location[pResult->numBreach-1] =
       g_string_chunk_insert(pResult->chunk, location);
@@ -328,8 +330,7 @@ oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   oi_vis *pVis;
-  const char desc1[] = "VISREFMAP missing for differential visibilities";
-  const char desc2[] = "VISREFMAP present for absolute visibilities";
+  const char desc[] = "VISREFMAP present (missing) for absolute (differential) visibilities";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
@@ -346,13 +347,13 @@ oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
                    "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has no VISREFMAP",
                    g_list_position(pOi->visList, link)+1,
                    pVis->amptyp, pVis->phityp);
-        set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       } else {
         g_snprintf(location, FLEN_VALUE,
                    "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has VISREFMAP",
                    g_list_position(pOi->visList, link)+1,
                    pVis->amptyp, pVis->phityp);
-        set_result(pResult, OI_BREACH_WARNING, desc2, location);
+        set_result(pResult, OI_BREACH_WARNING, desc, location);
       }
     }
     link = link->next;
@@ -589,7 +590,8 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
           set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
         }
       }
-    } else if(requireArrname) {
+    } else if(pSpectrum->calstat == 'U') {
+      /* ARRNAME required in OI_SPECTRUM only if uncalibrated */
       g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
                  g_list_position(pOi->spectrumList, link)+1);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
@@ -897,5 +899,63 @@ oi_breach_level check_time(oi_fits *pOi, oi_check_result *pResult)
       link = link->next;
     }
   }
+  return pResult->level;
+}
+
+/**
+ * Check presence of ARRNAME and STA_INDEX in OI_SPECTRUM tables.
+ *
+ * ARRNAME and STA_INDEX must be present if the spectrum is
+ * uncalibrated, but absent if it is calibrated.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_spectrum(oi_fits *pOi, oi_check_result *pResult)
+{
+  GList *link;
+  oi_spectrum *pSpectrum;
+  const char desc[] = "ARRNAME/STA_INDEX present (missing) in (un)calibrated spectrum";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+
+  link = pOi->spectrumList;
+  while (link != NULL) {
+    pSpectrum = link->data;
+    if (pSpectrum->calstat == 'C') {
+      if (strlen(pSpectrum->arrname) > 0) {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_SPECTRUM #%d ARRNAME='%s'",
+                   g_list_position(pOi->spectrumList, link)+1,
+                   pSpectrum->arrname);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      if (pSpectrum->record[0].sta_index != -1) {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_SPECTRUM #%d STA_INDEX present",
+                   g_list_position(pOi->spectrumList, link)+1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+    } else if (pSpectrum->calstat == 'U') {
+      if (strlen(pSpectrum->arrname) == 0) {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_SPECTRUM #%d ARRNAME missing",
+                   g_list_position(pOi->spectrumList, link)+1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      if (pSpectrum->record[0].sta_index == -1) {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_SPECTRUM #%d STA_INDEX missing",
+                   g_list_position(pOi->spectrumList, link)+1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+    }
+    /* else do nothing, will fail check_keywords() */
+    link = link->next;
+  }
+
   return pResult->level;
 }

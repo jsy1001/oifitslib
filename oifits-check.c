@@ -2,7 +2,7 @@
  * @file
  * Command-line OIFITS conformity check utility.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     check_t3amp,
     check_waveorder,
     check_time,
+    check_spectrum,
     NULL
   };
   oi_fits oi;

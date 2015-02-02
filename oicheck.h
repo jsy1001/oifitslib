@@ -3,7 +3,7 @@
  * @ingroup oicheck
  * Definitions for OIFITS conformity checker.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -47,6 +47,7 @@
  * - check_t3amp()
  * - check_waveorder()
  * - check_time()
+ * - check_spectrum()
  *
  * Each checking function is passed a pointer to a oi_fits struct
  * containing the data to check (except check_unique_targets()), and a
@@ -120,6 +121,7 @@ oi_breach_level check_flagging(oi_fits *, oi_check_result *);
 oi_breach_level check_t3amp(oi_fits *, oi_check_result *);
 oi_breach_level check_waveorder(oi_fits *, oi_check_result *);
 oi_breach_level check_time(oi_fits *, oi_check_result *);
+oi_breach_level check_spectrum(oi_fits *, oi_check_result *);
 
 #endif /* #ifndef OICHECK_H */
 

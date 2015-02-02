@@ -936,15 +936,14 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
                          STATUS *pStatus)
 {
   const char function[] = "write_oi_spectrum";
-  //:TODO: maybe omit STA_INDEX column
-  const int tfields = 6;
+  const int tfields = 5;
   char *ttype[] = {"TARGET_ID", "MJD", "INT_TIME",
-		   "FLUXDATA", "FLUXERR", "STA_INDEX"};
+		   "FLUXDATA", "FLUXERR"};
   const char *tformTpl[] = {"I", "D", "D",
-			    "?D", "?D", "I"};
+			    "?D", "?D"};
   char **tform;
   char *tunit[] = {"\0", "day", "s",
-		   "\0", "\0", "\0"};
+		   "\0", "\0"};
   char extname[] = "OI_SPECTRUM";
   char keyval[FLEN_VALUE];
   int revision = 1, irow;
@@ -999,8 +998,6 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
 		   spectrum.record[irow-1].fluxdata, pStatus);
     fits_write_col(fptr, TDOUBLE, 5, irow, 1, spectrum.nwave,
 		   spectrum.record[irow-1].fluxerr, pStatus);
-    fits_write_col(fptr, TINT, 6, irow, 1, 1,
-                   &spectrum.record[irow-1].sta_index, pStatus);
   }
 
   /* Write optional keywords */
@@ -1010,12 +1007,18 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
 		   "Correlated data set name", pStatus);
 
   /* Write optional columns */
-  if (correlated)
-  {
-    fits_insert_col(fptr, 6, "CORRINDX_FLUXDATA", "J", pStatus);
+  if (correlated) {
+    fits_insert_col(fptr, 5, "CORRINDX_FLUXDATA", "J", pStatus);
+    for(irow=1; irow<=spectrum.numrec; irow++) {
+      fits_write_col(fptr, TINT, 5, irow, 1, 1,
+                     &spectrum.record[irow-1].corrindx_fluxdata, pStatus);
+    }
+  }
+  if (strlen(spectrum.arrname) > 0) {
+    fits_insert_col(fptr, 6, "STA_INDEX", "I", pStatus);
     for(irow=1; irow<=spectrum.numrec; irow++) {
       fits_write_col(fptr, TINT, 6, irow, 1, 1,
-                     &spectrum.record[irow-1].corrindx_fluxdata, pStatus);
+                     &spectrum.record[irow-1].sta_index, pStatus);
     }
   }
 

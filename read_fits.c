@@ -1454,11 +1454,15 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave,
 		  &nulldouble, pSpectrum->record[irow-1].fluxerr, &anynull,
 		  pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-		  &pSpectrum->record[irow-1].sta_index, &anynull, pStatus);
-
     /* read optional columns */
+    fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
+    if(*pStatus == COL_NOT_FOUND) {
+      *pStatus = 0;
+      pSpectrum->record[irow-1].sta_index = -1;
+    } else {
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+                    &pSpectrum->record[irow-1].sta_index, &anynull, pStatus);
+    }
     if (correlated) {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_FLUXDATA", &colnum, pStatus);
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
