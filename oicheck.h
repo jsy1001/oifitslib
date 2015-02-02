@@ -36,12 +36,17 @@
  * are relevant to the tasks it performs. The available checking
  * functions are:
  * - check_tables()
+ * - check_header()
+ * - check_keywords()
+ * - check_visrefmap()
  * - check_unique_targets()
  * - check_targets_present()
  * - check_elements_present()
+ * - check_corr_present()
  * - check_flagging()
  * - check_t3amp()
  * - check_waveorder()
+ * - check_time()
  *
  * Each checking function is passed a pointer to a oi_fits struct
  * containing the data to check (except check_unique_targets()), and a
