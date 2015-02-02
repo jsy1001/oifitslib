@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Unit tests of OIFITS file-level API.
  *
- * Copyright (C) 2014 John Young
+ * Copyright (C) 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -25,8 +25,13 @@
 
 #include "oifile.h"
 #include <unistd.h>  /* unlink() */
+#include <math.h>
 
-#define FILENAME "utest_oifile.fits"
+#define FILENAME_OUT "utest_oifile.fits"
+#define FILENAME_V1 "test/OIFITS1/alp_aur--COAST_NICMOS.fits"
+#define FILENAME_V2 "test/OIFITS2/alp_aur--COAST_NICMOS.fits"
+#define FILENAME_ATOMIC "test/OIFITS2/alp_aur--COAST_NICMOS.fits"
+#define FILENAME_MULTI "test/OIFITS2/bigtest2.fits"
 
 
 static void test_init(void)
@@ -36,8 +41,47 @@ static void test_init(void)
   
   init_oi_fits(&data);
   status = 0;
-  g_assert(write_oi_fits(FILENAME, data, &status) == 0);
-  unlink(FILENAME);
+  g_assert(write_oi_fits(FILENAME_OUT, data, &status) == 0);
+  unlink(FILENAME_OUT);
+}
+
+static void test_version(void)
+{
+  oi_fits data;
+  int status;
+
+  status = 0;
+  read_oi_fits(FILENAME_V1, &data, &status);
+  g_assert(!status);
+  g_assert(is_oi_fits_one(&data));
+  g_assert(!is_oi_fits_two(&data));
+  free_oi_fits(&data);
+
+  read_oi_fits(FILENAME_V2, &data, &status);
+  g_assert(!status);
+  g_assert(!is_oi_fits_one(&data));
+  g_assert(is_oi_fits_two(&data));
+  free_oi_fits(&data);
+}
+
+static void test_atomic(void)
+{
+  oi_fits data;
+  int status;
+
+  init_oi_fits(&data);
+  g_assert(!is_atomic(&data, 0.5));
+
+  status = 0;
+  read_oi_fits(FILENAME_ATOMIC, &data, &status);
+  g_assert(!status);
+  g_assert(is_atomic(&data, 0.5));
+  free_oi_fits(&data);
+
+  read_oi_fits(FILENAME_MULTI, &data, &status);
+  g_assert(!status);
+  g_assert(!is_atomic(&data, 0.5));
+  free_oi_fits(&data);
 }
 
 
@@ -46,6 +90,8 @@ int main(int argc, char *argv[])
   g_test_init(&argc, &argv, NULL);
 
   g_test_add_func("/oifitslib/oifile/init", test_init);
+  g_test_add_func("/oifitslib/oifile/version", test_version);
+  g_test_add_func("/oifitslib/oifile/atomic", test_atomic);
 
   return g_test_run();
 }

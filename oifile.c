@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <fitsio.h>
 
@@ -211,53 +212,110 @@ static void format_polar_list_summary(GString *pGStr, GList *polarList)
 }    
 
 /**
- * Return earliest of binary table DATE-OBS values as MJD.
+ * Return earliest of OI_VIS/VIS2/T3/SPECTRUM MJD values.
  */
-static long min_mjd(const oi_fits *pOi)
+static double get_min_mjd(const oi_fits *pOi)
 {
   const GList *link;
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
   oi_spectrum *pSpectrum;
-  long year, month, day, mjd, minMjd;
+  int i;
+  double minMjd;
 
   minMjd = 100000;
   link = pOi->visList;
   while (link != NULL) {
     pVis = link->data;
-    if (sscanf(pVis->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
-        && (mjd = date2mjd(year, month, day)) < minMjd)
-      minMjd = mjd;
+    for (i=0; i<pVis->numrec; i++) {
+      if (pVis->record[i].mjd < minMjd)
+        minMjd = pVis->record[i].mjd;
+    }
     link = link->next;
   }
   link = pOi->vis2List;
   while (link != NULL) {
     pVis2 = link->data;
-    if (sscanf(pVis2->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
-        && (mjd = date2mjd(year, month, day)) < minMjd)
-      minMjd = mjd;
+    for (i=0; i<pVis2->numrec; i++) {
+      if (pVis2->record[i].mjd < minMjd)
+        minMjd = pVis2->record[i].mjd;
+    }
     link = link->next;
   }
   link = pOi->t3List;
   while (link != NULL) {
     pT3 = link->data;
-    if (sscanf(pT3->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
-        && (mjd = date2mjd(year, month, day)) < minMjd)
-      minMjd = mjd;
+    for (i=0; i<pT3->numrec; i++) {
+      if (pT3->record[i].mjd < minMjd)
+        minMjd = pT3->record[i].mjd;
+    }
     link = link->next;
   }
   link = pOi->spectrumList;
   while (link != NULL) {
     pSpectrum = link->data;
-    if (sscanf(pSpectrum->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
-        && (mjd = date2mjd(year, month, day)) < minMjd)
-      minMjd = mjd;
+    for (i=0; i<pSpectrum->numrec; i++) {
+      if (pSpectrum->record[i].mjd < minMjd)
+        minMjd = pSpectrum->record[i].mjd;
+    }
     link = link->next;
   }
   return minMjd;
 }
 
+/**
+ * Return latest of OI_VIS/VIS2/T3/SPECTRUM MJD values.
+ */
+static double get_max_mjd(const oi_fits *pOi)
+{
+  const GList *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
+  int i;
+  double maxMjd;
+
+  maxMjd = 0;
+  link = pOi->visList;
+  while (link != NULL) {
+    pVis = link->data;
+    for (i=0; i<pVis->numrec; i++) {
+      if (pVis->record[i].mjd > maxMjd)
+        maxMjd = pVis->record[i].mjd;
+    }
+    link = link->next;
+  }
+  link = pOi->vis2List;
+  while (link != NULL) {
+    pVis2 = link->data;
+    for (i=0; i<pVis2->numrec; i++) {
+      if (pVis2->record[i].mjd > maxMjd)
+        maxMjd = pVis2->record[i].mjd;
+    }
+    link = link->next;
+  }
+  link = pOi->t3List;
+  while (link != NULL) {
+    pT3 = link->data;
+    for (i=0; i<pT3->numrec; i++) {
+      if (pT3->record[i].mjd > maxMjd)
+        maxMjd = pT3->record[i].mjd;
+    }
+    link = link->next;
+  }
+  link = pOi->spectrumList;
+  while (link != NULL) {
+    pSpectrum = link->data;
+    for (i=0; i<pSpectrum->numrec; i++) {
+      if (pSpectrum->record[i].mjd > maxMjd)
+        maxMjd = pSpectrum->record[i].mjd;
+    }
+    link = link->next;
+  }
+  return maxMjd;
+}
 
 /*
  * Public functions
@@ -369,6 +427,35 @@ int is_oi_fits_two(const oi_fits *pOi)
   return TRUE;
 }
 
+/**
+ * Is the dataset one observation of single target with a single instrument?
+ *
+ * An empty dataset, as created by init_oi_fits(), is not considered atomic.
+ *
+ *   @param pOi      pointer to file data struct, see oifile.h
+ *   @param maxDays  maximum time span to be considered atomic, in days
+ *
+ *   @return TRUE if atomic, FALSE otherwise.
+ */
+int is_atomic(const oi_fits *pOi, double maxDays)
+{
+  double minMjd, maxMjd;
+
+  /* allow 0 or 1 array tables because optional for OIFITS v1 */
+  if (pOi->numArray > 1)
+    return FALSE;
+  if (pOi->numWavelength != 1)
+    return FALSE;
+  if (pOi->targets.ntarget != 1)
+    return FALSE;
+  
+  minMjd = get_min_mjd(pOi);
+  maxMjd = get_max_mjd(pOi);
+  if(fabs(maxMjd - minMjd) > maxDays)
+    return FALSE;
+
+  return TRUE;
+}
 
 /** Macro to write FITS table for each oi_* in GList. */
 #define WRITE_OI_LIST(fptr, list, type, link, write_func, \
@@ -422,7 +509,7 @@ void set_oi_header(oi_fits *pOi)
   }
 
   /* Set DATE-OBS */
-  mjd2date(min_mjd(pOi), &year, &month, &day);
+  mjd2date(floor(get_min_mjd(pOi)), &year, &month, &day);
   g_snprintf(pOi->header.date_obs, FLEN_VALUE,
              "%4ld-%02ld-%02ld", year, month, day);
 }
