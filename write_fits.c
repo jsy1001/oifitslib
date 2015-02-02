@@ -653,9 +653,11 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 		 "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &vis.date_obs,
 		 "UTC start date of observations", pStatus);
-  if (strlen(vis.arrname) > 0) //:TODO: mandatory in OIFITS2
+  if (strlen(vis.arrname) > 0)
     fits_write_key(fptr, TSTRING, "ARRNAME", &vis.arrname,
 		   "Array name", pStatus);
+  else
+    printf("WARNING! vis.arrname not set\n");
   fits_write_key(fptr, TSTRING, "INSNAME", &vis.insname,
 		 "Detector name", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
@@ -746,9 +748,11 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 		 "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &vis2.date_obs,
 		 "UTC start date of observations", pStatus);
-  if (strlen(vis2.arrname) > 0) //:TODO: mandatory in OIFITS2
+  if (strlen(vis2.arrname) > 0)
     fits_write_key(fptr, TSTRING, "ARRNAME", &vis2.arrname,
 		   "Array name", pStatus);
+  else
+    printf("WARNING! vis2.arrname not set\n");
   fits_write_key(fptr, TSTRING, "INSNAME", &vis2.insname,
 		 "Detector name", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
@@ -853,9 +857,11 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 		 "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &t3.date_obs,
 		 "UTC start date of observations", pStatus);
-  if (strlen(t3.arrname) > 0) //:TODO: mandatory in OIFITS2
+  if (strlen(t3.arrname) > 0)
     fits_write_key(fptr, TSTRING, "ARRNAME", &t3.arrname,
 		   "Array name", pStatus);
+  else
+    printf("WARNING! t3.arrname not set\n");
   fits_write_key(fptr, TSTRING, "INSNAME", &t3.insname,
 		 "Detector name", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
