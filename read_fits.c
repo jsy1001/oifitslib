@@ -1396,7 +1396,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, comment, pStatus);
   if (pSpectrum->revision > revision) {
-    printf("WARNING! Expecting OI_REVN < %d in OI_SPECTRUM table. Got %d\n",
+    printf("WARNING! Expecting OI_REVN <= %d in OI_SPECTRUM table. Got %d\n",
            revision, pSpectrum->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs,
