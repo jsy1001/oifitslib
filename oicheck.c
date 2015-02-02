@@ -513,7 +513,7 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
     if(strlen(pPolar->arrname) > 0) {
       for(i=0; i<pPolar->numrec; i++) {
         if(oi_fits_lookup_element(pOi, pPolar->arrname,
-                                  pPolar->record[i].sta_index) == NULL) {
+                                  pPolar->record[i].sta_index[0]) == NULL) {
           g_snprintf(location, FLEN_VALUE, "OI_POLAR #%d record %d",
                      g_list_position(pOi->polarList, link)+1, i+1);
           set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
@@ -524,6 +524,7 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
                  g_list_position(pOi->visList, link)+1);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
+    link = link->next;
   }
 
   /* Check OI_VIS tables (ARRNAME optional in v1) */
