@@ -330,7 +330,7 @@ oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   oi_vis *pVis;
-  const char desc[] = "VISREFMAP present (missing) for absolute (differential) visibilities";
+  const char desc[] = "VISREFMAP present (missing) for absolute (differential) vis";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
@@ -494,20 +494,39 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
   GList *link;
   int i, j;
   int requireArrname;
+  oi_polar *pPolar;
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
   oi_spectrum *pSpectrum;
   const char desc[] = "Reference to missing array element";
-  const char desc2[] = "ARRNAME missing";
+  const char desc2[] = "ARRNAME missing"; //:BUG:
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
   requireArrname = is_oi_fits_two(pOi);
 
-  //:TODO: check OI_POLAR tables?
+  /* Check OI_POLAR tables */
+  link = pOi->polarList;
+  while(link != NULL) {
+    pPolar = link->data;
+    if(strlen(pPolar->arrname) > 0) {
+      for(i=0; i<pPolar->numrec; i++) {
+        if(oi_fits_lookup_element(pOi, pPolar->arrname,
+                                  pPolar->record[i].sta_index) == NULL) {
+          g_snprintf(location, FLEN_VALUE, "OI_POLAR #%d record %d",
+                     g_list_position(pOi->polarList, link)+1, i+1);
+          set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+	}
+      }
+    } else {
+      g_snprintf(location, FLEN_VALUE, "OI_POLAR #%d",
+                 g_list_position(pOi->visList, link)+1);
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
+    }
+  }
 
-  /* Check OI_VIS tables */
+  /* Check OI_VIS tables (ARRNAME optional in v1) */
   link = pOi->visList;
   while(link != NULL) {
     pVis = link->data;
@@ -530,7 +549,7 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
     link = link->next;
   }
 
-  /* Check OI_VIS2 tables */
+  /* Check OI_VIS2 tables (ARRNAME optional in v1) */
   link = pOi->vis2List;
   while(link != NULL) {
     pVis2 = link->data;
@@ -553,7 +572,7 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
     link = link->next;
   }
 
-  /* Check OI_T3 tables */
+  /* Check OI_T3 tables (ARRNAME optional in v1) */
   link = pOi->t3List;
   while(link != NULL) {
     pT3 = link->data;
