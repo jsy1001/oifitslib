@@ -71,6 +71,7 @@ static oi_array *match_oi_array(const oi_array *pArray,
   oi_array *pCmp;
   element *pCmpEl;
   const double tol = 1e-10;
+  const float ftol = 1e-3;
   int i;
 
   link = list;
@@ -88,7 +89,12 @@ static oi_array *match_oi_array(const oi_array *pArray,
       if(fabs(pArray->elem[i].staxyz[0] - pCmpEl->staxyz[0]) > tol) break;
       if(fabs(pArray->elem[i].staxyz[1] - pCmpEl->staxyz[1]) > tol) break;
       if(fabs(pArray->elem[i].staxyz[2] - pCmpEl->staxyz[2]) > tol) break;
-      //:TODO: compare diameter and (optional) fov?
+      if(fabs(pArray->elem[i].diameter - pCmpEl->diameter) > ftol) break;
+      if(pArray->revision >= 2 && pCmp->revision >= 2) {
+        /* compare FOV in OIFITS v2+ */
+        if(fabs(pArray->elem[i].fov - pCmpEl->fov) > tol) break;
+        if(strcmp(pArray->elem[i].fovtype, pCmpEl->fovtype) != 0) break;
+      }
     }
     if(i == pArray->nelement) 
       return pCmp;  /* all elements match */
