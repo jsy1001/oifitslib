@@ -107,7 +107,7 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
   /* Write mandatory keywords */
   fits_write_key(fptr, TSTRING, "ORIGIN", header.origin,
 		 "Institution", pStatus);
-  //:TODO: write DATE
+  fits_write_date(fptr, pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", header.date_obs,
 		 "UTC start date of observation", pStatus);
   fits_write_key(fptr, TSTRING, "TELESCOP", header.telescop,
@@ -1000,6 +1000,7 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
 		   spectrum.record[irow-1].fluxerr, pStatus);
   }
 
+  //:TODO: maybe only write ARRNAME and STA_INDEX if CALSTAT == 'U'
   /* Write optional keywords */
   correlated = (strlen(spectrum.corrname) > 0);
   if (correlated)
