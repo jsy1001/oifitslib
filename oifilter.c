@@ -407,7 +407,7 @@ static gboolean prune_oi_polar(oi_fits *pData, GList *arrnameList)
                 "removed from filter output", pPolar->arrname);
       pData->polarList = g_list_remove(pData->polarList, pPolar);
       --pData->numPolar;
-      free_oi_array(pPolar);
+      free_oi_polar(pPolar);
       free(pPolar);
       return TRUE;
     }
@@ -844,6 +844,9 @@ void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
     if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
        pInTab->record[i].mjd > pFilter->mjd_range[1])
       continue; /* skip record as MJD out of range */
+    useWave = g_hash_table_lookup(useWaveHash, pInTab->record[i].insname);
+    if(useWave == NULL) 
+      continue; /* skip record as INSNAME filtered out */
     
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i],
@@ -854,8 +857,8 @@ void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
     pOutTab->record[nrec].lyy = malloc(pOutTab->nwave*sizeof(float complex));
     pOutTab->record[nrec].lxy = malloc(pOutTab->nwave*sizeof(float complex));
     pOutTab->record[nrec].lyx = malloc(pOutTab->nwave*sizeof(float complex));
-    useWave = g_hash_table_lookup(useWaveHash, pInTab->record[i].insname);
     k = 0;
+    g_assert(useWave != NULL);
     for(j=0; j<pInTab->nwave; j++) {
       if(useWave[j]) {
 	pOutTab->record[nrec].lxx[k] = pInTab->record[i].lxx[j];
