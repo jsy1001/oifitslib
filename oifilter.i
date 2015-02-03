@@ -41,6 +41,17 @@ COAST_NICMOS
 >>> print len(filtered.visList) + len(filtered.vis2List) + len(filtered.t3List)
 0
 >>> f = oifilter.Filter()
+>>> f.bas_range = (100.0, 300.0)
+>>> filtered = f.apply(o)
+>>> print len(filtered.visList) + len(filtered.vis2List) + len(filtered.t3List)
+0
+>>> f = oifilter.Filter()
+>>> f.snr_range = (100.0, 1000.0)
+>>> f.accept_flagged = 0
+>>> filtered = f.apply(o)
+>>> print len(filtered.visList) + len(filtered.vis2List) + len(filtered.t3List)
+0
+>>> f = oifilter.Filter()
 >>> f.accept_vis = 0
 >>> print len(f.apply(o).visList)
 0
@@ -76,6 +87,10 @@ if __name__ == '__main__':
 %apply double TUPLE_OUTPUT [ANY] {double mjd_range [2]};
 %apply float TUPLE_INPUT [ANY]  {float wave_range [2]};
 %apply float TUPLE_OUTPUT [ANY] {float wave_range [2]};
+%apply double TUPLE_INPUT [ANY]  {double bas_range [2]};
+%apply double TUPLE_OUTPUT [ANY] {double bas_range [2]};
+%apply float TUPLE_INPUT [ANY]  {float snr_range [2]};
+%apply float TUPLE_OUTPUT [ANY] {float snr_range [2]};
 
 
 %rename(Filter) oi_filter_spec;
@@ -85,10 +100,13 @@ typedef struct {
   int target_id;
   double mjd_range[2];
   float wave_range[2];
+  double bas_range[2];
+  float snr_range[2];
   int accept_vis;
   int accept_vis2;
   int accept_t3amp;
   int accept_t3phi;
+  int accept_flagged;
 } oi_filter_spec;
 
 // Object-oriented interface to filter
