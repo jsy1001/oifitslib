@@ -168,7 +168,7 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
 static void test_merge(gconstpointer userData)
 {
-  int i, numCorr;
+  int i, numCorr, numPolar;
   oi_fits outData, inData1, inData2, inData3;
   int status;
   DataCount inCount, outCount;
@@ -187,15 +187,18 @@ static void test_merge(gconstpointer userData)
     g_assert(!status);
     check(&inData1);
     numCorr += inData1.numCorr;
+    numPolar += inData1.numPolar;
     read_oi_fits(pSet->cases[i].filename2, &inData2, &status);
     g_assert(!status);
     check(&inData2);
     numCorr += inData2.numCorr;
+    numPolar += inData2.numPolar;
     if(pSet->cases[i].filename3 != NULL) {
       read_oi_fits(pSet->cases[i].filename3, &inData3, &status);
       g_assert(!status);
       check(&inData3);
       numCorr += inData3.numCorr;
+      numPolar += inData3.numPolar;
     }
 
     /* Merge datasets */
@@ -209,8 +212,9 @@ static void test_merge(gconstpointer userData)
     g_assert_cmpint(outData.numArray, ==, pSet->cases[i].numArray);
     g_assert_cmpint(outData.numWavelength, ==, pSet->cases[i].numWavelength);
 
-    /* Compare number of OI_CORR tables */
+    /* Compare number of OI_CORR and OI_POLAR tables */
     g_assert_cmpint(outData.numCorr, ==, numCorr);
+    g_assert_cmpint(outData.numPolar, ==, numPolar);
 
     /* Compare number of data */
     zero_count(&inCount);

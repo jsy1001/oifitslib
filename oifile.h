@@ -113,6 +113,7 @@ oi_target *dup_oi_target(const oi_target *);
 oi_array *dup_oi_array(const oi_array *);
 oi_wavelength *dup_oi_wavelength(const oi_wavelength *);
 oi_corr *dup_oi_corr(const oi_corr *);
+oi_polar *dup_oi_polar(const oi_polar *);
 oi_vis *dup_oi_vis(const oi_vis *);
 oi_vis2 *dup_oi_vis2(const oi_vis2 *);
 oi_t3 *dup_oi_t3(const oi_t3 *);

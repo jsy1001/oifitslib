@@ -1082,6 +1082,37 @@ oi_corr *dup_oi_corr(const oi_corr *pInTab)
 }
 
 /**
+ * Make deep copy of a OI_POLAR table.
+ *
+ * @param pInTab  pointer to input table
+ *
+ * @return Pointer to newly-allocated copy of input table
+ */
+oi_polar *dup_oi_polar(const oi_polar *pInTab)
+{
+  oi_polar *pOutTab;
+  oi_polar_record *pInRec, *pOutRec;
+  int i;
+
+  MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
+  MEMDUP(pOutTab->record, pInTab->record,
+	 pInTab->numrec*sizeof(pInTab->record[0]));
+  for(i=0; i<pInTab->numrec; i++) {
+    pOutRec = &pOutTab->record[i];
+    pInRec = &pInTab->record[i];
+    MEMDUP(pOutRec->lxx, pInRec->lxx,
+	   pInTab->nwave*sizeof(pInRec->lxx[0]));
+    MEMDUP(pOutRec->lyy, pInRec->lyy,
+	   pInTab->nwave*sizeof(pInRec->lyy[0]));
+    MEMDUP(pOutRec->lxy, pInRec->lxy,
+	   pInTab->nwave*sizeof(pInRec->lxy[0]));
+    MEMDUP(pOutRec->lyx, pInRec->lyx,
+	   pInTab->nwave*sizeof(pInRec->lyx[0]));
+  }
+  return pOutTab;
+}
+
+/**
  * Make deep copy of a OI_VIS table.
  *
  * @param pInTab  pointer to input table

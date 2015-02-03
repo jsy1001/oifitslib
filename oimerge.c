@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Implementation of merge component of OIFITSlib.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -472,6 +472,61 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
   }
 
 /**
+ * Copy all input OI_POLAR tables into output dataset.
+ *
+ * Modifies ARRNAME, INSNAME, and TARGET_ID to maintain correct
+ * cross-references.
+ *
+ * @param inList        linked list of oi_fits structs to merge
+ * @param targetIdHash  hash table giving new TARGET_ID indexed by target name
+ * @param arrnameHashList   list of hash tables giving new ARRNAME indexed
+ *                          by old
+ * @param insnameHashList   list of hash tables giving new INSNAME indexed
+ *                          by old
+ * @param pOutput       pointer to oi_fits struct to write merged data to
+ */
+void merge_all_oi_polar(const GList *inList, GHashTable *targetIdHash,
+                        const GList *arrnameHashList,
+                        const GList *insnameHashList,
+                        oi_fits *pOutput)
+{
+  const GList *ilink, *jlink, *arrHashLink, *insHashLink;
+  oi_fits *pInput;
+  oi_polar *pOutTab;
+  GHashTable *arrnameHash, *insnameHash;
+  int i;
+  
+  /* Loop over input datasets */
+  ilink = inList;
+  arrHashLink = arrnameHashList;
+  insHashLink = insnameHashList;
+  while(ilink != NULL) {
+    arrnameHash = (GHashTable *) arrHashLink->data;
+    insnameHash = (GHashTable *) insHashLink->data;
+    pInput = (oi_fits *) ilink->data;
+    /* Loop over polar tables in dataset */
+    jlink = pInput->polarList;
+    while(jlink != NULL) {
+      pOutTab = dup_oi_polar((oi_polar *) jlink->data);
+      REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
+      REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
+      for(i=0; i<pOutTab->numrec; i++) {
+        g_strlcpy(pOutTab->record[i].insname,
+                  g_hash_table_lookup(insnameHash, pOutTab->record[i].insname),
+                  FLEN_VALUE);
+      }
+      /* Append modified copy of table to output */
+      pOutput->polarList = g_list_append(pOutput->polarList, pOutTab); 
+      ++pOutput->numPolar;
+      jlink = jlink->next;
+    }
+    ilink = ilink->next;
+    arrHashLink = arrHashLink->next;
+    insHashLink = insHashLink->next;
+  }
+}
+
+/**
  * Copy all input OI_VIS tables into output dataset.
  *
  * Modifies ARRNAME, INSNAME, CORRNAME and TARGET_ID to maintain correct
@@ -711,6 +766,8 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
   arrnameHashList = merge_all_oi_array(inList, pOutput);
   insnameHashList = merge_all_oi_wavelength(inList, pOutput);
   corrnameHashList = merge_all_oi_corr(inList, pOutput);
+  merge_all_oi_polar(inList, targetIdHash, arrnameHashList,
+                     insnameHashList, pOutput);
   merge_all_oi_vis(inList, targetIdHash, arrnameHashList,
                    insnameHashList, corrnameHashList, pOutput);
   merge_all_oi_vis2(inList, targetIdHash, arrnameHashList,
