@@ -643,11 +643,11 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
  *
  * @param inList        linked list of oi_fits structs to merge
  * @param targetIdHash  hash table giving new TARGET_ID indexed by target name
- * @param arrnameHashList   list of hash tables giving new INSNAME indexed
+ * @param arrnameHashList   list of hash tables giving new ARRNAME indexed
  *                          by old
  * @param insnameHashList   list of hash tables giving new INSNAME indexed
  *                          by old
- * @param corrnameHashList  list of hash tables giving new INSNAME indexed
+ * @param corrnameHashList  list of hash tables giving new CORRNAME indexed
  *                          by old
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
