@@ -35,7 +35,7 @@ human-readable description of the result.
 ...           check_unique_targets, check_targets_present, check_corr_present,
 ...           check_elements_present, check_flagging, check_t3amp,
 ...           check_waveorder, check_time, check_spectrum]
->>> o = oifits.OiFits('bigtest2.fits')
+>>> o = oifits.OiFits('test/OIFITS2/bigtest2.fits')
 >>> for c in checks:
 ...     level, result = c(o)
 ...     if level > 0:

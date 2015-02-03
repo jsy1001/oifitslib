@@ -47,6 +47,10 @@ COAST
 >>> print f.apply(o).wavelengthList[0].insname
 COAST_NICMOS
 >>> f = oifilter.Filter()
+>>> f.corrname = 'TEST'
+>>> print f.apply(o).corrList[0].corrname
+TEST
+>>> f = oifilter.Filter()
 >>> f.target_id = 2
 >>> print f.apply(o).numTargets
 0
@@ -56,6 +60,17 @@ COAST_NICMOS
 1
 >>> f = oifilter.Filter()
 >>> f.wave_range = (2.0e-6, 2.4e-6)
+>>> filtered = f.apply(o)
+>>> print len(filtered.visList) + len(filtered.vis2List) + len(filtered.t3List)
+0
+>>> f = oifilter.Filter()
+>>> f.bas_range = (100.0, 300.0)
+>>> filtered = f.apply(o)
+>>> print len(filtered.visList) + len(filtered.vis2List) + len(filtered.t3List)
+0
+>>> f = oifilter.Filter()
+>>> f.snr_range = (100.0, 1000.0)
+>>> f.accept_flagged = 0
 >>> filtered = f.apply(o)
 >>> print len(filtered.visList) + len(filtered.vis2List) + len(filtered.t3List)
 0

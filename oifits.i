@@ -28,7 +28,7 @@ OIFITSlib C API) plus a few methods.
 
 Use the OiFits constructor to read an OIFITS file from disk:
 >>> import oifits
->>> o = oifits.OiFits('bigtest2.fits')
+>>> o = oifits.OiFits('test/OIFITS2/bigtest2.fits')
 
 The resulting OiFits instance may be passed to functions in the
 oicheck, oimerge, and oifilter modules. Functions in the latter two
