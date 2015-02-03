@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Implementation of Gregorian date/MJD conversions.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.

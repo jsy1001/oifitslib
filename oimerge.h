@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Definitions for merge component of OIFITSlib.
  *
- * Copyright (C) 2007, 2014 John Young
+ * Copyright (C) 2007, 2015 John Young
  *
  *
  * This file is part of OIFITSlib.

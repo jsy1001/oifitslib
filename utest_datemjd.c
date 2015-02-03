@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Unit tests of Gregorian date/MJD conversion.
  *
- * Copyright (C) 2014 John Young
+ * Copyright (C) 2015 John Young
  *
  *
  * This file is part of OIFITSlib.
