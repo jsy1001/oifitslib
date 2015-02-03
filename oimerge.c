@@ -203,9 +203,11 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
   MERGE_HEADER_KEY(inList, origin, pOutput);  //:TODO: MULTIPLE ok for ORIGIN?
   MERGE_HEADER_KEY(inList, telescop, pOutput);
   MERGE_HEADER_KEY(inList, instrume, pOutput);
+  MERGE_HEADER_KEY(inList, observer, pOutput);
   MERGE_HEADER_KEY(inList, insmode, pOutput);
   MERGE_HEADER_KEY(inList, object, pOutput);
   MERGE_HEADER_KEY(inList, referenc, pOutput);
+  MERGE_HEADER_KEY(inList, author, pOutput);
   MERGE_HEADER_KEY(inList, prog_id, pOutput);
   MERGE_HEADER_KEY(inList, procsoft, pOutput);
   MERGE_HEADER_KEY(inList, obstech, pOutput);
