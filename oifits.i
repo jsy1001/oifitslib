@@ -1,6 +1,24 @@
-// $Id$
-
 // oifits module - interface definition file for SWIG
+//
+// Copyright (C) 2007, 2015 John Young
+//
+//
+// This file is part of OIFITSlib.
+//
+// OIFITSlib is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// OIFITSlib is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with OIFITSlib.  If not, see
+// http://www.gnu.org/licenses/
+
 
 %define DOCSTRING
 "This module provides full read-only and limited read-write access
@@ -110,18 +128,25 @@ if __name__ == '__main__':
 %map_out_glist(arrayList, oi_array);
 %map_in_glist(wavelengthList, oi_wavelength);
 %map_out_glist(wavelengthList, oi_wavelength);
+%map_in_glist(corrList, oi_corr);
+%map_out_glist(corrList, oi_corr);
+%map_in_glist(polarList, oi_polar);
+%map_out_glist(polarList, oi_polar);
 %map_in_glist(visList, oi_vis);
 %map_out_glist(visList, oi_vis);
 %map_in_glist(vis2List, oi_vis2);
 %map_out_glist(vis2List, oi_vis2);
 %map_in_glist(t3List, oi_t3);
 %map_out_glist(t3List, oi_t3);
+%map_in_glist(spectrumList, oi_spectrum);
+%map_out_glist(spectrumList, oi_spectrum);
 
 
 // Exclude few attributes that can't be wrapped sensibly
 // We use new methods to plug the gaps
 %ignore wavelengthHash; // use get_eff_wave() etc. instead
 %ignore arrayHash; // use get_element() etc. instead
+%ignore corrHash;
 %ignore write_oi_fits; // use write() method instead
 
 %rename(OiFits) oi_fits;
@@ -146,9 +171,11 @@ if __name__ == '__main__':
 // could add __setitem__
 %add_array_access(element);
 %add_array_access(target);
+%add_array_access(oi_polar_record);
 %add_array_access(oi_vis_record);
 %add_array_access(oi_vis2_record);
 %add_array_access(oi_t3_record);
+%add_array_access(oi_spectrum_record);
 
 
 // Object-oriented interface to oi_fits struct

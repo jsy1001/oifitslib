@@ -1,6 +1,25 @@
-// $Id$
-
 // oifilter python module - SWIG interface definition file
+//
+// Copyright (C) 2007, 2015 John Young
+//
+//
+// This file is part of OIFITSlib.
+//
+// OIFITSlib is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// OIFITSlib is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with OIFITSlib.  If not, see
+// http://www.gnu.org/licenses/
+
+
 %define DOCSTRING
 "This module provides an object-oriented interface to the OIFITSlib
 dataset filtering functionality. To filter a oifits.OiFits instance,
@@ -76,19 +95,28 @@ if __name__ == '__main__':
 %apply double TUPLE_OUTPUT [ANY] {double mjd_range [2]};
 %apply float TUPLE_INPUT [ANY]  {float wave_range [2]};
 %apply float TUPLE_OUTPUT [ANY] {float wave_range [2]};
+%apply double TUPLE_INPUT [ANY]  {double bas_range [2]};
+%apply double TUPLE_OUTPUT [ANY] {double bas_range [2]};
+%apply float TUPLE_INPUT [ANY]  {float snr_range [2]};
+%apply float TUPLE_OUTPUT [ANY] {float snr_range [2]};
 
 
 %rename(Filter) oi_filter_spec;
 typedef struct {
   char arrname[FLEN_VALUE];
   char insname[FLEN_VALUE];
+  char corrname[FLEN_VALUE];
   int target_id;
   double mjd_range[2];
   float wave_range[2];
+  double bas_range[2];
+  float snr_range[2];
   int accept_vis;
   int accept_vis2;
   int accept_t3amp;
   int accept_t3phi;
+  int accept_spectrum;
+  int accept_flagged;
 } oi_filter_spec;
 
 // Object-oriented interface to filter

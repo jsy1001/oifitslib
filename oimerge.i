@@ -1,6 +1,24 @@
-// $Id$
-
 // oimerge module - interface definition for SWIG
+//
+// Copyright (C) 2007, 2015 John Young
+//
+//
+// This file is part of OIFITSlib.
+//
+// OIFITSlib is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// OIFITSlib is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with OIFITSlib.  If not, see
+// http://www.gnu.org/licenses/
+
 
 %define DOCSTRING
 "This module provides a simple interface to the OIFITSlib merge
@@ -13,7 +31,7 @@ merges instances supplied in a list.
 
 >>> import oifits, oimerge
 >>> o1 = oifits.OiFits('testdata.fits')
->>> o2 = oifits.OiFits('bigtest2.fits')
+>>> o2 = oifits.OiFits('test/OIFITS2/bigtest2.fits')
 >>> merged = oimerge.merge(o1, o2)
 >>> print len(merged.vis2List)
 3
