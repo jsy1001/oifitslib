@@ -427,12 +427,15 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
   return corrnameHashList;
 }
 
-/** Replace ARRNAME with string from hash table */
+/** Replace optional ARRNAME with string from hash table */
 #define REPLACE_ARRNAME(pTab, oldArrname, arrnameHash) \
   {                                                                     \
-    (void) g_strlcpy(pTab->arrname,                                     \
-                     g_hash_table_lookup(arrnameHash, oldArrname),      \
-                     FLEN_VALUE);                                       \
+    if (strlen(oldArrname) > 0)                                         \
+    {                                                                   \
+      (void) g_strlcpy(pTab->arrname,                                   \
+                       g_hash_table_lookup(arrnameHash, oldArrname),    \
+                       FLEN_VALUE);                                     \
+    }                                                                   \
   }
 
 /** Replace INSNAME with string from hash table */
@@ -443,7 +446,7 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
                      FLEN_VALUE);                                       \
   }
 
-/** Replace CORRNAME with string from hash table */
+/** Replace optional CORRNAME with string from hash table */
 #define REPLACE_CORRNAME(pTab, oldCorrname, corrnameHash)               \
   {                                                                     \
     if (strlen(oldCorrname) > 0)                                        \

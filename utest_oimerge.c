@@ -58,7 +58,7 @@ static const TestCase v1Cases[] = {
   {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "Mystery--AMBER--MedH.fits",
    NULL, 1, 2},
   {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
-  {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
+  {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Bin_Ary--MIRC_H.fits", NULL, 1, 1},
 };
 
 static const TestCase v2Cases[] = {
@@ -69,7 +69,8 @@ static const TestCase v2Cases[] = {
   {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits",
    NULL, 1, 2},
   {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
-  {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
+  {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1},
+  {"testdata.fits", DIR2 "bigtest2.fits", NULL, 3, 3}
 };
 
 static const TestSet v1Set = {
