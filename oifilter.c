@@ -386,6 +386,36 @@ static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
   return FALSE;
 }
 
+/**
+ * Remove first OI_POLAR table with ARRNAME not in @a arrnameList.
+ *
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ */
+static gboolean prune_oi_polar(oi_fits *pData, GList *arrnameList)
+{
+  GList *link;
+  oi_polar *pPolar;
+
+  link = pData->polarList;
+  while (link != NULL)
+  {
+    pPolar = (oi_polar *) link->data;
+    if (g_list_find_custom(arrnameList, pPolar->arrname,
+                           (GCompareFunc) strcmp) == NULL)
+    {
+      g_warning("Unreferenced OI_POLAR table with ARRNAME=%s "
+                "removed from filter output", pPolar->arrname);
+      pData->polarList = g_list_remove(pData->polarList, pPolar);
+      --pData->numPolar;
+      free_oi_array(pPolar);
+      free(pPolar);
+      return TRUE;
+    }
+    link = link->next;
+  }
+  return FALSE;
+}
+
 
 /*
  * Public functions
@@ -1568,9 +1598,10 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   filter_all_oi_t3(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_spectrum(pInput, pFilter, useWaveHash, pOutput);
 
-  /* Remove orphaned OI_ARRAY, OI_WAVELENGTH and OI_CORR tables */
+  /* Remove orphaned OI_ARRAY, OI_POLAR, OI_WAVELENGTH and OI_CORR tables */
   list = get_arrname_list(pOutput);
   while(prune_oi_array(pOutput, list)) ;
+  while(prune_oi_polar(pOutput, list)) ;
   g_list_free(list);
   list = get_insname_list(pOutput);
   while(prune_oi_wavelength(pOutput, list)) ;
