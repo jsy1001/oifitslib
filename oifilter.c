@@ -556,6 +556,8 @@ void filter_oi_header(const oi_header *pInHeader,
 		      const oi_filter_spec *pFilter, oi_header *pOutHeader)
 {
   memcpy(pOutHeader, pInHeader, sizeof(*pInHeader));
+  //:TODO: overwrite header values if dataset becomes atomic?
+  // TELESCOP, INSTRUME, OBJECT (OBSERVER, REFERENC)
 }
 
 /**

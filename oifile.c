@@ -204,7 +204,7 @@ static void format_polar_list_summary(GString *pGStr, GList *polarList)
   link = polarList;
   while(link != NULL) {
     pPolar = (oi_polar *) link->data;
-    //:TODO: add list of unique INSNAME values in this table
+    //:TODO: add list of unique INSNAME values in this OI_POLAR table
     g_string_append_printf(pGStr,
 			   "    #%-2d ARRNAME='%s'\n", nn++, pPolar->arrname);
     link = link->next;
@@ -414,7 +414,6 @@ int is_oi_fits_one(const oi_fits *pOi)
 int is_oi_fits_two(const oi_fits *pOi)
 {
   g_assert(pOi != NULL);
-  //:TODO: also check PRODCATG from primary header?
   if (pOi->targets.revision != 2) return FALSE;
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->arrayList, oi_array, 2, FALSE);
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->wavelengthList, oi_wavelength, 2, FALSE);
