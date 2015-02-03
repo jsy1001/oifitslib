@@ -449,8 +449,8 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
 		  &nullcomplex, pPolar->record[irow-1].lyx, &anynull,
 		  pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 2, &nullint,
-		  pPolar->record[irow-1].sta_index, &anynull, pStatus);
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+		  &pPolar->record[irow-1].sta_index, &anynull, pStatus);
   }
   return *pStatus;
 }

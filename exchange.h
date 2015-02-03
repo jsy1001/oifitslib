@@ -179,7 +179,7 @@ typedef struct {
   float complex *lyy;
   float complex *lxy;
   float complex *lyx;
-  int sta_index[2];
+  int sta_index;
 } oi_polar_record;
 
 /** Data for OI_POLAR FITS table (new in OIFITS2) */

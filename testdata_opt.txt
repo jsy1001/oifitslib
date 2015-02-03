@@ -85,7 +85,7 @@ npol 1
 arrname COAST
 orient LABORATORY
 model NOMINAL
-numrec 5
+numrec 7
 
 target_id 1
 insname COAST_NICMOS
@@ -95,7 +95,17 @@ lxx  0.0  0.31i
 lyy  1.0  0.5i
 lxy  1.0 -1.0i
 lyx  0.0 -0.23i
-sta_index 1 2
+sta_index 1
+
+target_id 1
+insname COAST_NICMOS
+mjd 51836.958449
+int_time 60.0
+lxx  0.0  0.31i
+lyy  1.0  0.5i
+lxy  1.0 -1.0i
+lyx  0.0 -0.23i
+sta_index 2
 
 target_id 1
 insname COAST_NICMOS
@@ -105,7 +115,17 @@ lxx  1.0  0.0i
 lyy  0.0  0.5i
 lxy  0.0 -1.0i
 lyx  1.0  0.23i
-sta_index 1 3
+sta_index 1
+
+target_id 1
+insname COAST_NICMOS
+mjd 51836.960394
+int_time 60.0
+lxx  1.0  0.0i
+lyy  0.0  0.5i
+lxy  0.0 -1.0i
+lyx  1.0  0.23i
+sta_index 3
 
 target_id 1
 insname COAST_NICMOS
@@ -115,7 +135,7 @@ lxx  0.0  0.31i
 lyy  1.0  0.5i
 lxy  1.0 -1.0i
 lyx  0.0 -0.23i
-sta_index 1 2
+sta_index 1
 
 target_id 1
 insname COAST_NICMOS
@@ -125,7 +145,7 @@ lxx  0.0  0.31i
 lyy  1.0  0.5i
 lxy  1.0 -1.0i
 lyx  0.0 -0.23i
-sta_index 2 3
+sta_index 2
 
 target_id 1
 insname COAST_NICMOS
@@ -135,7 +155,7 @@ lxx  0.0  0.31i
 lyy  1.0  0.5i
 lxy  1.0 -1.0i
 lyx  0.0 -0.23i
-sta_index 1 3
+sta_index 3
 
 
 OI_VIS

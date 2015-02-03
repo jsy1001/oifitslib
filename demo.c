@@ -199,8 +199,7 @@ void demo_write(void)
       fscanf(fp, "%f %fi ", &real, &imag);
       polar.record[irec].lyx[iwave] = real + imag*I;
     }
-    fscanf(fp, "sta_index %d %d ", &polar.record[irec].sta_index[0],
-	   &polar.record[irec].sta_index[1]);
+    fscanf(fp, "sta_index %d ", &polar.record[irec].sta_index);
   }
   polar.revision = 1;
   polar.nwave = wave.nwave;

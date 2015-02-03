@@ -435,7 +435,7 @@ STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
                    "LXX", "LYY", "LXY", "LYX", "STA_INDEX"};
   //:TODO: follow standard in choosing repeat count for INSNAME
   const char *tformTpl[] = {"I", "70A", "D", "D",
-			    "?C", "?C", "?C", "?C", "2I"};
+			    "?C", "?C", "?C", "?C", "I"};
   char **tform;
   char *tunit[] = {"\0", "\0", "day", "s",
 		   "\0", "\0", "\0", "\0", "\0"};
@@ -491,8 +491,8 @@ STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
 		   polar.record[irow-1].lxy, pStatus);
     fits_write_col(fptr, TCOMPLEX, 8, irow, 1, polar.nwave,
 		   polar.record[irow-1].lyx, pStatus);
-    fits_write_col(fptr, TINT, 9, irow, 1, 2, polar.record[irow-1].sta_index,
-		   pStatus);
+    fits_write_col(fptr, TINT, 9, irow, 1, 1,
+                   &polar.record[irow-1].sta_index, pStatus);
   }
 
   fits_write_chksum(fptr, pStatus);
