@@ -27,7 +27,6 @@
 #include "datemjd.h"
 
 #include <string.h>
-#include <assert.h>
 #include <math.h>
 
 
@@ -193,7 +192,7 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
 {
   long year, month, day;
 
-  assert(pOutput->header.origin[0] == '\0');
+  g_assert_cmpint(strlen(pOutput->header.origin), ==, 0);
 
   mjd2date(files_min_mjd(inList), &year, &month, &day);
   g_snprintf(pOutput->header.date_obs, FLEN_VALUE,
@@ -243,7 +242,7 @@ GHashTable *merge_oi_target(const GList *inList, oi_fits *pOutput)
       if(!g_hash_table_lookup(targetIdHash, pInTab->targ[i].target)) {
 	pValue = malloc(sizeof(int));
 	*pValue = ++pOutTab->ntarget;
-	assert(pOutTab->ntarget < MAX_TARGET);
+	g_assert_cmpint(pOutTab->ntarget, <, MAX_TARGET);
 	g_hash_table_insert(targetIdHash, pInTab->targ[i].target, pValue);
 	memcpy(&pOutTab->targ[pOutTab->ntarget-1], &pInTab->targ[i],
 	       sizeof(target));
@@ -274,7 +273,7 @@ GList *merge_all_oi_array(const GList *inList, oi_fits *pOutput)
   char newName[FLEN_VALUE];
   
   arrnameHashList = NULL;
-  assert(pOutput->arrayList == NULL);
+  g_assert(pOutput->arrayList == NULL);
   
   /* Loop over input datasets */
   ilink = inList;
@@ -332,7 +331,7 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
   char newName[FLEN_VALUE];
   
   insnameHashList = NULL;
-  assert(pOutput->wavelengthList == NULL);
+  g_assert(pOutput->wavelengthList == NULL);
   
   /* Loop over input datasets */
   ilink = inList;
@@ -392,7 +391,7 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
   char newName[FLEN_VALUE];
   
   corrnameHashList = NULL;
-  assert(pOutput->corrList == NULL);
+  g_assert(pOutput->corrList == NULL);
   
   /* Loop over input datasets */
   ilink = inList;
