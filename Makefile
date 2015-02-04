@@ -86,10 +86,11 @@ clean:
 	rm -f $(PYTHONMODULES) *_wrap.c *.py *.pyc
 
 # Library for table level I/O only - does not require GLib
-liboitable.a: read_fits.o write_fits.o free_fits.o
+liboitable.a: read_fits.o write_fits.o alloc_fits.o free_fits.o
 	$(AR) -ruc $@ $^
 write_fits.o: write_fits.c exchange.h
 read_fits.o: read_fits.c exchange.h
+alloc_fits.o: alloc_fits.c exchange.h
 free_fits.o: free_fits.c exchange.h
 
 demo: demo.o liboitable.a
@@ -100,8 +101,8 @@ demo.o: demo.c exchange.h
 #
 # Targets requiring GLib
 #
-liboifits.a: read_fits.o write_fits.o free_fits.o datemjd.o oifile.o \
- oifilter.o oicheck.o oimerge.o
+liboifits.a: read_fits.o write_fits.o alloc_fits.o free_fits.o \
+ datemjd.o oifile.o oifilter.o oicheck.o oimerge.o
 	$(AR) -ruc $@ $^
 datemjd.o: datemjd.c datemjd.h
 oifile.o: oifile.c oifile.h exchange.h datemjd.h glib-2.0.libexists

@@ -198,7 +198,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   double nan, nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -222,10 +222,9 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   fits_read_key(fptr, TDOUBLE, "ARRAYX", &pArray->arrayx, comment, pStatus);
   fits_read_key(fptr, TDOUBLE, "ARRAYY", &pArray->arrayy, comment, pStatus);
   fits_read_key(fptr, TDOUBLE, "ARRAYZ", &pArray->arrayz, comment, pStatus);
-  /* get number of rows */
-  fits_get_num_rows(fptr, &repeat, pStatus);
-  pArray->nelement = repeat;
-  pArray->elem = malloc(pArray->nelement*sizeof(element));
+  /* get number of rows and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  alloc_oi_array(pArray, nrows);
   /* read rows */
   for (irow=1; irow<=pArray->nelement; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TEL_NAME", &colnum, pStatus);
@@ -285,7 +284,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   float nullfloat = 0.0F;
   const int revision = 2;
   int colnum, anynull;
-  long repeat;
+  long nrows;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -303,10 +302,8 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   }
 
   /* get number of rows */
-  fits_get_num_rows(fptr, &repeat, pStatus);
-  pWave->nwave = repeat;
-  pWave->eff_wave = malloc(pWave->nwave*sizeof(float));
-  pWave->eff_band = malloc(pWave->nwave*sizeof(float));
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  alloc_oi_wavelength(pWave, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "EFF_WAVE", &colnum, pStatus);
   fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, &nullfloat,
@@ -337,7 +334,7 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   double nulldouble = 0.0;
   const int revision = 1;
   int colnum, anynull;
-  long repeat;
+  long nrows;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -355,12 +352,9 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   }
   fits_read_key(fptr, TINT, "NDATA", &pCorr->ndata, comment, pStatus);
 
-  /* get number of rows */
-  fits_get_num_rows(fptr, &repeat, pStatus);
-  pCorr->ncorr = repeat;
-  pCorr->iindx = malloc(pCorr->ncorr*sizeof(int));
-  pCorr->jindx = malloc(pCorr->ncorr*sizeof(int));
-  pCorr->corr = malloc(pCorr->ncorr*sizeof(double));
+  /* get number of rows and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  alloc_oi_corr(pCorr, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "IINDX", &colnum, pStatus);
   fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, &nullint,
@@ -396,7 +390,7 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   float complex nullcomplex = 0.0 + 0.0*I;
   const int revision = 1;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows, repeat;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -412,14 +406,12 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   fits_read_key(fptr, TSTRING, "ARRNAME", pPolar->arrname, comment, pStatus);
   fits_read_key(fptr, TSTRING, "ORIENT", pPolar->orient, comment, pStatus);
   fits_read_key(fptr, TSTRING, "MODEL", pPolar->model, comment, pStatus);
-  /* get number of rows */
-  fits_get_num_rows(fptr, &pPolar->numrec, pStatus);
-  pPolar->record = malloc(pPolar->numrec*sizeof(oi_polar_record));
-  /* get value for nwave */
-  /* format specifies same repeat count for L* columns */
+  /* get dimensions and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  /* note format specifies same repeat count for L* columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
-  pPolar->nwave = repeat;
+  alloc_oi_polar(pPolar, nrows, repeat);
   /* read rows */
   for (irow=1; irow<=pPolar->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -435,10 +427,6 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pPolar->record[irow-1].int_time, &anynull, pStatus);
-    pPolar->record[irow-1].lxx = malloc(pPolar->nwave*sizeof(float complex));
-    pPolar->record[irow-1].lyy = malloc(pPolar->nwave*sizeof(float complex));
-    pPolar->record[irow-1].lxy = malloc(pPolar->nwave*sizeof(float complex));
-    pPolar->record[irow-1].lyx = malloc(pPolar->nwave*sizeof(float complex));
     fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave,
 		  &nullcomplex, pPolar->record[irow-1].lxx, &anynull,
@@ -532,7 +520,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -543,10 +531,9 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     printf("WARNING! Expecting OI_REVN <= %d in OI_TARGET table. Got %d\n",
            revision, pTargets->revision);
   }
-  /* get number of rows */
-  fits_get_num_rows(fptr, &repeat, pStatus);
-  pTargets->ntarget = repeat;
-  pTargets->targ = malloc(pTargets->ntarget*sizeof(target));
+  /* get number of rows and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  alloc_oi_target(pTargets, nrows);
   /* read rows */
   for (irow=1; irow<=pTargets->ntarget; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -874,10 +861,14 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
     fits_read_key(fptr, TSTRING, keyval, pVis->complexunit, comment, pStatus);
 
     for (irow=1; irow<=pVis->numrec; irow++) {
-      pVis->record[irow-1].rvis = malloc(pVis->nwave*sizeof(DATA));
-      pVis->record[irow-1].rviserr = malloc(pVis->nwave*sizeof(DATA));
-      pVis->record[irow-1].ivis = malloc(pVis->nwave*sizeof(DATA));
-      pVis->record[irow-1].iviserr = malloc(pVis->nwave*sizeof(DATA));
+      pVis->record[irow-1].rvis = malloc(pVis->nwave *
+                                         sizeof(pVis->record[0].rvis[0]));
+      pVis->record[irow-1].rviserr = malloc(pVis->nwave *
+                                            sizeof(pVis->record[0].rviserr[0]));
+      pVis->record[irow-1].ivis = malloc(pVis->nwave *
+                                         sizeof(pVis->record[0].ivis[0]));
+      pVis->record[irow-1].iviserr = malloc(pVis->nwave *
+                                            sizeof(pVis->record[0].iviserr[0]));
       fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
       fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
                     &nulldouble, pVis->record[irow-1].rvis, &anynull,
@@ -995,8 +986,8 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   } else {
     pVis->usevisrefmap = TRUE;
     for (irow=1; irow<=pVis->numrec; irow++) {
-      pVis->record[irow-1].visrefmap = malloc(pVis->nwave*pVis->nwave*
-                                              sizeof(BOOL));
+      pVis->record[irow-1].visrefmap = malloc(pVis->nwave * pVis->nwave *
+                                              sizeof(pVis->record[0].visrefmap[0]));
       fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave*pVis->nwave,
                     &nullchar, pVis->record[irow-1].visrefmap,
                     &anynull, pStatus);
@@ -1027,7 +1018,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows, repeat;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -1053,14 +1044,12 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     fits_clear_errmark();
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, comment, pStatus);
-  /* get number of rows */
-  fits_get_num_rows(fptr, &pVis->numrec, pStatus);
-  pVis->record = malloc(pVis->numrec*sizeof(oi_vis_record));
-  /* get value for nwave */
-  /* format specifies same repeat count for VIS* columns */
+  /* get dimensions and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  /* note format specifies same repeat count for VIS* & FLAG columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "VISAMP", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
-  pVis->nwave = repeat;
+  alloc_oi_vis(pVis, nrows, repeat);
   /* read VISAMP unit (optional) */
   snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
   fits_write_errmark();
@@ -1084,11 +1073,6 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pVis->record[irow-1].int_time, &anynull, pStatus);
-    pVis->record[irow-1].visamp = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].visamperr = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].visphi = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].visphierr = malloc(pVis->nwave*sizeof(DATA));
-    pVis->record[irow-1].flag = malloc(pVis->nwave*sizeof(BOOL));
     fits_get_colnum(fptr, CASEINSEN, "VISAMP", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
 		  &nulldouble, pVis->record[irow-1].visamp, &anynull,
@@ -1149,7 +1133,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows, repeat;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -1189,14 +1173,12 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     }
   }
   
-  /* get number of rows */
-  fits_get_num_rows(fptr, &pVis2->numrec, pStatus);
-  pVis2->record = malloc(pVis2->numrec*sizeof(oi_vis2_record));
-  /* get value for nwave */
-  /* format specifies same repeat count for VIS2DATA & VIS2ERR columns */
+  /* get dimensions and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  /* note format specifies same repeat count for VIS2* & FLAG columns = nwave*/
   fits_get_colnum(fptr, CASEINSEN, "VIS2DATA", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
-  pVis2->nwave = repeat;
+  alloc_oi_vis2(pVis2, nrows, repeat);
   /* read rows */
   for (irow=1; irow<=pVis2->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -1211,9 +1193,6 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pVis2->record[irow-1].int_time, &anynull, pStatus);
-    pVis2->record[irow-1].vis2data = malloc(pVis2->nwave*sizeof(DATA));
-    pVis2->record[irow-1].vis2err = malloc(pVis2->nwave*sizeof(DATA));
-    pVis2->record[irow-1].flag = malloc(pVis2->nwave*sizeof(BOOL));
     fits_get_colnum(fptr, CASEINSEN, "VIS2DATA", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis2->nwave,
 		  &nulldouble, pVis2->record[irow-1].vis2data, &anynull,
@@ -1273,7 +1252,7 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows, repeat;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -1314,13 +1293,12 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   }
 
   /* get number of rows & allocate storage */
-  fits_get_num_rows(fptr, &pT3->numrec, pStatus);
-  pT3->record = malloc(pT3->numrec*sizeof(oi_t3_record));
+  fits_get_num_rows(fptr, &nrows, pStatus);
   /* get value for nwave */
-  /* format specifies same repeat count for T3* columns */
+  /* format specifies same repeat count for T3* & FLAG columns */
   fits_get_colnum(fptr, CASEINSEN, "T3AMP", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
-  pT3->nwave = repeat;
+  alloc_oi_t3(pT3, nrows, repeat);
   /* read rows */
   for (irow=1; irow<=pT3->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -1335,11 +1313,6 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pT3->record[irow-1].int_time, &anynull, pStatus);
-    pT3->record[irow-1].t3amp = malloc(pT3->nwave*sizeof(DATA));
-    pT3->record[irow-1].t3amperr = malloc(pT3->nwave*sizeof(DATA));
-    pT3->record[irow-1].t3phi = malloc(pT3->nwave*sizeof(DATA));
-    pT3->record[irow-1].t3phierr = malloc(pT3->nwave*sizeof(DATA));
-    pT3->record[irow-1].flag = malloc(pT3->nwave*sizeof(BOOL));
     fits_get_colnum(fptr, CASEINSEN, "T3AMP", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave,
 		  &nulldouble, pT3->record[irow-1].t3amp, &anynull,
@@ -1416,7 +1389,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   double nulldouble = 0.0;
   const int revision = 1;
   int irow, colnum, anynull;
-  long repeat;
+  long nrows, repeat;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -1458,18 +1431,15 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus); //:BUG: buffer overrun
   fits_read_key(fptr, TSTRING, "CALSTAT", keyval, comment, pStatus);
   pSpectrum->calstat = keyval[0];
-  /* get number of rows & allocate storage */
-  fits_get_num_rows(fptr, &pSpectrum->numrec, pStatus);
-  pSpectrum->record = malloc(pSpectrum->numrec*sizeof(oi_spectrum_record));
-  /* get value for nwave */
-  /* format specifies same repeat count for FLUX* columns */
+  /* get dimensions and allocate storage */
+  fits_get_num_rows(fptr, &nrows, pStatus);
+  /* note format specifies same repeat count for FLUX* columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
-  pSpectrum->nwave = repeat;
+  alloc_oi_spectrum(pSpectrum, nrows, repeat);
   /* read unit (mandatory) */
   snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
   fits_read_key(fptr, TSTRING, keyval, pSpectrum->fluxunit, comment, pStatus);
-    
   /* read rows */
   for (irow=1; irow<=pSpectrum->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -1482,8 +1452,6 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
 		  &pSpectrum->record[irow-1].int_time, &anynull, pStatus);
-    pSpectrum->record[irow-1].fluxdata = malloc(pSpectrum->nwave*sizeof(DATA));
-    pSpectrum->record[irow-1].fluxerr = malloc(pSpectrum->nwave*sizeof(DATA));
     fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave,
 		  &nulldouble, pSpectrum->record[irow-1].fluxdata, &anynull,

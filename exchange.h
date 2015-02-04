@@ -358,6 +358,16 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus);
 STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus);
 STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
                              STATUS *pStatus);
+/* Functions from alloc_fits.c */
+void alloc_oi_array(oi_array *pArray, int nelement);
+void alloc_oi_target(oi_target *pTargets, int ntarget);
+void alloc_oi_wavelength(oi_wavelength *pWave, int nwave);
+void alloc_oi_corr(oi_corr *pCorr, int ncorr);
+void alloc_oi_polar(oi_polar *pPolar, long numrec, int nwave);
+void alloc_oi_vis(oi_vis *pVis, long numrec, int nwave);
+void alloc_oi_vis2(oi_vis2 *pVis2, long numrec, int nwave);
+void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave);
+void alloc_oi_spectrum(oi_spectrum *pSpectrum, long numrec, int nwave);
 /* Functions from free_fits.c */
 void free_oi_array(oi_array *pArray);
 void free_oi_target(oi_target *pTargets);

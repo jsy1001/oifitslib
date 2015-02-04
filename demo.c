@@ -66,7 +66,8 @@ void demo_write(void)
   oi_spectrum spectrum;
   char filename[FLEN_FILENAME];
   FILE *fp;
-  int i, irec, iwave, itarg, status;
+  int i, irec, iwave, itarg, status, nrows;
+  long numrec;
   float real, imag;
   fitsfile *fptr;
 
@@ -82,8 +83,8 @@ void demo_write(void)
   fscanf(fp, "frame %70s ", array.frame);
   fscanf(fp, "arrayx %lf arrayy %lf arrayz %lf ", &array.arrayx,
 	 &array.arrayy, &array.arrayz);
-  fscanf(fp, "nelement %d ", &array.nelement);
-  array.elem = malloc(array.nelement*sizeof(element));
+  fscanf(fp, "nelement %d ", &nrows);
+  alloc_oi_array(&array, nrows);
   for (i=0; i<array.nelement; i++) {
     
     fscanf(fp, "tel_name %16s sta_name %16s ", array.elem[i].tel_name,
@@ -98,8 +99,8 @@ void demo_write(void)
   array.revision = 2;
 
   /* Read info for OI_TARGET table */
-  fscanf(fp, "OI_TARGET ntarget %d ", &targets.ntarget);
-  targets.targ = malloc(targets.ntarget*sizeof(target));
+  fscanf(fp, "OI_TARGET ntarget %d ", &nrows);
+  alloc_oi_target(&targets, nrows);
   targets.usecategory = FALSE;
   for (itarg=0; itarg<targets.ntarget; itarg++) {
     fscanf(fp, "target_id %d ", &targets.targ[itarg].target_id);
@@ -127,9 +128,8 @@ void demo_write(void)
 
   /* Read info for OI_WAVELENGTH table */
   fscanf(fp, "OI_WAVELENGTH insname %70s ", wave.insname);
-  fscanf(fp, "nwave %d ", &wave.nwave);
-  wave.eff_wave = malloc(wave.nwave*sizeof(float));
-  wave.eff_band = malloc(wave.nwave*sizeof(float));
+  fscanf(fp, "nwave %d ", &nrows);
+  alloc_oi_wavelength(&wave, nrows);
   fscanf(fp, "eff_wave ");
   for(i=0; i<wave.nwave; i++) {
     fscanf(fp, "%f ", &wave.eff_wave[i]);
@@ -143,10 +143,8 @@ void demo_write(void)
   /* Read info for OI_CORR table */
   fscanf(fp, "OI_CORR corrname %70s ", corr.corrname);
   fscanf(fp, "ndata %d ", &corr.ndata);
-  fscanf(fp, "ncorr %d ", &corr.ncorr);
-  corr.iindx = malloc(corr.ncorr*sizeof(int));
-  corr.jindx = malloc(corr.ncorr*sizeof(int));
-  corr.corr = malloc(corr.ncorr*sizeof(double));
+  fscanf(fp, "ncorr %d ", &nrows);
+  alloc_oi_corr(&corr, nrows);
   fscanf(fp, "iindx ");
   for(i=0; i<corr.ncorr; i++) {
     fscanf(fp, "%d ", &corr.iindx[i]);
@@ -167,8 +165,8 @@ void demo_write(void)
   fscanf(fp, "arrname %70s ", polar.arrname);
   fscanf(fp, "orient %70s ", polar.orient);
   fscanf(fp, "model %70s ", polar.model);
-  fscanf(fp, "numrec %ld ", &polar.numrec);
-  polar.record = malloc(polar.numrec*sizeof(oi_polar_record));
+  fscanf(fp, "numrec %ld ", &numrec);
+  alloc_oi_polar(&polar, numrec, wave.nwave);
   printf("Reading %ld polar records...\n", polar.numrec);
   /* loop over records */
   for(irec=0; irec<polar.numrec; irec++) {
@@ -176,25 +174,21 @@ void demo_write(void)
            &polar.record[irec].target_id, polar.record[irec].insname,
            &polar.record[irec].mjd);
     fscanf(fp, "int_time %lf lxx ", &polar.record[irec].int_time);
-    polar.record[irec].lxx = malloc(wave.nwave*sizeof(float complex));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
       polar.record[irec].lxx[iwave] = real + imag*I;
     }
     fscanf(fp, "lyy ");
-    polar.record[irec].lyy = malloc(wave.nwave*sizeof(float complex));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
       polar.record[irec].lyy[iwave] = real + imag*I;
     }
     fscanf(fp, "lxy ");
-    polar.record[irec].lxy = malloc(wave.nwave*sizeof(float complex));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
       polar.record[irec].lxy[iwave] = real + imag*I;
     }
     fscanf(fp, "lyx ");
-    polar.record[irec].lyx = malloc(wave.nwave*sizeof(float complex));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
       polar.record[irec].lyx[iwave] = real + imag*I;
@@ -202,7 +196,6 @@ void demo_write(void)
     fscanf(fp, "sta_index %d ", &polar.record[irec].sta_index);
   }
   polar.revision = 1;
-  polar.nwave = wave.nwave;
 
   /* Read info for OI_VIS table */
   fscanf(fp, "OI_VIS date-obs %70s ", vis.date_obs);
@@ -213,31 +206,27 @@ void demo_write(void)
   scan_opt_string(fp, " phityp %70s", vis.phityp);
   scan_opt_int(fp, " amporder %d", &vis.amporder, -1);
   scan_opt_int(fp, " phiorder %d", &vis.phiorder, -1);
-  fscanf(fp, " numrec %ld ", &vis.numrec);
-  vis.record = malloc(vis.numrec*sizeof(oi_vis_record));
+  fscanf(fp, " numrec %ld ", &numrec);
+  alloc_oi_vis(&vis, numrec, wave.nwave);
   printf("Reading %ld vis records...\n", vis.numrec);
   /* loop over records */
   for(irec=0; irec<vis.numrec; irec++) {
     fscanf(fp, "target_id %d time %lf mjd %lf ", &vis.record[irec].target_id,
 	   &vis.record[irec].time, &vis.record[irec].mjd);
     fscanf(fp, "int_time %lf visamp ", &vis.record[irec].int_time);
-    vis.record[irec].visamp = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamp[iwave]);
     }
     fscanf(fp, "visamperr ");
-    vis.record[irec].visamperr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamperr[iwave]);
     }
     fscanf(fp, "corrindx_visamp %d ", &vis.record[irec].corrindx_visamp);
     fscanf(fp, "visphi ");
-    vis.record[irec].visphi = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphi[iwave]);
     }
     fscanf(fp, "visphierr ");
-    vis.record[irec].visphierr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphierr[iwave]);
     }
@@ -246,13 +235,11 @@ void demo_write(void)
 	   &vis.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis.record[irec].sta_index[0],
 	   &vis.record[irec].sta_index[1]);
-    vis.record[irec].flag = malloc(wave.nwave*sizeof(BOOL));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       vis.record[irec].flag[iwave] = FALSE;
     }
   }
   vis.revision = 2;
-  vis.nwave = wave.nwave;
   vis.usevisrefmap = FALSE;
   vis.usecomplex = FALSE;  /* hence complexunit not used */
   vis.complexunit[0] = '\0';
@@ -265,20 +252,18 @@ void demo_write(void)
   fscanf(fp, "OI_VIS2 date-obs %70s ", vis2.date_obs);
   fscanf(fp, "arrname %70s insname %70s ", vis2.arrname, vis2.insname);
   fscanf(fp, "corrname %70s ", vis2.corrname);
-  fscanf(fp, "numrec %ld ", &vis2.numrec);
-  vis2.record = malloc(vis2.numrec*sizeof(oi_vis2_record));
+  fscanf(fp, "numrec %ld ", &numrec);
+  alloc_oi_vis2(&vis2, numrec, wave.nwave);
   printf("Reading %ld vis2 records...\n", vis2.numrec);
   /* loop over records */
   for(irec=0; irec<vis2.numrec; irec++) {
     fscanf(fp, "target_id %d time %lf mjd %lf ", &vis2.record[irec].target_id,
 	   &vis2.record[irec].time, &vis2.record[irec].mjd);
     fscanf(fp, "int_time %lf vis2data ", &vis2.record[irec].int_time);
-    vis2.record[irec].vis2data = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2data[iwave]);
     }
     fscanf(fp, "vis2err ");
-    vis2.record[irec].vis2err = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2err[iwave]);
     }
@@ -287,43 +272,37 @@ void demo_write(void)
 	   &vis2.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis2.record[irec].sta_index[0],
 	   &vis2.record[irec].sta_index[1]);
-    vis2.record[irec].flag = malloc(wave.nwave*sizeof(BOOL));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       vis2.record[irec].flag[iwave] = FALSE;
     }
   }
   vis2.revision = 2;
-  vis2.nwave = wave.nwave;
 
   /* Read info for OI_T3 table */
   fscanf(fp, "OI_T3 date-obs %70s ", t3.date_obs);
   fscanf(fp, "arrname %70s insname %70s ", t3.arrname, t3.insname);
   fscanf(fp, "corrname %70s ", t3.corrname);
-  fscanf(fp, "numrec %ld ", &t3.numrec);
-  t3.record = malloc(t3.numrec*sizeof(oi_t3_record));
+  fscanf(fp, "numrec %ld ", &numrec);
+  alloc_oi_t3(&t3, numrec, wave.nwave);
   printf("Reading %ld t3 records...\n", t3.numrec);
   /* loop over records */
   for(irec=0; irec<t3.numrec; irec++) {
     fscanf(fp, "target_id %d time %lf mjd %lf ", &t3.record[irec].target_id,
 	   &t3.record[irec].time, &t3.record[irec].mjd);
     fscanf(fp, "int_time %lf t3amp ", &t3.record[irec].int_time);
-    t3.record[irec].t3amp = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amp[iwave]);
     }
     fscanf(fp, "t3amperr ");
-    t3.record[irec].t3amperr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amperr[iwave]);
     }
     fscanf(fp, "corrindx_t3amp %d ", &t3.record[irec].corrindx_t3amp);
     fscanf(fp, "t3phi ");
-    t3.record[irec].t3phi = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phi[iwave]);
     }
     fscanf(fp, "t3phierr ");
-    t3.record[irec].t3phierr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phierr[iwave]);
     }
@@ -335,13 +314,11 @@ void demo_write(void)
     fscanf(fp, "sta_index %d %d %d ", &t3.record[irec].sta_index[0],
 	   &t3.record[irec].sta_index[1],
 	   &t3.record[irec].sta_index[2]);
-    t3.record[irec].flag = malloc(wave.nwave*sizeof(BOOL));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       t3.record[irec].flag[iwave] = FALSE;
     }
   }
   t3.revision = 2;
-  t3.nwave = wave.nwave;
 
   /* Read info for OI_SPECTRUM table */
   fscanf(fp, "OI_SPECTRUM date-obs %70s ", spectrum.date_obs);
@@ -349,20 +326,18 @@ void demo_write(void)
   fscanf(fp, "corrname %70s ", spectrum.corrname);
   fscanf(fp, "fov %lf fovtype %6s ", &spectrum.fov, spectrum.fovtype);
   fscanf(fp, "calstat %c ", &spectrum.calstat);
-  fscanf(fp, "numrec %ld ", &spectrum.numrec);
-  spectrum.record = malloc(spectrum.numrec*sizeof(oi_spectrum_record));
+  fscanf(fp, "numrec %ld ", &numrec);
+  alloc_oi_spectrum(&spectrum, numrec, wave.nwave);
   printf("Reading %ld spectrum records...\n", spectrum.numrec);
   /* loop over records */
   for(irec=0; irec<spectrum.numrec; irec++) {
     fscanf(fp, "target_id %d mjd %lf ", &spectrum.record[irec].target_id,
 	   &spectrum.record[irec].mjd);
     fscanf(fp, "int_time %lf fluxdata ", &spectrum.record[irec].int_time);
-    spectrum.record[irec].fluxdata = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &spectrum.record[irec].fluxdata[iwave]);
     }
     fscanf(fp, "fluxerr ");
-    spectrum.record[irec].fluxerr = malloc(wave.nwave*sizeof(DATA));
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &spectrum.record[irec].fluxerr[iwave]);
     }
@@ -372,7 +347,6 @@ void demo_write(void)
   }
   spectrum.revision = 1;
   strcpy(spectrum.fluxunit, "Jy");
-  spectrum.nwave = wave.nwave;
 
   fclose(fp);
 
