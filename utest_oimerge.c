@@ -190,6 +190,7 @@ static void test_merge(gconstpointer userData)
     /* Read files to merge */
     status = 0;
     numCorr = 0;
+    numPolar = 0;
     read_oi_fits(pSet->cases[i].filename1, &inData1, &status);
     g_assert(!status);
     check(&inData1);
