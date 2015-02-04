@@ -214,9 +214,9 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   }
   if (arrname == NULL) {
     fits_read_key(fptr, TSTRING, "ARRNAME", name, comment, pStatus);
-    strncpy(pArray->arrname, name, FLEN_VALUE-1);
+    strncpy(pArray->arrname, name, FLEN_VALUE);
   } else {
-    strncpy(pArray->arrname, arrname, FLEN_VALUE-1);
+    strncpy(pArray->arrname, arrname, FLEN_VALUE);
   }
   fits_read_key(fptr, TSTRING, "FRAME", pArray->frame, comment, pStatus);
   fits_read_key(fptr, TDOUBLE, "ARRAYX", &pArray->arrayx, comment, pStatus);
@@ -296,9 +296,9 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   }
   if (insname == NULL) {
     fits_read_key(fptr, TSTRING, "INSNAME", name, comment, pStatus);
-    strncpy(pWave->insname, name, FLEN_VALUE-1);
+    strncpy(pWave->insname, name, FLEN_VALUE);
   } else {
-    strncpy(pWave->insname, insname, FLEN_VALUE-1);
+    strncpy(pWave->insname, insname, FLEN_VALUE);
   }
 
   /* get number of rows */
@@ -346,9 +346,9 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   }
   if (corrname == NULL) {
     fits_read_key(fptr, TSTRING, "CORRNAME", name, comment, pStatus);
-    strncpy(pCorr->corrname, name, FLEN_VALUE-1);
+    strncpy(pCorr->corrname, name, FLEN_VALUE);
   } else {
-    strncpy(pCorr->corrname, corrname, FLEN_VALUE-1);
+    strncpy(pCorr->corrname, corrname, FLEN_VALUE);
   }
   fits_read_key(fptr, TINT, "NDATA", &pCorr->ndata, comment, pStatus);
 
