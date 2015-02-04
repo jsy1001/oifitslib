@@ -208,10 +208,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 {
   char name[FLEN_VALUE];
   char *p;
-  char nullstring[] = "NULL";
-  int nullint = 0;
-  float nullfloat = 0.0F;
-  double nan, nulldouble = 0.0;
+  double nan;
   const int revision = 2;
   int irow, colnum, anynull;
   long nrows;
@@ -245,29 +242,29 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   for (irow=1; irow<=pArray->nelement; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TEL_NAME", &colnum, pStatus);
     p = pArray->elem[irow-1].tel_name;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_NAME", &colnum, pStatus);
     p = pArray->elem[irow-1].sta_name;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pArray->elem[irow-1].sta_index, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "DIAMETER", &colnum, pStatus);
-    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nullfloat,
+    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
 		  &pArray->elem[irow-1].diameter, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STAXYZ", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 3, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 3, NULL,
 		  &pArray->elem[irow-1].staxyz, &anynull, pStatus);
     if (pArray->revision >= 2) {
       fits_get_colnum(fptr, CASEINSEN, "FOV", &colnum, pStatus);
-      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                     &pArray->elem[irow-1].fov, &anynull, pStatus);
       fits_get_colnum(fptr, CASEINSEN, "FOVTYPE", &colnum, pStatus);
       p = pArray->elem[irow-1].fovtype;
-      fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-                    &anynull, pStatus);
+      fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                    &p, &anynull, pStatus);
     } else {
       pArray->elem[irow-1].fov = nan;
       strncpy(pArray->elem[irow-1].fovtype, "FWHM", 7);
@@ -297,7 +294,6 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
                                       char *insname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
-  float nullfloat = 0.0F;
   const int revision = 2;
   int colnum, anynull;
   long nrows;
@@ -322,10 +318,10 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   alloc_oi_wavelength(pWave, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "EFF_WAVE", &colnum, pStatus);
-  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, &nullfloat,
+  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, NULL,
 		pWave->eff_wave, &anynull, pStatus);
   fits_get_colnum(fptr, CASEINSEN, "EFF_BAND", &colnum, pStatus);
-  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, &nullfloat,
+  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, NULL,
 		pWave->eff_band, &anynull, pStatus);
   return *pStatus;
 }
@@ -346,8 +342,6 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
                                 char *corrname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
-  int nullint = 0;
-  double nulldouble = 0.0;
   const int revision = 1;
   int colnum, anynull;
   long nrows;
@@ -373,13 +367,13 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   alloc_oi_corr(pCorr, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "IINDX", &colnum, pStatus);
-  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, &nullint,
+  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, NULL,
                 pCorr->iindx, &anynull, pStatus);
   fits_get_colnum(fptr, CASEINSEN, "JINDX", &colnum, pStatus);
-  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, &nullint,
+  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, NULL,
                 pCorr->jindx, &anynull, pStatus);
   fits_get_colnum(fptr, CASEINSEN, "CORR", &colnum, pStatus);
-  fits_read_col(fptr, TDOUBLE, colnum, 1, 1, pCorr->ncorr, &nulldouble,
+  fits_read_col(fptr, TDOUBLE, colnum, 1, 1, pCorr->ncorr, NULL,
 		pCorr->corr, &anynull, pStatus);
   return *pStatus;
 }
@@ -399,10 +393,6 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
                                  STATUS *pStatus)
 {
   char *p;
-  char nullstring[] = "NULL";
-  int nullint = 0;
-  double nulldouble = 0.0;
-  float complex nullcomplex = 0.0 + 0.0*I;
   const int revision = 1;
   int irow, colnum, anynull;
   long nrows, repeat;
@@ -430,36 +420,32 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   /* read rows */
   for (irow=1; irow<=pPolar->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pPolar->record[irow-1].target_id, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INSNAME", &colnum, pStatus);
     p = pPolar->record[irow-1].insname;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-		  &anynull, pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pPolar->record[irow-1].mjd, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pPolar->record[irow-1].int_time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave,
-		  &nullcomplex, pPolar->record[irow-1].lxx, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave, NULL,
+		  pPolar->record[irow-1].lxx, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LYY", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave,
-		  &nullcomplex, pPolar->record[irow-1].lyy, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave, NULL,
+		  pPolar->record[irow-1].lyy, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LXY", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave,
-		  &nullcomplex, pPolar->record[irow-1].lxy, &anynull,
-		  pStatus);
+		  NULL, pPolar->record[irow-1].lxy, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LYX", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave,
-		  &nullcomplex, pPolar->record[irow-1].lyx, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave, NULL,
+		  pPolar->record[irow-1].lyx, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pPolar->record[irow-1].sta_index, &anynull, pStatus);
   }
   return *pStatus;
@@ -528,10 +514,6 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 {
   const char function[] = "read_oi_target";
   char *p;
-  char nullstring[] = "NULL";
-  int nullint = 0;
-  float nullfloat = 0.0F;
-  double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
   long nrows;
@@ -551,60 +533,60 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   /* read rows */
   for (irow=1; irow<=pTargets->ntarget; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].target_id, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "TARGET", &colnum, pStatus);
     p = pTargets->targ[irow-1].target;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-		  &anynull, pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "RAEP0", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].raep0, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "DECEP0", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].decep0, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "EQUINOX", &colnum, pStatus);
-    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nullfloat,
+    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].equinox, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "RA_ERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].ra_err, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "DEC_ERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].dec_err, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "SYSVEL", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].sysvel, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VELTYP", &colnum, pStatus);
     p = pTargets->targ[irow-1].veltyp;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-		  &anynull, pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VELDEF", &colnum, pStatus);
     p = pTargets->targ[irow-1].veldef;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-		  &anynull, pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PMRA", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].pmra, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PMDEC", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].pmdec, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PMRA_ERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].pmra_err, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PMDEC_ERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].pmdec_err, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PARALLAX", &colnum, pStatus);
-    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nullfloat,
+    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].parallax, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PARA_ERR", &colnum, pStatus);
-    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nullfloat,
+    fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
 		  &pTargets->targ[irow-1].para_err, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "SPECTYP", &colnum, pStatus);
     p = pTargets->targ[irow-1].spectyp;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-		  &anynull, pStatus);
+    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                  &p, &anynull, pStatus);
     /*printf("%16s  %10f %10f  %8s\n",
 	   pTargets->targ[irow-1].target,
 	   pTargets->targ[irow-1].raep0, pTargets->targ[irow-1].decep0,
@@ -623,8 +605,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
       pTargets->usecategory = TRUE;
       for (irow=1; irow<=pTargets->ntarget; irow++) {
         p = pTargets->targ[irow-1].category;
-        fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, nullstring, &p,
-                      &anynull, pStatus);
+        fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                      &p, &anynull, pStatus);
       }
     }
   }
@@ -849,8 +831,6 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
                                   bool correlated, STATUS *pStatus)
 {
   char keyword[FLEN_VALUE];
-  int nullint = 0;
-  double nulldouble = 0.0;
   int irow, colnum, anynull;
 
   fits_write_errmark();
@@ -883,30 +863,24 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
       pVis->record[irow-1].iviserr = malloc(pVis->nwave *
                                             sizeof(pVis->record[0].iviserr[0]));
       fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
-      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                    &nulldouble, pVis->record[irow-1].rvis, &anynull,
-                    pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                    pVis->record[irow-1].rvis, &anynull, pStatus);
       fits_get_colnum(fptr, CASEINSEN, "RVISERR", &colnum, pStatus);
-      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                    &nulldouble, pVis->record[irow-1].rviserr, &anynull,
-                    pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                    pVis->record[irow-1].rviserr, &anynull, pStatus);
       fits_get_colnum(fptr, CASEINSEN, "IVIS", &colnum, pStatus);
-      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                    &nulldouble, pVis->record[irow-1].ivis, &anynull,
-                    pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                    pVis->record[irow-1].ivis, &anynull, pStatus);
       fits_get_colnum(fptr, CASEINSEN, "IVISERR", &colnum, pStatus);
-      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-                    &nulldouble, pVis->record[irow-1].iviserr, &anynull,
-                    pStatus);
+      fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                    pVis->record[irow-1].iviserr, &anynull, pStatus);
       if (correlated) {
         fits_get_colnum(fptr, CASEINSEN, "CORRINDX_RVIS", &colnum, pStatus);
-        fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                      &pVis->record[irow-1].corrindx_rvis,
-                      &anynull, pStatus);
+        fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
+                      &pVis->record[irow-1].corrindx_rvis, &anynull, pStatus);
         fits_get_colnum(fptr, CASEINSEN, "CORRINDX_IVIS", &colnum, pStatus);
-        fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                      &pVis->record[irow-1].corrindx_ivis,
-                      &anynull, pStatus);
+        fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
+                      &pVis->record[irow-1].corrindx_ivis, &anynull, pStatus);
       }
     }
   }
@@ -918,8 +892,6 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
  */
 static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
-  char nullchar = 0;
-  int nullint = 0;
   int irow, colnum, anynull;
   bool correlated;
 
@@ -945,13 +917,11 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   if (correlated) {
     for (irow=1; irow<=pVis->numrec; irow++) {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISAMP", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                    &pVis->record[irow-1].corrindx_visamp,
-                    &anynull, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
+                    &pVis->record[irow-1].corrindx_visamp, &anynull, pStatus);
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISPHI", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
-                    &pVis->record[irow-1].corrindx_visphi,
-                    &anynull, pStatus);
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
+                    &pVis->record[irow-1].corrindx_visphi, &anynull, pStatus);
     }
   }
   fits_write_errmark();
@@ -969,8 +939,7 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
       pVis->record[irow-1].visrefmap = malloc(pVis->nwave * pVis->nwave *
                                               sizeof(pVis->record[0].visrefmap[0]));
       fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave*pVis->nwave,
-                    &nullchar, pVis->record[irow-1].visrefmap,
-                    &anynull, pStatus);
+                    NULL, pVis->record[irow-1].visrefmap, &anynull, pStatus);
     }
   }
   read_oi_vis_complex(fptr, pVis, correlated, pStatus);
@@ -992,9 +961,6 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis";
   char keyword[FLEN_KEYWORD];
-  char nullchar = 0;
-  int nullint = 0;
-  double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
   long nrows, repeat;
@@ -1029,44 +995,40 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   /* read rows */
   for (irow=1; irow<=pVis->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pVis->record[irow-1].target_id, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis->record[irow-1].time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis->record[irow-1].mjd, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis->record[irow-1].int_time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VISAMP", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-		  &nulldouble, pVis->record[irow-1].visamp, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                  pVis->record[irow-1].visamp, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VISAMPERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-		  &nulldouble, pVis->record[irow-1].visamperr, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                  pVis->record[irow-1].visamperr, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VISPHI", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-		  &nulldouble, pVis->record[irow-1].visphi, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                  pVis->record[irow-1].visphi, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VISPHIERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave,
-		  &nulldouble, pVis->record[irow-1].visphierr, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
+                  pVis->record[irow-1].visphierr, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "UCOORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis->record[irow-1].ucoord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VCOORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis->record[irow-1].vcoord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 2, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 2, NULL,
 		  pVis->record[irow-1].sta_index, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
-    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave, &nullchar,
+    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave, NULL,
 		  pVis->record[irow-1].flag, &anynull, pStatus);
   }
   read_oi_vis_opt(fptr, pVis, pStatus);
@@ -1094,9 +1056,6 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis2";
   bool correlated;
-  char nullchar = 0;
-  int nullint = 0;
-  double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
   long nrows, repeat;
@@ -1137,42 +1096,40 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   /* read rows */
   for (irow=1; irow<=pVis2->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pVis2->record[irow-1].target_id, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis2->record[irow-1].time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis2->record[irow-1].mjd, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis2->record[irow-1].int_time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VIS2DATA", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis2->nwave,
-		  &nulldouble, pVis2->record[irow-1].vis2data, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis2->nwave, NULL,
+                  pVis2->record[irow-1].vis2data, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VIS2ERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis2->nwave,
-		  &nulldouble, pVis2->record[irow-1].vis2err, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis2->nwave, NULL,
+                  pVis2->record[irow-1].vis2err, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "UCOORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis2->record[irow-1].ucoord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "VCOORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pVis2->record[irow-1].vcoord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 2, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 2, NULL,
 		  pVis2->record[irow-1].sta_index, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
-    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis2->nwave, &nullchar,
+    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis2->nwave, NULL,
 		  pVis2->record[irow-1].flag, &anynull, pStatus);
 
     /* read optional columns */
     if (correlated) {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VIS2DATA", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pVis2->record[irow-1].corrindx_vis2data,
                     &anynull, pStatus);
     }
@@ -1201,9 +1158,6 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_t3";
   bool correlated;
-  char nullchar = 0;
-  int nullint = 0;
-  double nulldouble = 0.0;
   const int revision = 2;
   int irow, colnum, anynull;
   long nrows, repeat;
@@ -1246,59 +1200,55 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   /* read rows */
   for (irow=1; irow<=pT3->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].target_id, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].mjd, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].int_time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "T3AMP", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave,
-		  &nulldouble, pT3->record[irow-1].t3amp, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave, NULL,
+                  pT3->record[irow-1].t3amp, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "T3AMPERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave,
-		  &nulldouble, pT3->record[irow-1].t3amperr, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave, NULL,
+                  pT3->record[irow-1].t3amperr, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "T3PHI", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave,
-		  &nulldouble, pT3->record[irow-1].t3phi, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave, NULL,
+                  pT3->record[irow-1].t3phi, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "T3PHIERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave,
-		  &nulldouble, pT3->record[irow-1].t3phierr, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pT3->nwave, NULL,
+                  pT3->record[irow-1].t3phierr, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "U1COORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1,
-		  &nulldouble, &pT3->record[irow-1].u1coord, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
+                  &pT3->record[irow-1].u1coord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "V1COORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].v1coord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "U2COORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].u2coord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "V2COORD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pT3->record[irow-1].v2coord, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 3, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 3, NULL,
 		  pT3->record[irow-1].sta_index, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
-    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pT3->nwave, &nullchar,
+    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pT3->nwave, NULL,
 		  pT3->record[irow-1].flag, &anynull, pStatus);
 
     /* read optional columns */
     if (correlated) {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_T3AMP", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pT3->record[irow-1].corrindx_t3amp, &anynull, pStatus);
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_T3PHI", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pT3->record[irow-1].corrindx_t3phi, &anynull, pStatus);
      }
   }
@@ -1328,8 +1278,6 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   const char function[] = "read_next_oi_spectrum";
   bool correlated;
   char keyword[FLEN_KEYWORD], value[FLEN_VALUE];
-  int nullint = 0;
-  double nulldouble = 0.0;
   const int revision = 1;
   int irow, colnum, anynull;
   long nrows, repeat;
@@ -1374,23 +1322,21 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   /* read rows */
   for (irow=1; irow<=pSpectrum->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
-    fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+    fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
 		  &pSpectrum->record[irow-1].target_id, &anynull, pStatus);
     /* no TIME column */
     fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pSpectrum->record[irow-1].mjd, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, &nulldouble,
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
 		  &pSpectrum->record[irow-1].int_time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave,
-		  &nulldouble, pSpectrum->record[irow-1].fluxdata, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave, NULL,
+                  pSpectrum->record[irow-1].fluxdata, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLUXERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave,
-		  &nulldouble, pSpectrum->record[irow-1].fluxerr, &anynull,
-		  pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave, NULL,
+                  pSpectrum->record[irow-1].fluxerr, &anynull, pStatus);
     /* read optional columns */
     fits_write_errmark();
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
@@ -1399,12 +1345,12 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
       *pStatus = 0;
       fits_clear_errmark();
     } else {
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pSpectrum->record[irow-1].sta_index, &anynull, pStatus);
     }
     if (correlated) {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_FLUXDATA", &colnum, pStatus);
-      fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
+      fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pSpectrum->record[irow-1].corrindx_fluxdata,
                     &anynull, pStatus);
     }
