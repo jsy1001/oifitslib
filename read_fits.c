@@ -92,7 +92,7 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
  */
 static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT], extname[FLEN_VALUE];
+  char extname[FLEN_VALUE];
   int hdutype;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
@@ -102,7 +102,7 @@ static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
     fits_movrel_hdu(fptr, 1, &hdutype, pStatus);
     if (*pStatus) return *pStatus; /* no more HDUs */
     if (hdutype == BINARY_TBL) {
-      fits_read_key(fptr, TSTRING, "EXTNAME", extname, comment, pStatus);
+      fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
       if (strcmp(extname, reqName) == 0) break; /* current HDU matches */
     }
   }
@@ -124,7 +124,7 @@ static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
 static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
                                  char *keyword, char *reqVal, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT], extname[FLEN_VALUE], value[FLEN_VALUE];
+  char extname[FLEN_VALUE], value[FLEN_VALUE];
   int ihdu, nhdu, hdutype;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
@@ -135,8 +135,8 @@ static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
     fits_movabs_hdu(fptr, ihdu, &hdutype, pStatus);
     if (hdutype == BINARY_TBL) {
       fits_write_errmark();
-      fits_read_key(fptr, TSTRING, "EXTNAME", extname, comment, pStatus);
-      fits_read_key(fptr, TSTRING, keyword, value, comment, pStatus);
+      fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
+      fits_read_key(fptr, TSTRING, keyword, value, NULL, pStatus);
       if (*pStatus) {
 	*pStatus = 0;
         fits_clear_errmark();
@@ -190,7 +190,7 @@ static bool read_key_opt_string(fitsfile *fptr, char *keyname,
 static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
                                  char *arrname, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT], name[FLEN_VALUE];
+  char name[FLEN_VALUE];
   char *p;
   char nullstring[] = "NULL";
   int nullint = 0;
@@ -207,21 +207,21 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   nan /= nan;
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, NULL, pStatus);
   if (pArray->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_ARRAY table. Got %d\n",
            revision, pArray->revision);
   }
   if (arrname == NULL) {
-    fits_read_key(fptr, TSTRING, "ARRNAME", name, comment, pStatus);
+    fits_read_key(fptr, TSTRING, "ARRNAME", name, NULL, pStatus);
     strncpy(pArray->arrname, name, FLEN_VALUE);
   } else {
     strncpy(pArray->arrname, arrname, FLEN_VALUE);
   }
-  fits_read_key(fptr, TSTRING, "FRAME", pArray->frame, comment, pStatus);
-  fits_read_key(fptr, TDOUBLE, "ARRAYX", &pArray->arrayx, comment, pStatus);
-  fits_read_key(fptr, TDOUBLE, "ARRAYY", &pArray->arrayy, comment, pStatus);
-  fits_read_key(fptr, TDOUBLE, "ARRAYZ", &pArray->arrayz, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "FRAME", pArray->frame, NULL, pStatus);
+  fits_read_key(fptr, TDOUBLE, "ARRAYX", &pArray->arrayx, NULL, pStatus);
+  fits_read_key(fptr, TDOUBLE, "ARRAYY", &pArray->arrayy, NULL, pStatus);
+  fits_read_key(fptr, TDOUBLE, "ARRAYZ", &pArray->arrayz, NULL, pStatus);
   /* get number of rows and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
   alloc_oi_array(pArray, nrows);
@@ -280,7 +280,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
                                       char *insname, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT], name[FLEN_VALUE];
+  char name[FLEN_VALUE];
   float nullfloat = 0.0F;
   const int revision = 2;
   int colnum, anynull;
@@ -289,13 +289,13 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, NULL, pStatus);
   if (pWave->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_WAVELENGTH table. Got %d\n",
            revision, pWave->revision);
   }
   if (insname == NULL) {
-    fits_read_key(fptr, TSTRING, "INSNAME", name, comment, pStatus);
+    fits_read_key(fptr, TSTRING, "INSNAME", name, NULL, pStatus);
     strncpy(pWave->insname, name, FLEN_VALUE);
   } else {
     strncpy(pWave->insname, insname, FLEN_VALUE);
@@ -329,7 +329,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
                                 char *corrname, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT], name[FLEN_VALUE];
+  char name[FLEN_VALUE];
   int nullint = 0;
   double nulldouble = 0.0;
   const int revision = 1;
@@ -339,18 +339,18 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, NULL, pStatus);
   if (pCorr->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_CORR table. Got %d\n",
            revision, pCorr->revision);
   }
   if (corrname == NULL) {
-    fits_read_key(fptr, TSTRING, "CORRNAME", name, comment, pStatus);
+    fits_read_key(fptr, TSTRING, "CORRNAME", name, NULL, pStatus);
     strncpy(pCorr->corrname, name, FLEN_VALUE);
   } else {
     strncpy(pCorr->corrname, corrname, FLEN_VALUE);
   }
-  fits_read_key(fptr, TINT, "NDATA", &pCorr->ndata, comment, pStatus);
+  fits_read_key(fptr, TINT, "NDATA", &pCorr->ndata, NULL, pStatus);
 
   /* get number of rows and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
@@ -382,7 +382,6 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
                                  STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT];
   char *p;
   char nullstring[] = "NULL";
   int nullint = 0;
@@ -395,17 +394,17 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pPolar->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pPolar->revision, NULL, pStatus);
   if (pPolar->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_POLAR table. Got %d\n",
            revision, pPolar->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pPolar->date_obs, comment, pStatus);
-  fits_read_key(fptr, TINT, "NPOL", &pPolar->npol, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pPolar->date_obs, NULL, pStatus);
+  fits_read_key(fptr, TINT, "NPOL", &pPolar->npol, NULL, pStatus);
   /* note ARRNAME is mandatory */
-  fits_read_key(fptr, TSTRING, "ARRNAME", pPolar->arrname, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "ORIENT", pPolar->orient, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "MODEL", pPolar->model, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pPolar->arrname, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "ORIENT", pPolar->orient, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "MODEL", pPolar->model, NULL, pStatus);
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
   /* note format specifies same repeat count for L* columns = nwave */
@@ -512,7 +511,6 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 {
   const char function[] = "read_oi_target";
-  char comment[FLEN_COMMENT];
   char *p;
   char nullstring[] = "NULL";
   int nullint = 0;
@@ -526,7 +524,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
   verify_chksum(fptr, pStatus);
-  fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, NULL, pStatus);
   if (pTargets->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_TARGET table. Got %d\n",
            revision, pTargets->revision);
@@ -834,8 +832,7 @@ STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
 static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
                                   bool correlated, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT];
-  char keyval[FLEN_VALUE];
+  char keyword[FLEN_VALUE];
   int nullint = 0;
   double nulldouble = 0.0;
   int irow, colnum, anynull;
@@ -857,8 +854,8 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
     pVis->usecomplex = TRUE;
     /* read unit (mandatory if RVIS present) */
     fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
-    snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
-    fits_read_key(fptr, TSTRING, keyval, pVis->complexunit, comment, pStatus);
+    snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
+    fits_read_key(fptr, TSTRING, keyword, pVis->complexunit, NULL, pStatus);
 
     for (irow=1; irow<=pVis->numrec; irow++) {
       pVis->record[irow-1].rvis = malloc(pVis->nwave *
@@ -905,7 +902,6 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
  */
 static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
-  char comment[FLEN_COMMENT];
   char nullchar = 0;
   int nullint = 0;
   int irow, colnum, anynull;
@@ -924,7 +920,7 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 
   /* Read optional keywords */
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
     pVis->corrname[0] = '\0';
     correlated = FALSE;
@@ -934,27 +930,27 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
     correlated = TRUE;
   }
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "AMPTYP", pVis->amptyp, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "AMPTYP", pVis->amptyp, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* AMPTYP is optional */
     pVis->amptyp[0] = '\0';
     *pStatus = 0;
     fits_clear_errmark();
   }
-  fits_read_key(fptr, TSTRING, "PHITYP", pVis->phityp, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "PHITYP", pVis->phityp, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* PHITYP is optional */
     pVis->phityp[0] = '\0';
     *pStatus = 0;
     fits_clear_errmark();
   }
   fits_write_errmark();
-  fits_read_key(fptr, TINT, "AMPORDER", &pVis->amporder, comment, pStatus);
+  fits_read_key(fptr, TINT, "AMPORDER", &pVis->amporder, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* AMPORDER is optional */
     pVis->amporder = -1;
     *pStatus = 0;
     fits_clear_errmark();
   }
   fits_write_errmark();
-  fits_read_key(fptr, TINT, "PHIORDER", &pVis->phiorder, comment, pStatus);
+  fits_read_key(fptr, TINT, "PHIORDER", &pVis->phiorder, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* PHIORDER is optional */
     pVis->phiorder = -1;
     *pStatus = 0;
@@ -1011,8 +1007,7 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis";
-  char comment[FLEN_COMMENT];
-  char keyval[FLEN_VALUE];
+  char keyword[FLEN_KEYWORD];
   char nullchar = 0;
   int nullint = 0;
   double nulldouble = 0.0;
@@ -1030,20 +1025,20 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   verify_chksum(fptr, pStatus);
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, NULL, pStatus);
   if (pVis->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS table. Got %d\n",
            revision, pVis->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, NULL, pStatus);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pVis->arrname[0] = '\0';
     *pStatus = 0;
     fits_clear_errmark();
   }
-  fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, NULL, pStatus);
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
   /* note format specifies same repeat count for VIS* & FLAG columns = nwave */
@@ -1051,9 +1046,9 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   alloc_oi_vis(pVis, nrows, repeat);
   /* read VISAMP unit (optional) */
-  snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
+  snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, keyval, pVis->ampunit, comment, pStatus);
+  fits_read_key(fptr, TSTRING, keyword, pVis->ampunit, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) {
     pVis->ampunit[0] = '\0';
     *pStatus = 0;
@@ -1126,7 +1121,6 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis2";
-  char comment[FLEN_COMMENT];
   bool correlated;
   char nullchar = 0;
   int nullint = 0;
@@ -1145,26 +1139,26 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   verify_chksum(fptr, pStatus);
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, NULL, pStatus);
   if (pVis2->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS2 table. Got %d\n",
            revision, pVis2->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pVis2->date_obs, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pVis2->date_obs, NULL, pStatus);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pVis2->arrname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pVis2->arrname, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pVis2->arrname[0] = '\0';
     *pStatus = 0;
     fits_clear_errmark();
   }
-  fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, NULL, pStatus);
 
   correlated = FALSE;  /* default */
   pVis2->corrname[0] = '\0';
   if (pVis2->revision >= 2) {
     fits_write_errmark();
-    fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, comment, pStatus);
+    fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, NULL, pStatus);
     if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
       *pStatus = 0;
       fits_clear_errmark();
@@ -1245,7 +1239,6 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_t3";
-  char comment[FLEN_COMMENT];
   bool correlated;
   char nullchar = 0;
   int nullint = 0;
@@ -1264,26 +1257,26 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   verify_chksum(fptr, pStatus);
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, NULL, pStatus);
   if (pT3->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_T3 table. Got %d\n",
            revision, pT3->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pT3->date_obs, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pT3->date_obs, NULL, pStatus);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pT3->arrname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pT3->arrname, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pT3->arrname[0] = '\0';
     *pStatus = 0;
     fits_clear_errmark();
   }
-  fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, NULL, pStatus);
 
   correlated = FALSE;  /* default */
   pT3->corrname[0] = '\0';
   if (pT3->revision >= 2) {
     fits_write_errmark();
-    fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, comment, pStatus);
+    fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, NULL, pStatus);
     if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
       *pStatus = 0;
       fits_clear_errmark();
@@ -1382,9 +1375,8 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
                              STATUS *pStatus)
 {
   const char function[] = "read_next_oi_spectrum";
-  char comment[FLEN_COMMENT];
   bool correlated;
-  char keyval[FLEN_VALUE];
+  char keyword[FLEN_KEYWORD], value[FLEN_VALUE];
   int nullint = 0;
   double nulldouble = 0.0;
   const int revision = 1;
@@ -1401,24 +1393,22 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   verify_chksum(fptr, pStatus);
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, comment, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, NULL, pStatus);
   if (pSpectrum->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_SPECTRUM table. Got %d\n",
            revision, pSpectrum->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs,
-                comment, pStatus);
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs, NULL, pStatus);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pSpectrum->arrname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pSpectrum->arrname, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pSpectrum->arrname[0] = '\0';
     *pStatus = 0;
     fits_clear_errmark();
   }
-  fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
+  fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, NULL, pStatus);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "CORRNAME", pSpectrum->corrname, comment,
-                pStatus);
+  fits_read_key(fptr, TSTRING, "CORRNAME", pSpectrum->corrname, NULL, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
     pSpectrum->corrname[0] = '\0';
     correlated = FALSE;
@@ -1427,10 +1417,10 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   } else {
     correlated = TRUE;
   }
-  fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, comment, pStatus);
-  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, comment, pStatus); //:BUG: buffer overrun
-  fits_read_key(fptr, TSTRING, "CALSTAT", keyval, comment, pStatus);
-  pSpectrum->calstat = keyval[0];
+  fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, NULL, pStatus); //:BUG: buffer overrun
+  fits_read_key(fptr, TSTRING, "CALSTAT", value, NULL, pStatus);
+  pSpectrum->calstat = value[0];
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
   /* note format specifies same repeat count for FLUX* columns = nwave */
@@ -1438,8 +1428,8 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   alloc_oi_spectrum(pSpectrum, nrows, repeat);
   /* read unit (mandatory) */
-  snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
-  fits_read_key(fptr, TSTRING, keyval, pSpectrum->fluxunit, comment, pStatus);
+  snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
+  fits_read_key(fptr, TSTRING, keyword, pSpectrum->fluxunit, NULL, pStatus);
   /* read rows */
   for (irow=1; irow<=pSpectrum->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
