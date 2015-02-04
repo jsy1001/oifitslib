@@ -635,6 +635,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pArray = malloc(sizeof(oi_array));
+    fits_write_errmark();
     if (read_next_oi_array(fptr, pArray, pStatus))
       break; /* no more OI_ARRAY */
     pOi->arrayList = g_list_append(pOi->arrayList, pArray);
@@ -643,12 +644,14 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pArray);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_WAVELENGTH tables */
   pOi->numWavelength = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pWave = malloc(sizeof(oi_wavelength));
+    fits_write_errmark();
     if (read_next_oi_wavelength(fptr, pWave, pStatus))
       break; /* no more OI_WAVELENGTH */
     pOi->wavelengthList = g_list_append(pOi->wavelengthList, pWave);
@@ -657,12 +660,14 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pWave);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_CORR tables */
   pOi->numCorr = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pCorr = malloc(sizeof(oi_corr));
+    fits_write_errmark();
     if (read_next_oi_corr(fptr, pCorr, pStatus))
       break; /* no more OI_CORR */
     pOi->corrList = g_list_append(pOi->corrList, pCorr);
@@ -671,12 +676,14 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pCorr);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_POLAR tables */
   pOi->numPolar = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pPolar = malloc(sizeof(oi_polar));
+    fits_write_errmark();
     if (read_next_oi_polar(fptr, pPolar, pStatus))
       break; /* no more OI_POLAR */
     pOi->polarList = g_list_append(pOi->polarList, pPolar);
@@ -685,6 +692,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pPolar);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_VIS, hash-tabling corresponding array, wavelength and
    * corr tables */
@@ -692,6 +700,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pVis = malloc(sizeof(oi_vis));
+    fits_write_errmark();
     if (read_next_oi_vis(fptr, pVis, pStatus)) break; /* no more OI_VIS */
     pOi->visList = g_list_append(pOi->visList, pVis);
     ++pOi->numVis;
@@ -712,6 +721,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pVis);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_VIS2, hash-tabling corresponding array, wavelength
    * and corr tables */
@@ -719,6 +729,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pVis2 = malloc(sizeof(oi_vis2));
+    fits_write_errmark();
     if (read_next_oi_vis2(fptr, pVis2, pStatus)) break; /* no more OI_VIS2 */
     pOi->vis2List = g_list_append(pOi->vis2List, pVis2);
     ++pOi->numVis2;
@@ -739,6 +750,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pVis2);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_T3, hash-tabling corresponding array, wavelength and
    * corr tables */
@@ -746,6 +758,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pT3 = malloc(sizeof(oi_t3));
+    fits_write_errmark();
     if (read_next_oi_t3(fptr, pT3, pStatus)) break; /* no more OI_T3 */
     pOi->t3List = g_list_append(pOi->t3List, pT3);
     ++pOi->numT3;
@@ -766,6 +779,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pT3);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   /* Read all OI_SPECTRUM, hash-tabling corresponding array &
    * wavelength tables */
@@ -773,6 +787,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
     pSpectrum = malloc(sizeof(oi_spectrum));
+    fits_write_errmark();
     if (read_next_oi_spectrum(fptr, pSpectrum, pStatus))
       break; /* no more OI_SPECTRUM */
     pOi->spectrumList = g_list_append(pOi->spectrumList, pSpectrum);
@@ -789,6 +804,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   free(pSpectrum);
   if(*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
+  fits_clear_errmark();
 
   if (is_oi_fits_one(pOi))
     set_oi_header(pOi);

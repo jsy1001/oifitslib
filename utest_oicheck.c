@@ -111,6 +111,7 @@ static void test_check(gconstpointer userData)
   oi_fits inData;
   int status;
   oi_check_result result;
+  char msg[FLEN_ERRMSG];
 
   const TestSet *pSet = userData;
 
@@ -120,6 +121,8 @@ static void test_check(gconstpointer userData)
     status = 0;
     read_oi_fits(pSet->cases[i].filename, &inData, &status);
     g_assert(!status);
+    if (fits_read_errmsg(msg))
+      g_error("Uncleared CFITSIO error message: %s", msg);
     if ((*pSet->cases[i].check)(&inData, &result) != pSet->cases[i].expected) {
       g_error("Bad result for %s:\n  expected '%s'\n  got '%s'",
               pSet->cases[i].filename,

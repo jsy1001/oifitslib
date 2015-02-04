@@ -49,6 +49,7 @@ static void test_version(void)
 {
   oi_fits data;
   int status;
+  char msg[FLEN_ERRMSG];
 
   status = 0;
   read_oi_fits(FILENAME_V1, &data, &status);
@@ -62,12 +63,16 @@ static void test_version(void)
   g_assert(!is_oi_fits_one(&data));
   g_assert(is_oi_fits_two(&data));
   free_oi_fits(&data);
+
+  if (fits_read_errmsg(msg))
+    g_error("Uncleared CFITSIO error message: %s", msg);
 }
 
 static void test_atomic(void)
 {
   oi_fits data;
   int status;
+  char msg[FLEN_ERRMSG];
 
   init_oi_fits(&data);
   g_assert(!is_atomic(&data, 0.5));
@@ -82,6 +87,9 @@ static void test_atomic(void)
   g_assert(!status);
   g_assert(!is_atomic(&data, 0.5));
   free_oi_fits(&data);
+
+  if (fits_read_errmsg(msg))
+    g_error("Uncleared CFITSIO error message: %s", msg);
 }
 
 

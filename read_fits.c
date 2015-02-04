@@ -56,10 +56,13 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
   fits_verify_chksum(fptr, &dataok, &hduok, pStatus);
   if (dataok == -1 || hduok == -1) {
     fits_get_hdu_num(fptr, &hdunum);
+    fits_write_errmark();
     fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
     if (*pStatus) {
-      if (*pStatus == KEY_NO_EXIST)
+      if (*pStatus == KEY_NO_EXIST) {
         *pStatus = 0;
+        fits_clear_errmark();
+      }
       extname[0] = '\0';
       extver = 0;
     } else {
@@ -131,10 +134,12 @@ static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
   for (ihdu=2; ihdu<=nhdu; ihdu++) {
     fits_movabs_hdu(fptr, ihdu, &hdutype, pStatus);
     if (hdutype == BINARY_TBL) {
+      fits_write_errmark();
       fits_read_key(fptr, TSTRING, "EXTNAME", extname, comment, pStatus);
       fits_read_key(fptr, TSTRING, keyword, value, comment, pStatus);
       if (*pStatus) {
 	*pStatus = 0;
+        fits_clear_errmark();
 	continue; /* next HDU */
       }
       if (strcmp(extname, reqName) != 0 || strcmp(value, reqVal) != 0)
@@ -161,9 +166,11 @@ static bool read_key_opt_string(fitsfile *fptr, char *keyname,
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
+  fits_write_errmark();
   if (fits_read_key(fptr, TSTRING, keyname, keyval, NULL, pStatus)) {
-    *pStatus = 0;
     keyval[0] = '\0';
+    *pStatus = 0;
+    fits_clear_errmark();
     return FALSE;
   }
   return TRUE;
@@ -606,9 +613,11 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   /* Read optional column */
   pTargets->usecategory = FALSE;  /* default */
   if (pTargets->revision >= 2) {
+    fits_write_errmark();
     fits_get_colnum(fptr, CASEINSEN, "CATEGORY", &colnum, pStatus);
     if(*pStatus == COL_NOT_FOUND) {
       *pStatus = 0;
+      fits_clear_errmark();
     } else {
       pTargets->usecategory = TRUE;
       for (irow=1; irow<=pTargets->ntarget; irow++) {
@@ -844,10 +853,10 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
   double nulldouble = 0.0;
   int irow, colnum, anynull;
 
+  fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
   if (*pStatus == COL_NOT_FOUND) {
     pVis->usecomplex = FALSE;
-    *pStatus = 0;
     pVis->complexunit[0] = '\0';
     for (irow=1; irow<=pVis->numrec; irow++) {
       pVis->record[irow-1].rvis = NULL;
@@ -855,6 +864,8 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
       pVis->record[irow-1].ivis = NULL;
       pVis->record[irow-1].iviserr = NULL;
     }
+    *pStatus = 0;
+    fits_clear_errmark();
   } else {
     pVis->usecomplex = TRUE;
     /* read unit (mandatory if RVIS present) */
@@ -921,33 +932,42 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   }
 
   /* Read optional keywords */
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
     pVis->corrname[0] = '\0';
-    *pStatus = 0;
     correlated = FALSE;
+    *pStatus = 0;
+    fits_clear_errmark();
   } else {
     correlated = TRUE;
   }
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "AMPTYP", pVis->amptyp, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* AMPTYP is optional */
     pVis->amptyp[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
   fits_read_key(fptr, TSTRING, "PHITYP", pVis->phityp, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* PHITYP is optional */
     pVis->phityp[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
+  fits_write_errmark();
   fits_read_key(fptr, TINT, "AMPORDER", &pVis->amporder, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* AMPORDER is optional */
     pVis->amporder = -1;
     *pStatus = 0;
+    fits_clear_errmark();
   }
+  fits_write_errmark();
   fits_read_key(fptr, TINT, "PHIORDER", &pVis->phiorder, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* PHIORDER is optional */
     pVis->phiorder = -1;
     *pStatus = 0;
+    fits_clear_errmark();
   }
 
   /* Read optional columns */
@@ -963,13 +983,15 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
                     &anynull, pStatus);
     }
   }
+  fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, "VISREFMAP", &colnum, pStatus);
   if (*pStatus == COL_NOT_FOUND) {
     pVis->usevisrefmap = FALSE;
-    *pStatus = 0;
     for (irow=1; irow<=pVis->numrec; irow++) {
       pVis->record[irow-1].visrefmap = NULL;
     }
+    *pStatus = 0;
+    fits_clear_errmark();
   } else {
     pVis->usevisrefmap = TRUE;
     for (irow=1; irow<=pVis->numrec; irow++) {
@@ -1023,10 +1045,12 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
            revision, pVis->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, comment, pStatus);
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pVis->arrname[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, comment, pStatus);
   /* get number of rows */
@@ -1039,10 +1063,12 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   pVis->nwave = repeat;
   /* read VISAMP unit (optional) */
   snprintf(keyval, FLEN_VALUE, "TUNIT%d", colnum);
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, keyval, pVis->ampunit, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) {
     pVis->ampunit[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
   /* read rows */
   for (irow=1; irow<=pVis->numrec; irow++) {
@@ -1141,19 +1167,23 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
            revision, pVis2->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis2->date_obs, comment, pStatus);
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "ARRNAME", pVis2->arrname, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pVis2->arrname[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, comment, pStatus);
 
   correlated = FALSE;  /* default */
   pVis2->corrname[0] = '\0';
   if (pVis2->revision >= 2) {
+    fits_write_errmark();
     fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, comment, pStatus);
     if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
       *pStatus = 0;
+      fits_clear_errmark();
     } else {
       correlated = TRUE;
     }
@@ -1261,19 +1291,23 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
            revision, pT3->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pT3->date_obs, comment, pStatus);
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "ARRNAME", pT3->arrname, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pT3->arrname[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, comment, pStatus);
 
   correlated = FALSE;  /* default */
   pT3->corrname[0] = '\0';
   if (pT3->revision >= 2) {
+    fits_write_errmark();
     fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, comment, pStatus);
     if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
       *pStatus = 0;
+      fits_clear_errmark();
     } else {
       correlated = TRUE;
     }
@@ -1401,18 +1435,22 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs,
                 comment, pStatus);
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "ARRNAME", pSpectrum->arrname, comment, pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
     pSpectrum->arrname[0] = '\0';
     *pStatus = 0;
+    fits_clear_errmark();
   }
   fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, comment, pStatus);
+  fits_write_errmark();
   fits_read_key(fptr, TSTRING, "CORRNAME", pSpectrum->corrname, comment,
                 pStatus);
   if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
     pSpectrum->corrname[0] = '\0';
-    *pStatus = 0;
     correlated = FALSE;
+    *pStatus = 0;
+    fits_clear_errmark();
   } else {
     correlated = TRUE;
   }
@@ -1455,10 +1493,12 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
 		  &nulldouble, pSpectrum->record[irow-1].fluxerr, &anynull,
 		  pStatus);
     /* read optional columns */
+    fits_write_errmark();
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
     if(*pStatus == COL_NOT_FOUND) {
-      *pStatus = 0;
       pSpectrum->record[irow-1].sta_index = -1;
+      *pStatus = 0;
+      fits_clear_errmark();
     } else {
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, &nullint,
                     &pSpectrum->record[irow-1].sta_index, &anynull, pStatus);

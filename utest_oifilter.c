@@ -101,11 +101,14 @@ static void check(oi_fits *pData)
 static void setup_fixture(TestFixture *fix, gconstpointer userData)
 {
   int status;
+  char msg[FLEN_ERRMSG];
   const char *filename = userData;
 
   status = 0;
   read_oi_fits(filename, &fix->inData, &status);
   g_assert(!status);
+  if (fits_read_errmsg(msg))
+    g_error("Uncleared CFITSIO error message: %s", msg);
   check(&fix->inData);
   init_oi_filter(&fix->filter);
   /* outData is initialised in test function */

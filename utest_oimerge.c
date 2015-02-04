@@ -178,6 +178,7 @@ static void test_merge(gconstpointer userData)
   oi_fits outData, inData1, inData2, inData3;
   int status;
   DataCount inCount, outCount;
+  char msg[FLEN_ERRMSG];
 
   const TestSet *pSet = userData;
 
@@ -206,6 +207,8 @@ static void test_merge(gconstpointer userData)
       numCorr += inData3.numCorr;
       numPolar += inData3.numPolar;
     }
+    if (fits_read_errmsg(msg))
+      g_error("Uncleared CFITSIO error message: %s", msg);
 
     /* Merge datasets */
     if (pSet->cases[i].filename3 != NULL)
