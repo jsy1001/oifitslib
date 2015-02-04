@@ -48,7 +48,7 @@ char **make_tform(const char **template, int n, int value)
   char **tform;
   int i, size, needed;
 
-  tform = malloc(n*sizeof(char *));
+  tform = malloc(n*sizeof(*tform));
   for(i=0; i<n; i++) {
     if (template[i][0] == '?') {
       size = strlen(template[i]) + 4; /* allow for extra digits + \0 */

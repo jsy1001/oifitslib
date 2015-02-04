@@ -608,8 +608,7 @@ void filter_oi_target(const oi_target *pInTargets,
     pOutTargets->ntarget = 0;
     for(i=0; i< pInTargets->ntarget; i++) {
       if(pInTargets->targ[i].target_id == pFilter->target_id) {
-	pOutTargets->ntarget = 1;
-	pOutTargets->targ = malloc(sizeof(target));
+        alloc_oi_target(pOutTargets, 1);
 	memcpy(pOutTargets->targ, &pInTargets->targ[i], sizeof(target));
 	pOutTargets->targ[0].target_id = 1;
       }
@@ -678,7 +677,7 @@ GHashTable *filter_all_oi_wavelength(const oi_fits *pInput,
   while(link != NULL) {
     pInWave = (oi_wavelength *) link->data;
     if(ACCEPT_INSNAME(pInWave, pFilter)) {
-      useWave = malloc(pInWave->nwave*sizeof(char));
+      useWave = malloc(pInWave->nwave*sizeof(useWave[0]));
       pOutWave = malloc(sizeof(oi_wavelength));
       filter_oi_wavelength(pInWave, pFilter->wave_range, pOutWave, useWave);
       if (pOutWave->nwave > 0) {
@@ -853,10 +852,14 @@ void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
            sizeof(oi_polar_record));
     if(pFilter->target_id >= 0)
       pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].lxx = malloc(pOutTab->nwave*sizeof(float complex));
-    pOutTab->record[nrec].lyy = malloc(pOutTab->nwave*sizeof(float complex));
-    pOutTab->record[nrec].lxy = malloc(pOutTab->nwave*sizeof(float complex));
-    pOutTab->record[nrec].lyx = malloc(pOutTab->nwave*sizeof(float complex));
+    pOutTab->record[nrec].lxx = malloc(pOutTab->nwave *
+                                       sizeof(pOutTab->record[0].lxx[0]));
+    pOutTab->record[nrec].lyy = malloc(pOutTab->nwave *
+                                       sizeof(pOutTab->record[0].lyy[0]));
+    pOutTab->record[nrec].lxy = malloc(pOutTab->nwave *
+                                       sizeof(pOutTab->record[0].lxy[0]));
+    pOutTab->record[nrec].lyx = malloc(pOutTab->nwave *
+                                       sizeof(pOutTab->record[0].lyx[0]));
     k = 0;
     g_assert(useWave != NULL);
     for(j=0; j<pInTab->nwave; j++) {
@@ -873,13 +876,13 @@ void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
          originally allocated, so reallocate */
       pOutTab->nwave = k;
       pOutTab->record[nrec].lxx = realloc(pOutTab->record[nrec].lxx,
-                                          k*sizeof(DATA));
+                                          k*sizeof(pOutTab->record[0].lxx[0]));
       pOutTab->record[nrec].lyy = realloc(pOutTab->record[nrec].lyy,
-                                          k*sizeof(DATA));
+                                          k*sizeof(pOutTab->record[0].lyy[0]));
       pOutTab->record[nrec].lxy = realloc(pOutTab->record[nrec].lxy,
-                                          k*sizeof(DATA));
+                                          k*sizeof(pOutTab->record[0].lxy[0]));
       pOutTab->record[nrec].lyx = realloc(pOutTab->record[nrec].lyx,
-                                          k*sizeof(DATA));
+                                          k*sizeof(pOutTab->record[0].lyx[0]));
     }
     ++nrec;
   }
@@ -974,20 +977,21 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
   memcpy(pOutRec, pInRec, sizeof(oi_vis_record));
   if (pFilter->target_id >= 0)
     pOutRec->target_id = 1;
-  pOutRec->visamp = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->visamperr = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->visphi = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->visphierr = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
+  pOutRec->visamp = malloc(nwaveOut*sizeof(pOutRec->visamp[0]));
+  pOutRec->visamperr = malloc(nwaveOut*sizeof(pOutRec->visamperr[0]));
+  pOutRec->visphi = malloc(nwaveOut*sizeof(pOutRec->visphi[0]));
+  pOutRec->visphierr = malloc(nwaveOut*sizeof(pOutRec->visphierr[0]));
+  pOutRec->flag = malloc(nwaveOut*sizeof(pOutRec->flag[0]));
   if (usevisrefmap)
-    pOutRec->visrefmap = malloc(nwaveOut*nwaveOut*sizeof(BOOL));
+    pOutRec->visrefmap = malloc(nwaveOut * nwaveOut *
+                                sizeof(pOutRec->visrefmap[0]));
   else
     pOutRec->visrefmap = NULL;
   if (usecomplex) {
-    pOutRec->rvis = malloc(nwaveOut*sizeof(DATA));
-    pOutRec->rviserr = malloc(nwaveOut*sizeof(DATA));
-    pOutRec->ivis = malloc(nwaveOut*sizeof(DATA));
-    pOutRec->iviserr = malloc(nwaveOut*sizeof(DATA));
+    pOutRec->rvis = malloc(nwaveOut*sizeof(pOutRec->rvis[0]));
+    pOutRec->rviserr = malloc(nwaveOut*sizeof(pOutRec->rviserr[0]));
+    pOutRec->ivis = malloc(nwaveOut*sizeof(pOutRec->ivis[0]));
+    pOutRec->iviserr = malloc(nwaveOut*sizeof(pOutRec->iviserr[0]));
   } else {
     pOutRec->rvis = NULL;
     pOutRec->rviserr = NULL;
@@ -1166,9 +1170,9 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
   memcpy(pOutRec, pInRec, sizeof(oi_vis2_record));
   if(pFilter->target_id >= 0)
     pOutRec->target_id = 1;
-  pOutRec->vis2data = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->vis2err = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
+  pOutRec->vis2data = malloc(nwaveOut*sizeof(pOutRec->vis2data[0]));
+  pOutRec->vis2err = malloc(nwaveOut*sizeof(pOutRec->vis2err[0]));
+  pOutRec->flag = malloc(nwaveOut*sizeof(pOutRec->flag[0]));
   k = 0;
   someUnflagged = FALSE;
   for(j=0; j<nwaveIn; j++) {
@@ -1335,11 +1339,11 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
   memcpy(pOutRec, pInRec, sizeof(oi_t3_record));
   if (pFilter->target_id >= 0)
     pOutRec->target_id = 1;
-  pOutRec->t3amp = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->t3amperr = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->t3phi = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->t3phierr = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->flag = malloc(nwaveOut*sizeof(BOOL));
+  pOutRec->t3amp = malloc(nwaveOut*sizeof(pOutRec->t3amp[0]));
+  pOutRec->t3amperr = malloc(nwaveOut*sizeof(pOutRec->t3amperr[0]));
+  pOutRec->t3phi = malloc(nwaveOut*sizeof(pOutRec->t3phi[0]));
+  pOutRec->t3phierr = malloc(nwaveOut*sizeof(pOutRec->t3phierr[0]));
+  pOutRec->flag = malloc(nwaveOut*sizeof(pOutRec->flag[0]));
   k = 0;
   someUnflagged = FALSE;
   for (j=0; j<nwaveIn; j++) {
@@ -1500,8 +1504,8 @@ static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
   memcpy(pOutRec, pInRec, sizeof(oi_spectrum_record));
   if (pFilter->target_id >= 0)
     pOutRec->target_id = 1;
-  pOutRec->fluxdata = malloc(nwaveOut*sizeof(DATA));
-  pOutRec->fluxerr = malloc(nwaveOut*sizeof(DATA));
+  pOutRec->fluxdata = malloc(nwaveOut*sizeof(pOutRec->fluxdata[0]));
+  pOutRec->fluxerr = malloc(nwaveOut*sizeof(pOutRec->fluxerr[0]));
   k = 0;
   for (j=0; j<nwaveIn; j++) {
     if (useWave[j]) {
