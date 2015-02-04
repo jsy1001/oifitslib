@@ -37,6 +37,50 @@
  */
 
 /**
+ * Read optional string-valued header keyword.
+ *
+ * @return TRUE if keyword read successfully, FALSE otherwise.
+ */
+static bool read_key_opt_string(fitsfile *fptr, char *keyname,
+                                char *keyval, STATUS *pStatus)
+{
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  fits_write_errmark();
+  if (fits_read_key(fptr, TSTRING, keyname, keyval, NULL, pStatus)) {
+    keyval[0] = '\0';
+    if (*pStatus == KEY_NO_EXIST) {
+      *pStatus = 0;
+      fits_clear_errmark();
+    }
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * Read optional integer-valued header keyword.
+ *
+ * @return TRUE if keyword read successfully, FALSE otherwise.
+ */
+static bool read_key_opt_int(fitsfile *fptr, char *keyname,
+                             int *keyval, STATUS *pStatus)
+{
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+
+  fits_write_errmark();
+  if (fits_read_key(fptr, TINT, keyname, keyval, NULL, pStatus)) {
+    *keyval = -1;
+    if (*pStatus == KEY_NO_EXIST) {
+      *pStatus = 0;
+      fits_clear_errmark();
+    }
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Verify current HDU against CHECKSUM and DATASUM keywords.
  *
  * The checksum keyword convention is described at
@@ -56,14 +100,7 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
   fits_verify_chksum(fptr, &dataok, &hduok, pStatus);
   if (dataok == -1 || hduok == -1) {
     fits_get_hdu_num(fptr, &hdunum);
-    fits_write_errmark();
-    fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
-    if (*pStatus) {
-      if (*pStatus == KEY_NO_EXIST) {
-        *pStatus = 0;
-        fits_clear_errmark();
-      }
-      extname[0] = '\0';
+    if (!read_key_opt_string(fptr, "EXTNAME", extname, pStatus)) {
       extver = 0;
     } else {
       fits_read_key(fptr, TINT, "EXTVER", &extver, NULL, pStatus);
@@ -153,27 +190,6 @@ static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
   }
 
   return *pStatus;
-}
-
-/**
- * Read optional header keyword.
- *
- * @return TRUE if keyword present, FALSE otherwise.
- */
-static bool read_key_opt_string(fitsfile *fptr, char *keyname,
-                                char *keyval, STATUS *pStatus)
-{
-
-  if (*pStatus) return *pStatus; /* error flag set - do nothing */
-
-  fits_write_errmark();
-  if (fits_read_key(fptr, TSTRING, keyname, keyval, NULL, pStatus)) {
-    keyval[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-    return FALSE;
-  }
-  return TRUE;
 }
 
 /**
@@ -919,43 +935,11 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   }
 
   /* Read optional keywords */
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "CORRNAME", pVis->corrname, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
-    pVis->corrname[0] = '\0';
-    correlated = FALSE;
-    *pStatus = 0;
-    fits_clear_errmark();
-  } else {
-    correlated = TRUE;
-  }
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "AMPTYP", pVis->amptyp, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* AMPTYP is optional */
-    pVis->amptyp[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
-  fits_read_key(fptr, TSTRING, "PHITYP", pVis->phityp, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* PHITYP is optional */
-    pVis->phityp[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
-  fits_write_errmark();
-  fits_read_key(fptr, TINT, "AMPORDER", &pVis->amporder, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* AMPORDER is optional */
-    pVis->amporder = -1;
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
-  fits_write_errmark();
-  fits_read_key(fptr, TINT, "PHIORDER", &pVis->phiorder, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* PHIORDER is optional */
-    pVis->phiorder = -1;
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
+  correlated = read_key_opt_string(fptr, "CORRNAME", pVis->corrname, pStatus);
+  read_key_opt_string(fptr, "AMPTYP", pVis->amptyp, pStatus);
+  read_key_opt_string(fptr, "PHITYP", pVis->phityp, pStatus);
+  read_key_opt_int(fptr, "AMPORDER", &pVis->amporder, pStatus);
+  read_key_opt_int(fptr, "PHIORDER", &pVis->phiorder, pStatus);
 
   /* Read optional columns */
   if (correlated) {
@@ -1031,13 +1015,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
            revision, pVis->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis->date_obs, NULL, pStatus);
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pVis->arrname, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
-    pVis->arrname[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
+  read_key_opt_string(fptr, "ARRNAME", pVis->arrname, pStatus);
   fits_read_key(fptr, TSTRING, "INSNAME", pVis->insname, NULL, pStatus);
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
@@ -1047,13 +1025,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   alloc_oi_vis(pVis, nrows, repeat);
   /* read VISAMP unit (optional) */
   snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, keyword, pVis->ampunit, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) {
-    pVis->ampunit[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
+  read_key_opt_string(fptr, keyword, pVis->ampunit, pStatus);
   /* read rows */
   for (irow=1; irow<=pVis->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
@@ -1145,26 +1117,15 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
            revision, pVis2->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pVis2->date_obs, NULL, pStatus);
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pVis2->arrname, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
-    pVis2->arrname[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
+  read_key_opt_string(fptr, "ARRNAME", pVis2->arrname, pStatus);
   fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, NULL, pStatus);
 
-  correlated = FALSE;  /* default */
-  pVis2->corrname[0] = '\0';
-  if (pVis2->revision >= 2) {
-    fits_write_errmark();
-    fits_read_key(fptr, TSTRING, "CORRNAME", pVis2->corrname, NULL, pStatus);
-    if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
-      *pStatus = 0;
-      fits_clear_errmark();
-    } else {
-      correlated = TRUE;
-    }
+  if (pVis2->revision >= 2 &&
+      read_key_opt_string(fptr, "CORRNAME", pVis2->corrname, pStatus)) {
+    correlated = TRUE;
+  } else {
+    correlated = FALSE;
+    pVis2->corrname[0] = '\0';
   }
   
   /* get dimensions and allocate storage */
@@ -1219,7 +1180,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 
  except:
   if (*pStatus && !oi_hush_errors) {
-    fprintf(stderr, "CFITSIO error in %s:\n", function);
+    fprintf(stderr, "FITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
@@ -1264,25 +1225,15 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pT3->date_obs, NULL, pStatus);
   fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pT3->arrname, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
-    pT3->arrname[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
+  read_key_opt_string(fptr, "ARRNAME", pT3->arrname, pStatus);
   fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, NULL, pStatus);
 
-  correlated = FALSE;  /* default */
-  pT3->corrname[0] = '\0';
-  if (pT3->revision >= 2) {
-    fits_write_errmark();
-    fits_read_key(fptr, TSTRING, "CORRNAME", pT3->corrname, NULL, pStatus);
-    if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
-      *pStatus = 0;
-      fits_clear_errmark();
-    } else {
-      correlated = TRUE;
-    }
+  if (pT3->revision >= 2 &&
+      read_key_opt_string(fptr, "CORRNAME", pT3->corrname, pStatus)) {
+    correlated = TRUE;
+  } else {
+    correlated = FALSE;
+    pT3->corrname[0] = '\0';
   }
 
   /* get number of rows & allocate storage */
@@ -1399,23 +1350,13 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
            revision, pSpectrum->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs, NULL, pStatus);
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "ARRNAME", pSpectrum->arrname, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* ARRNAME is optional */
-    pSpectrum->arrname[0] = '\0';
-    *pStatus = 0;
-    fits_clear_errmark();
-  }
+  read_key_opt_string(fptr, "ARRNAME", pSpectrum->arrname, pStatus);
   fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, NULL, pStatus);
-  fits_write_errmark();
-  fits_read_key(fptr, TSTRING, "CORRNAME", pSpectrum->corrname, NULL, pStatus);
-  if (*pStatus == KEY_NO_EXIST) { /* CORRNAME is optional */
+  if(read_key_opt_string(fptr, "CORRNAME", pSpectrum->corrname, pStatus)) {
+    correlated = TRUE;
+  } else {
     pSpectrum->corrname[0] = '\0';
     correlated = FALSE;
-    *pStatus = 0;
-    fits_clear_errmark();
-  } else {
-    correlated = TRUE;
   }
   fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, NULL, pStatus);
   fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, NULL, pStatus); //:BUG: buffer overrun
