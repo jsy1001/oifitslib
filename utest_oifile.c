@@ -33,6 +33,10 @@
 #define FILENAME_ATOMIC "test/OIFITS2/alp_aur--COAST_NICMOS.fits"
 #define FILENAME_MULTI "test/OIFITS2/bigtest2.fits"
 
+#define MULTI_NUM_VIS 40
+#define MULTI_NUM_VIS2 40
+#define MULTI_NUM_T3 40
+
 
 static void test_init(void)
 {
@@ -92,6 +96,26 @@ static void test_atomic(void)
     g_error("Uncleared CFITSIO error message: %s", msg);
 }
 
+static void test_count(void)
+{
+  oi_fits data;
+  int status;
+  char msg[FLEN_ERRMSG];
+  long numVis, numVis2, numT3;
+
+  status = 0;
+  read_oi_fits(FILENAME_MULTI, &data, &status);
+
+  if (fits_read_errmsg(msg))
+    g_error("Uncleared CFITSIO error message: %s", msg);
+
+  count_oi_fits_data(&data, &numVis, &numVis2, &numT3);
+
+  g_assert_cmpint(numVis, ==, MULTI_NUM_VIS);
+  g_assert_cmpint(numVis2, ==, MULTI_NUM_VIS2);
+  g_assert_cmpint(numT3, ==, MULTI_NUM_T3);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -100,6 +124,7 @@ int main(int argc, char *argv[])
   g_test_add_func("/oifitslib/oifile/init", test_init);
   g_test_add_func("/oifitslib/oifile/version", test_version);
   g_test_add_func("/oifitslib/oifile/atomic", test_atomic);
+  g_test_add_func("/oifitslib/oifile/count", test_count);
 
   return g_test_run();
 }

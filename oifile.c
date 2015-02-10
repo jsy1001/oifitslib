@@ -456,6 +456,74 @@ int is_atomic(const oi_fits *pOi, double maxDays)
   return TRUE;
 }
 
+/**
+ * Count unflagged data.
+ *
+ *   @param pOi       pointer to file data struct, see oifile.h
+ *   @param pNumVis   return location for number of complex visibility data
+ *   @param pNumVis2  return location for number of squared visibility data
+ *   @param pNumT3    return location for number of bispectrum data
+ */
+void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
+                        long *const pNumVis2, long *const pNumT3)
+{
+  long numVis, numVis2, numT3;
+  GList *link;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  int i, j;
+  
+  /* Count unflagged complex visibilities */
+  numVis = 0;
+  link = pOi->visList;
+  while (link != NULL)
+  {
+    pVis = (oi_vis *) link->data;
+    for (j=0; j<pVis->numrec; j++) {
+      for (i=0; i<pVis->nwave; i++) {
+        if (!pVis->record[j].flag[i])
+          ++numVis;
+      }
+    }
+    link = link->next;
+  }
+
+  /* Count unflagged squared visibilities */
+  numVis2 = 0;
+  link = pOi->vis2List;
+  while (link != NULL)
+  {
+    pVis2 = (oi_vis2 *) link->data;
+    for (j=0; j<pVis2->numrec; j++) {
+      for (i=0; i<pVis2->nwave; i++) {
+        if (!pVis2->record[j].flag[i])
+          ++numVis2;
+      }
+    }
+    link = link->next;
+  }
+
+  /* Count unflagged bispectra */
+  numT3 = 0;
+  link = pOi->t3List;
+  while (link != NULL)
+  {
+    pT3 = (oi_t3 *) link->data;
+    for (j=0; j<pT3->numrec; j++) {
+      for (i=0; i<pT3->nwave; i++) {
+        if (!pT3->record[j].flag[i])
+          ++numT3;
+      }
+    }
+    link = link->next;
+  }
+
+  *pNumVis = numVis;
+  *pNumVis2 = numVis2;
+  *pNumT3 = numT3;
+}
+
 /** Macro to write FITS table for each oi_* in GList. */
 #define WRITE_OI_LIST(fptr, list, type, link, write_func, \
                       extver, pStatus) \

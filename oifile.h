@@ -98,6 +98,7 @@ void init_oi_fits(oi_fits *);
 int is_oi_fits_one(const oi_fits *);
 int is_oi_fits_two(const oi_fits *);
 int is_atomic(const oi_fits *, double);
+void count_oi_fits_data(const oi_fits *, long *const, long *const, long *const);
 void set_oi_header(oi_fits *);
 STATUS write_oi_fits(const char *, oi_fits, STATUS *);
 STATUS read_oi_fits(const char *, oi_fits *, STATUS *);
