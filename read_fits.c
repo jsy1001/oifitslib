@@ -177,8 +177,10 @@ static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
 
   /* Move to correct HDU - don't assume anything about EXTVERs */
   fits_get_num_hdus(fptr, &nhdu, pStatus);
+  if (*pStatus) return *pStatus;
   for (ihdu=2; ihdu<=nhdu; ihdu++) {
     fits_movabs_hdu(fptr, ihdu, &hdutype, pStatus);
+    if (*pStatus) return *pStatus;
     if (hdutype == BINARY_TBL) {
       fits_write_errmark();
       fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
@@ -230,6 +232,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, NULL, pStatus);
+  if (*pStatus) return *pStatus;
   if (pArray->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_ARRAY table. Got %d\n",
            revision, pArray->revision);
@@ -246,6 +249,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   fits_read_key(fptr, TDOUBLE, "ARRAYZ", &pArray->arrayz, NULL, pStatus);
   /* get number of rows and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
+  if (*pStatus) return *pStatus;
   alloc_oi_array(pArray, nrows);
   /* read rows */
   for (irow=1; irow<=pArray->nelement; irow++) {
@@ -311,6 +315,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, NULL, pStatus);
+  if (*pStatus) return *pStatus;
   if (pWave->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_WAVELENGTH table. Got %d\n",
            revision, pWave->revision);
@@ -324,6 +329,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 
   /* get number of rows */
   fits_get_num_rows(fptr, &nrows, pStatus);
+  if (*pStatus) return *pStatus;
   alloc_oi_wavelength(pWave, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "EFF_WAVE", &colnum, pStatus);
@@ -359,6 +365,7 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, NULL, pStatus);
+  if (*pStatus) return *pStatus;
   if (pCorr->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_CORR table. Got %d\n",
            revision, pCorr->revision);
@@ -373,6 +380,7 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 
   /* get number of rows and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
+  if (*pStatus) return *pStatus;
   alloc_oi_corr(pCorr, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "IINDX", &colnum, pStatus);
@@ -410,6 +418,7 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pPolar->revision, NULL, pStatus);
+  if (*pStatus) return *pStatus;
   if (pPolar->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_POLAR table. Got %d\n",
            revision, pPolar->revision);
@@ -425,6 +434,7 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   /* note format specifies same repeat count for L* columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
+  if (*pStatus) return *pStatus;
   alloc_oi_polar(pPolar, nrows, repeat);
   /* read rows */
   for (irow=1; irow<=pPolar->numrec; irow++) {
@@ -532,12 +542,14 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
   verify_chksum(fptr, pStatus);
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, NULL, pStatus);
+  if (*pStatus) goto except;
   if (pTargets->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_TARGET table. Got %d\n",
            revision, pTargets->revision);
   }
   /* get number of rows and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
+  if (*pStatus) goto except;
   alloc_oi_target(pTargets, nrows);
   /* read rows */
   for (irow=1; irow<=pTargets->ntarget; irow++) {
@@ -620,7 +632,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     }
   }
   
-
+except:
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -675,7 +687,8 @@ STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_ARRAY", pStatus);
-  if (*pStatus == END_OF_FILE) return *pStatus;
+  if (*pStatus == END_OF_FILE)
+    return *pStatus;  /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_array_chdu(fptr, pArray, NULL, pStatus);
 
@@ -734,7 +747,8 @@ STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_WAVELENGTH", pStatus);
-  if (*pStatus == END_OF_FILE) return *pStatus;
+  if (*pStatus == END_OF_FILE)
+    return *pStatus;  /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_wavelength_chdu(fptr, pWave, NULL, pStatus);
 
@@ -792,7 +806,8 @@ STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_CORR", pStatus);
-  if (*pStatus == END_OF_FILE) return *pStatus;
+  if (*pStatus == END_OF_FILE)
+    return *pStatus;  /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_corr_chdu(fptr, pCorr, NULL, pStatus);
 
@@ -821,7 +836,8 @@ STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_POLAR", pStatus);
-  if (*pStatus == END_OF_FILE) return *pStatus;
+  if (*pStatus == END_OF_FILE)
+    return *pStatus;  /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_polar_chdu(fptr, pPolar, pStatus);
 
@@ -841,6 +857,8 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
 {
   char keyword[FLEN_VALUE];
   int irow, colnum, anynull;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
@@ -903,6 +921,8 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   int irow, colnum, anynull;
   bool correlated;
+
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   if (pVis->revision == 1) {
     pVis->corrname[0] = '\0';
@@ -978,13 +998,14 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 
   next_named_hdu(fptr, "OI_VIS", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;
+    return *pStatus;  /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, NULL, pStatus);
+  if (*pStatus) goto except;
   if (pVis->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS table. Got %d\n",
            revision, pVis->revision);
@@ -997,6 +1018,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   /* note format specifies same repeat count for VIS* & FLAG columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "VISAMP", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
+  if (*pStatus) goto except;
   alloc_oi_vis(pVis, nrows, repeat);
   /* read VISAMP unit (optional) */
   snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
@@ -1073,13 +1095,14 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 
   next_named_hdu(fptr, "OI_VIS2", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;
+    return *pStatus;  /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, NULL, pStatus);
+  if (*pStatus) goto except;
   if (pVis2->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS2 table. Got %d\n",
            revision, pVis2->revision);
@@ -1101,6 +1124,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   /* note format specifies same repeat count for VIS2* & FLAG columns = nwave*/
   fits_get_colnum(fptr, CASEINSEN, "VIS2DATA", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
+  if (*pStatus) goto except;
   alloc_oi_vis2(pVis2, nrows, repeat);
   /* read rows */
   for (irow=1; irow<=pVis2->numrec; irow++) {
@@ -1175,13 +1199,14 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 
   next_named_hdu(fptr, "OI_T3", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;
+    return *pStatus;  /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, NULL, pStatus);
+  if (*pStatus) goto except;
   if (pT3->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_T3 table. Got %d\n",
            revision, pT3->revision);
@@ -1205,6 +1230,7 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   /* format specifies same repeat count for T3* & FLAG columns */
   fits_get_colnum(fptr, CASEINSEN, "T3AMP", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
+  if (*pStatus) goto except;
   alloc_oi_t3(pT3, nrows, repeat);
   /* read rows */
   for (irow=1; irow<=pT3->numrec; irow++) {
@@ -1295,13 +1321,14 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
 
   next_named_hdu(fptr, "OI_SPECTRUM", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;
+    return *pStatus;  /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, NULL, pStatus);
+  if (*pStatus) goto except;
   if (pSpectrum->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_SPECTRUM table. Got %d\n",
            revision, pSpectrum->revision);
@@ -1324,6 +1351,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   /* note format specifies same repeat count for FLUX* columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
+  if (*pStatus) goto except;
   alloc_oi_spectrum(pSpectrum, nrows, repeat);
   /* read unit (mandatory) */
   snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
