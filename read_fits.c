@@ -139,8 +139,17 @@ static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
     fits_movrel_hdu(fptr, 1, &hdutype, pStatus);
     if (*pStatus) return *pStatus; /* no more HDUs */
     if (hdutype == BINARY_TBL) {
+      fits_write_errmark();
       fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
-      if (strcmp(extname, reqName) == 0) break; /* current HDU matches */
+      if (*pStatus == KEY_NO_EXIST) {
+        printf("WARNING! Skipping binary table HDU with no EXTNAME\n");
+        *pStatus = 0;
+        fits_clear_errmark();
+      } else if (*pStatus) {
+        return *pStatus;
+      } else if (strcmp(extname, reqName) == 0) {
+        break; /* current HDU matches */
+      }
     }
   }
   return *pStatus;
