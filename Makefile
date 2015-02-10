@@ -16,12 +16,15 @@
 # License along with OIFITSlib.  If not, see
 # http://www.gnu.org/licenses/
 
+.PHONY: default install clean
+
 CC = gcc
 #CC = cc
 AR = ar
 # Note that 'demo' target can be built even if pkg-config not present
 PKGCONFIG = pkg-config
 TOUCH = touch
+INSTALL = install
 PYTHON = python2.7
 PYINCFLAGS = `$(PYTHON)-config --cflags`
 
@@ -51,6 +54,12 @@ else
 endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
 
+# Where to install things
+prefix = /usr/local
+includedir = $(prefix)/include
+bindir = $(prefix)/bin
+libdir = $(prefix)/lib
+
 
 # Rules to make .o file from .c file
 %_wrap.o : %_wrap.c
@@ -75,11 +84,17 @@ EXES = oifits-check oifits-merge oifits-filter oifits-upgrade
 TEST_EXES = utest_datemjd utest_oifile \
  utest_oicheck utest_oimerge utest_oifilter
 LIBRARIES = liboifits.a
+INCFILES = datemjd.h exchange.h oifile.h oicheck.h oifilter.h oimerge.h
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
 
 # List targets that don't require GLib first
 default: $(OITABLE) $(LIBRARIES) $(EXES) $(TEST_EXES) $(PYTHONMODULES);
+
+install: $(OITABLE) $(LIBRARIES) $(INCFILES) $(EXES)
+	$(INSTALL) -m 755 $(EXES) $(bindir)
+	$(INSTALL) -m 644 $(OITABLE) $(LIBRARIES) $(libdir)
+	$(INSTALL) -m 644 $(INCFILES) $(includedir)
 
 clean:
 	rm -f $(OITABLE) $(LIBRARIES) $(EXES) $(TEST_EXES) *.o *.libexists
