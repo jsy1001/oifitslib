@@ -460,9 +460,11 @@ int is_atomic(const oi_fits *pOi, double maxDays)
  * Count unflagged data.
  *
  *   @param pOi       pointer to file data struct, see oifile.h
- *   @param pNumVis   return location for number of complex visibility data
- *   @param pNumVis2  return location for number of squared visibility data
- *   @param pNumT3    return location for number of bispectrum data
+ *   @param pNumVis   return location for number of complex visibility data,
+ *                    or NULL
+ *   @param pNumVis2  return location for number of squared visibility data,
+ *                    or NULL
+ *   @param pNumT3    return location for number of bispectrum data, or NULL
  */
 void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
                         long *const pNumVis2, long *const pNumT3)
@@ -519,9 +521,12 @@ void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
     link = link->next;
   }
 
-  *pNumVis = numVis;
-  *pNumVis2 = numVis2;
-  *pNumT3 = numT3;
+  if (pNumVis)
+    *pNumVis = numVis;
+  if (pNumVis2)
+    *pNumVis2 = numVis2;
+  if (pNumT3)
+    *pNumT3 = numT3;
 }
 
 /** Macro to write FITS table for each oi_* in GList. */
