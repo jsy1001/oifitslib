@@ -481,7 +481,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->wave_range[1] = 1e-4;
   pFilter->bas_range[0] = 0.;
   pFilter->bas_range[1] = 1e4;
-  pFilter->snr_range[0] = 0.;
+  pFilter->snr_range[0] = -5.;
   pFilter->snr_range[1] = 1e10;
   pFilter->accept_vis = 1;
   pFilter->accept_vis2 = 1;
