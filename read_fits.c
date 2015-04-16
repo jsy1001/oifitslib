@@ -42,7 +42,7 @@
  *
  * @return TRUE if keyword read successfully, FALSE otherwise.
  */
-static bool read_key_opt_string(fitsfile *fptr, char *keyname,
+static bool read_key_opt_string(fitsfile *fptr, const char *keyname,
                                 char *keyval, STATUS *pStatus)
 {
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
@@ -64,7 +64,7 @@ static bool read_key_opt_string(fitsfile *fptr, char *keyname,
  *
  * @return TRUE if keyword read successfully, FALSE otherwise.
  */
-static bool read_key_opt_int(fitsfile *fptr, char *keyname,
+static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
                              int *keyval, STATUS *pStatus)
 {
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
@@ -128,7 +128,8 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus)
  */
-static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
+static STATUS next_named_hdu(fitsfile *fptr, const char *reqName,
+                             STATUS *pStatus)
 {
   char extname[FLEN_VALUE];
   int hdutype;
@@ -168,8 +169,9 @@ static STATUS next_named_hdu(fitsfile *fptr, char *reqName, STATUS *pStatus)
  *   @return On error, returns non-zero cfitsio error code (also assigned to
  *           *pStatus)
  */
-static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
-                                 char *keyword, char *reqVal, STATUS *pStatus)
+static STATUS specific_named_hdu(fitsfile *fptr, const char *reqName,
+                                 const char *keyword, const char *reqVal,
+                                 STATUS *pStatus)
 {
   char extname[FLEN_VALUE], value[FLEN_VALUE];
   int ihdu, nhdu, hdutype;
@@ -216,7 +218,7 @@ static STATUS specific_named_hdu(fitsfile *fptr, char *reqName,
  *           *pStatus). Contents of array data struct are undefined
  */
 static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
-                                 char *arrname, STATUS *pStatus)
+                                 const char *arrname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
   char *p;
@@ -305,7 +307,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
  *           *pStatus). Contents of wavelength data struct are undefined
  */
 static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
-                                      char *insname, STATUS *pStatus)
+                                      const char *insname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
   const int revision = 2;
@@ -355,7 +357,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
  *           *pStatus). Contents of corr data struct are undefined
  */
 static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
-                                char *corrname, STATUS *pStatus)
+                                const char *corrname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
   const int revision = 1;

@@ -99,7 +99,7 @@ typedef struct {
 } oi_check_result;
 
 /** Standard interface to checking function. */
-typedef oi_breach_level (*check_func)(oi_fits *, oi_check_result *);
+typedef oi_breach_level (*check_func)(const oi_fits *, oi_check_result *);
 
 
 /*
@@ -109,19 +109,19 @@ void init_check_result(oi_check_result *);
 void free_check_result(oi_check_result *);
 char *format_check_result(oi_check_result *);
 void print_check_result(oi_check_result *);
-oi_breach_level check_tables(oi_fits *, oi_check_result *);
-oi_breach_level check_header(oi_fits *, oi_check_result *);
-oi_breach_level check_keywords(oi_fits *, oi_check_result *);
-oi_breach_level check_visrefmap(oi_fits *, oi_check_result *);
-oi_breach_level check_unique_targets(oi_fits *, oi_check_result *);
-oi_breach_level check_targets_present(oi_fits *, oi_check_result *);
-oi_breach_level check_elements_present(oi_fits *, oi_check_result *);
-oi_breach_level check_corr_present(oi_fits *, oi_check_result *);
-oi_breach_level check_flagging(oi_fits *, oi_check_result *);
-oi_breach_level check_t3amp(oi_fits *, oi_check_result *);
-oi_breach_level check_waveorder(oi_fits *, oi_check_result *);
-oi_breach_level check_time(oi_fits *, oi_check_result *);
-oi_breach_level check_spectrum(oi_fits *, oi_check_result *);
+oi_breach_level check_tables(const oi_fits *, oi_check_result *);
+oi_breach_level check_header(const oi_fits *, oi_check_result *);
+oi_breach_level check_keywords(const oi_fits *, oi_check_result *);
+oi_breach_level check_visrefmap(const oi_fits *, oi_check_result *);
+oi_breach_level check_unique_targets(const oi_fits *, oi_check_result *);
+oi_breach_level check_targets_present(const oi_fits *, oi_check_result *);
+oi_breach_level check_elements_present(const oi_fits *, oi_check_result *);
+oi_breach_level check_corr_present(const oi_fits *, oi_check_result *);
+oi_breach_level check_flagging(const oi_fits *, oi_check_result *);
+oi_breach_level check_t3amp(const oi_fits *, oi_check_result *);
+oi_breach_level check_waveorder(const oi_fits *, oi_check_result *);
+oi_breach_level check_time(const oi_fits *, oi_check_result *);
+oi_breach_level check_spectrum(const oi_fits *, oi_check_result *);
 
 #endif /* #ifndef OICHECK_H */
 

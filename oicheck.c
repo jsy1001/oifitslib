@@ -136,7 +136,7 @@ void print_check_result(oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
 {
   const char desc1[] = "Mandatory table missing";
   const char desc2[] = "Mixed table revisions";
@@ -189,7 +189,7 @@ oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_header(const oi_fits *pOi, oi_check_result *pResult)
 {
   const char desc[] = "Invalid/missing primary header keyword value";
   char location[FLEN_VALUE];
@@ -253,7 +253,7 @@ oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_keywords(const oi_fits *pOi, oi_check_result *pResult)
 {
   int ver2;
   GList *link;
@@ -343,7 +343,7 @@ oi_breach_level check_keywords(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_visrefmap(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   oi_vis *pVis;
@@ -387,7 +387,8 @@ oi_breach_level check_visrefmap(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_unique_targets(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_unique_targets(const oi_fits *pOi,
+                                     oi_check_result *pResult)
 {
   int i;
   GList *idList;
@@ -423,7 +424,8 @@ oi_breach_level check_unique_targets(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_targets_present(const oi_fits *pOi,
+                                      oi_check_result *pResult)
 {
   GList *link;
   int i;
@@ -506,7 +508,8 @@ oi_breach_level check_targets_present(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_elements_present(const oi_fits *pOi,
+                                       oi_check_result *pResult)
 {
   GList *link;
   int i, j;
@@ -650,7 +653,8 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_corr_present(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_corr_present(const oi_fits *pOi,
+                                   oi_check_result *pResult)
 {
   GList *link;
   oi_vis *pVis;
@@ -725,7 +729,7 @@ oi_breach_level check_corr_present(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_flagging(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   int i, j;
@@ -801,7 +805,7 @@ oi_breach_level check_flagging(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_t3amp(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_t3amp(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   int i, j;
@@ -842,7 +846,7 @@ oi_breach_level check_t3amp(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_waveorder(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_waveorder(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   int i;
@@ -879,7 +883,7 @@ oi_breach_level check_waveorder(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_time(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_time(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   int i;
@@ -950,7 +954,7 @@ oi_breach_level check_time(oi_fits *pOi, oi_check_result *pResult)
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_spectrum(oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_spectrum(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
   oi_spectrum *pSpectrum;

@@ -145,7 +145,7 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
  * Return new linked list of ARRNAMEs referenced by the
  * OI_VIS/VIS2/T3/SPECTRUM tables.
  */
-static GList *get_arrname_list(oi_fits *pData)
+static GList *get_arrname_list(const oi_fits *pData)
 {
   GList *arrnameList, *link;
   oi_vis *pVis;
@@ -201,7 +201,7 @@ static GList *get_arrname_list(oi_fits *pData)
  * Return new linked list of INSNAMEs referenced by the
  * OI_VIS/VIS2/T3/SPECTRUM tables.
  */
-static GList *get_insname_list(oi_fits *pData)
+static GList *get_insname_list(const oi_fits *pData)
 {
   GList *insnameList, *link;
   oi_vis *pVis;
@@ -252,7 +252,7 @@ static GList *get_insname_list(oi_fits *pData)
 /**
  * Return new linked list of CORRNAMEs referenced by the OI_VIS/VIS2/T3 tables.
  */
-static GList *get_corrname_list(oi_fits *pData)
+static GList *get_corrname_list(const oi_fits *pData)
 {
   GList *corrnameList, *link;
   oi_vis *pVis;
@@ -503,7 +503,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
  *
  * @return Human-readable string stating filter acceptance criteria
  */
-const char *format_oi_filter(oi_filter_spec *pFilter)
+const char *format_oi_filter(const oi_filter_spec *pFilter)
 {
   if (pGStr == NULL)
     pGStr = g_string_sized_new(256);
@@ -558,7 +558,7 @@ const char *format_oi_filter(oi_filter_spec *pFilter)
  *
  * @param pFilter  pointer to filter specification
  */
-void print_oi_filter(oi_filter_spec *pFilter)
+void print_oi_filter(const oi_filter_spec *pFilter)
 {
   printf("%s", format_oi_filter(pFilter));
 }

@@ -84,7 +84,7 @@ static const TestSet v2Set = {
 };
 
 
-static void check(oi_fits *pData)
+static void check(const oi_fits *pData)
 {
   check_func checks[] = {
     check_tables,

@@ -98,8 +98,8 @@ typedef struct {
  * Function prototypes
  */
 void init_oi_filter(oi_filter_spec *);
-const char *format_oi_filter(oi_filter_spec *);
-void print_oi_filter(oi_filter_spec *);
+const char *format_oi_filter(const oi_filter_spec *);
+void print_oi_filter(const oi_filter_spec *);
 void apply_oi_filter(const oi_fits *, oi_filter_spec *, oi_fits *);
 GOptionGroup *get_oi_filter_option_group(void);
 oi_filter_spec *get_user_oi_filter(void);
