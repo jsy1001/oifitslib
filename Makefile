@@ -84,7 +84,8 @@ EXES = oifits-check oifits-merge oifits-filter oifits-upgrade
 TEST_EXES = utest_datemjd utest_oifile \
  utest_oicheck utest_oimerge utest_oifilter
 LIBRARIES = liboifits.a
-INCFILES = datemjd.h exchange.h oifile.h oicheck.h oifilter.h oimerge.h
+INCFILES = chkmalloc.h datemjd.h \
+ exchange.h oifile.h oicheck.h oifilter.h oimerge.h
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
 
@@ -101,12 +102,13 @@ clean:
 	rm -f $(PYTHONMODULES) *_wrap.c *.py *.pyc
 
 # Library for table level I/O only - does not require GLib
-liboitable.a: read_fits.o write_fits.o alloc_fits.o free_fits.o
+liboitable.a: read_fits.o write_fits.o alloc_fits.o free_fits.o chkmalloc.o
 	$(AR) -ruc $@ $^
-write_fits.o: write_fits.c exchange.h
-read_fits.o: read_fits.c exchange.h
-alloc_fits.o: alloc_fits.c exchange.h
+write_fits.o: write_fits.c exchange.h chkmalloc.h
+read_fits.o: read_fits.c exchange.h chkmalloc.h
+alloc_fits.o: alloc_fits.c exchange.h chkmalloc.h
 free_fits.o: free_fits.c exchange.h
+chkmalloc.o: chkmalloc.c chkmalloc.h
 
 demo: demo.o liboitable.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS)
@@ -116,14 +118,14 @@ demo.o: demo.c exchange.h
 #
 # Targets requiring GLib
 #
-liboifits.a: read_fits.o write_fits.o alloc_fits.o free_fits.o \
+liboifits.a: read_fits.o write_fits.o alloc_fits.o free_fits.o chkmalloc.o \
  datemjd.o oifile.o oifilter.o oicheck.o oimerge.o
 	$(AR) -ruc $@ $^
 datemjd.o: datemjd.c datemjd.h
-oifile.o: oifile.c oifile.h exchange.h datemjd.h glib-2.0.libexists
-oifilter.o: oifilter.c oifilter.h oifile.h exchange.h glib-2.0.libexists
+oifile.o: oifile.c oifile.h exchange.h chkmalloc.h datemjd.h glib-2.0.libexists
+oifilter.o: oifilter.c oifilter.h oifile.h exchange.h chkmalloc.h glib-2.0.libexists
 oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
-oimerge.o: oimerge.c oimerge.h oifile.h exchange.h datemjd.h glib-2.0.libexists
+oimerge.o: oimerge.c oimerge.h oifile.h exchange.h chkmalloc.h datemjd.h glib-2.0.libexists
 utest_datemjd.o: utest_datemjd.c datemjd.h glib-2.0.libexists
 utest_oifile.o: utest_oifile.c oifile.h exchange.h glib-2.0.libexists
 utest_oicheck.o: utest_oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists

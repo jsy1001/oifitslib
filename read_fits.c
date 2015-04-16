@@ -25,6 +25,7 @@
  */
 
 #include "exchange.h"
+#include "chkmalloc.h"
 
 #include <fitsio.h>
 #include <stdlib.h>
@@ -882,14 +883,22 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
     fits_read_key(fptr, TSTRING, keyword, pVis->complexunit, NULL, pStatus);
 
     for (irow=1; irow<=pVis->numrec; irow++) {
-      pVis->record[irow-1].rvis = malloc(pVis->nwave *
-                                         sizeof(pVis->record[0].rvis[0]));
-      pVis->record[irow-1].rviserr = malloc(pVis->nwave *
-                                            sizeof(pVis->record[0].rviserr[0]));
-      pVis->record[irow-1].ivis = malloc(pVis->nwave *
-                                         sizeof(pVis->record[0].ivis[0]));
-      pVis->record[irow-1].iviserr = malloc(pVis->nwave *
-                                            sizeof(pVis->record[0].iviserr[0]));
+      pVis->record[irow-1].rvis = chkmalloc
+      (
+        pVis->nwave * sizeof(pVis->record[0].rvis[0])
+      );
+      pVis->record[irow-1].rviserr = chkmalloc
+      (
+        pVis->nwave * sizeof(pVis->record[0].rviserr[0])
+      );
+      pVis->record[irow-1].ivis = chkmalloc
+      (
+        pVis->nwave * sizeof(pVis->record[0].ivis[0])
+      );
+      pVis->record[irow-1].iviserr = chkmalloc
+      (
+        pVis->nwave * sizeof(pVis->record[0].iviserr[0])
+      );
       fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
       fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
                     pVis->record[irow-1].rvis, &anynull, pStatus);
@@ -966,8 +975,10 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   } else {
     pVis->usevisrefmap = TRUE;
     for (irow=1; irow<=pVis->numrec; irow++) {
-      pVis->record[irow-1].visrefmap = malloc(pVis->nwave * pVis->nwave *
-                                              sizeof(pVis->record[0].visrefmap[0]));
+      pVis->record[irow-1].visrefmap = chkmalloc
+      (
+        pVis->nwave * pVis->nwave * sizeof(pVis->record[0].visrefmap[0])
+      );
       fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave*pVis->nwave,
                     NULL, pVis->record[irow-1].visrefmap, &anynull, pStatus);
     }

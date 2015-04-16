@@ -24,6 +24,7 @@
  */
 
 #include "oifile.h"
+#include "chkmalloc.h"
 #include "datemjd.h"
 
 #include <stdlib.h>
@@ -708,7 +709,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numArray = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pArray = malloc(sizeof(oi_array));
+    pArray = chkmalloc(sizeof(oi_array));
     fits_write_errmark();
     if (read_next_oi_array(fptr, pArray, pStatus))
       break; /* no more OI_ARRAY */
@@ -724,7 +725,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numWavelength = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pWave = malloc(sizeof(oi_wavelength));
+    pWave = chkmalloc(sizeof(oi_wavelength));
     fits_write_errmark();
     if (read_next_oi_wavelength(fptr, pWave, pStatus))
       break; /* no more OI_WAVELENGTH */
@@ -740,7 +741,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numCorr = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pCorr = malloc(sizeof(oi_corr));
+    pCorr = chkmalloc(sizeof(oi_corr));
     fits_write_errmark();
     if (read_next_oi_corr(fptr, pCorr, pStatus))
       break; /* no more OI_CORR */
@@ -756,7 +757,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numInspol = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pInspol = malloc(sizeof(oi_inspol));
+    pInspol = chkmalloc(sizeof(oi_inspol));
     fits_write_errmark();
     if (read_next_oi_inspol(fptr, pInspol, pStatus))
       break; /* no more OI_INSPOL */
@@ -773,7 +774,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numVis = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pVis = malloc(sizeof(oi_vis));
+    pVis = chkmalloc(sizeof(oi_vis));
     fits_write_errmark();
     if (read_next_oi_vis(fptr, pVis, pStatus)) break; /* no more OI_VIS */
     pOi->visList = g_list_append(pOi->visList, pVis);
@@ -802,7 +803,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numVis2 = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pVis2 = malloc(sizeof(oi_vis2));
+    pVis2 = chkmalloc(sizeof(oi_vis2));
     fits_write_errmark();
     if (read_next_oi_vis2(fptr, pVis2, pStatus)) break; /* no more OI_VIS2 */
     pOi->vis2List = g_list_append(pOi->vis2List, pVis2);
@@ -831,7 +832,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numT3 = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pT3 = malloc(sizeof(oi_t3));
+    pT3 = chkmalloc(sizeof(oi_t3));
     fits_write_errmark();
     if (read_next_oi_t3(fptr, pT3, pStatus)) break; /* no more OI_T3 */
     pOi->t3List = g_list_append(pOi->t3List, pT3);
@@ -860,7 +861,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->numSpectrum = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (1==1) {
-    pSpectrum = malloc(sizeof(oi_spectrum));
+    pSpectrum = chkmalloc(sizeof(oi_spectrum));
     fits_write_errmark();
     if (read_next_oi_spectrum(fptr, pSpectrum, pStatus))
       break; /* no more OI_SPECTRUM */

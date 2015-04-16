@@ -24,6 +24,7 @@
  */
 
 #include "oimerge.h"
+#include "chkmalloc.h"
 #include "datemjd.h"
 
 #include <string.h>
@@ -233,7 +234,7 @@ GHashTable *merge_oi_target(const GList *inList, oi_fits *pOutput)
   pOutTab = &pOutput->targets;
   pOutTab->revision = 1;
   pOutTab->ntarget = 0;
-  pOutTab->targ = malloc(MAX_TARGET*sizeof(target));
+  pOutTab->targ = chkmalloc(MAX_TARGET*sizeof(target));
   targetIdHash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, free);
   link = inList;
   while(link != NULL) {
@@ -242,7 +243,7 @@ GHashTable *merge_oi_target(const GList *inList, oi_fits *pOutput)
       pOutTab->revision = pInTab->revision;
     for(i=0; i<pInTab->ntarget; i++) {
       if(!g_hash_table_lookup(targetIdHash, pInTab->targ[i].target)) {
-	pValue = malloc(sizeof(int));
+	pValue = chkmalloc(sizeof(int));
 	*pValue = ++pOutTab->ntarget;
 	g_assert_cmpint(pOutTab->ntarget, <, MAX_TARGET);
 	g_hash_table_insert(targetIdHash, pInTab->targ[i].target, pValue);

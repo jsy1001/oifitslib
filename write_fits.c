@@ -25,6 +25,7 @@
  */
 
 #include "exchange.h"
+#include "chkmalloc.h"
 
 #include <fitsio.h>
 #include <stdio.h>
@@ -48,15 +49,15 @@ char **make_tform(const char **template, int n, int value)
   char **tform;
   int i, size, needed;
 
-  tform = malloc(n*sizeof(*tform));
+  tform = chkmalloc(n*sizeof(*tform));
   for(i=0; i<n; i++) {
     if (template[i][0] == '?') {
       size = strlen(template[i]) + 4; /* allow for extra digits + \0 */
-      tform[i] = malloc(size);
+      tform[i] = chkmalloc(size);
       needed = snprintf(tform[i], size, "%d%s", value, &template[i][1]);
       assert(needed < size); /* fails if string was truncated */
     } else {
-      tform[i] = malloc((strlen(template[i])+1)); /* +1 for \0 */
+      tform[i] = chkmalloc((strlen(template[i])+1)); /* +1 for \0 */
       strcpy(tform[i], template[i]);
     }
   }
