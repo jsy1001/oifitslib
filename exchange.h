@@ -88,6 +88,7 @@ typedef struct {
   /* mandatory keywords */
   char origin[FLEN_VALUE];
   char date_obs[FLEN_VALUE];
+  char content[FLEN_VALUE];
   char telescop[FLEN_VALUE];
   char instrume[FLEN_VALUE];
   char observer[FLEN_VALUE];

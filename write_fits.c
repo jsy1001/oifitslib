@@ -116,8 +116,9 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
 		 "Generic name of the instrument", pStatus);
   fits_write_key(fptr, TSTRING, "OBSERVER", header.observer,
   		 "Who acquired the data", pStatus);
-  fits_write_key(fptr, TSTRING, "PRODCATG", "SCIENCE.OIFITS2",
-		 "Product category", pStatus);
+  /* we always write OIFITS2 */
+  fits_write_key(fptr, TSTRING, "CONTENT", "OIFITS2",
+		 "This file is an OIFITS2 container", pStatus);
   fits_write_key(fptr, TSTRING, "INSMODE", header.insmode,
 		 "Instrument mode", pStatus);
   fits_write_key(fptr, TSTRING, "OBJECT", header.object,

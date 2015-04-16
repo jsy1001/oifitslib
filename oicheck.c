@@ -191,37 +191,54 @@ oi_breach_level check_tables(oi_fits *pOi, oi_check_result *pResult)
  */
 oi_breach_level check_header(oi_fits *pOi, oi_check_result *pResult)
 {
-  const char desc[] = "Missing or blank mandatory primary header keyword";
+  const char desc[] = "Invalid/missing primary header keyword value";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
   if(is_oi_fits_two(pOi)) {
     if(strlen(pOi->header.origin) == 0) {
-      g_snprintf(location, FLEN_VALUE, "ORIGIN missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "ORIGIN value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if(strlen(pOi->header.date_obs) == 0) {
-      g_snprintf(location, FLEN_VALUE, "DATE-OBS missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "DATE-OBS value missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if(strlen(pOi->header.content) == 0) {
+      g_snprintf(location, FLEN_VALUE,
+                 "CONTENT value missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    } else if(strcmp(pOi->header.content, "OIFITS2") != 0) {
+      g_snprintf(location, FLEN_VALUE,
+                 "Value of CONTENT in primary header is '%s' not 'OIFITS2'",
+                 pOi->header.content);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if(strlen(pOi->header.telescop) == 0) {
-      g_snprintf(location, FLEN_VALUE, "TELESCOP missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "TELESCOP value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if(strlen(pOi->header.instrume) == 0) {
-      g_snprintf(location, FLEN_VALUE, "INSTRUME missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "INSTRUME value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if(strlen(pOi->header.observer) == 0) {
-      g_snprintf(location, FLEN_VALUE, "OBSERVER missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "OBSERVER value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if(strlen(pOi->header.insmode) == 0) {
-      g_snprintf(location, FLEN_VALUE, "INSMODE missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "INSMODE value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if(strlen(pOi->header.object) == 0) {
-      g_snprintf(location, FLEN_VALUE, "OBJECT missing from primary header");
+      g_snprintf(location, FLEN_VALUE,
+                 "OBJECT value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
   }

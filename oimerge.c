@@ -197,6 +197,8 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
   mjd2date(files_min_mjd(inList), &year, &month, &day);
   g_snprintf(pOutput->header.date_obs, FLEN_VALUE,
              "%4ld-%02ld-%02ld", year, month, day);
+  /* ensure merged header passes check: */
+  g_snprintf(pOutput->header.content, FLEN_VALUE, "OIFITS2");
 
   /* Copy unique keywords or replace with "MULTIPLE" */
   MERGE_HEADER_KEY(inList, origin, pOutput);  //:TODO: MULTIPLE ok for ORIGIN?

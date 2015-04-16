@@ -330,6 +330,7 @@ void init_oi_fits(oi_fits *pOi)
 {
   pOi->header.origin[0] = '\0';
   pOi->header.date_obs[0] = '\0';
+  pOi->header.content[0] = '\0';
   pOi->header.telescop[0] = '\0';
   pOi->header.instrume[0] = '\0';
   pOi->header.observer[0] = '\0';
@@ -1057,7 +1058,10 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
   if (pGStr == NULL)
     pGStr = g_string_sized_new(512);
 
-  g_string_printf(pGStr, "OIFITS data:\n");
+  if(strlen(pOi->header.content) > 0)
+    g_string_printf(pGStr, "'%s' data:\n", pOi->header.content);
+  else
+    g_string_printf(pGStr, "OIFITS data:\n");
   g_string_append_printf(pGStr, "  DATE-OBS=%s  OBJECT='%s'\n",
                          pOi->header.date_obs, pOi->header.object);
   g_string_append_printf(pGStr, "  TELESCOP='%s'  INSTRUME='%s'\n",
