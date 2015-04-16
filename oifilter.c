@@ -387,28 +387,28 @@ static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
 }
 
 /**
- * Remove first OI_POLAR table with ARRNAME not in @a arrnameList.
+ * Remove first OI_INSPOL table with ARRNAME not in @a arrnameList.
  *
  * @return gboolean  TRUE if a table was removed, FALSE if all checked.
  */
-static gboolean prune_oi_polar(oi_fits *pData, GList *arrnameList)
+static gboolean prune_oi_inspol(oi_fits *pData, GList *arrnameList)
 {
   GList *link;
-  oi_polar *pPolar;
+  oi_inspol *pInspol;
 
-  link = pData->polarList;
+  link = pData->inspolList;
   while (link != NULL)
   {
-    pPolar = (oi_polar *) link->data;
-    if (g_list_find_custom(arrnameList, pPolar->arrname,
+    pInspol = (oi_inspol *) link->data;
+    if (g_list_find_custom(arrnameList, pInspol->arrname,
                            (GCompareFunc) strcmp) == NULL)
     {
-      g_warning("Unreferenced OI_POLAR table with ARRNAME=%s "
-                "removed from filter output", pPolar->arrname);
-      pData->polarList = g_list_remove(pData->polarList, pPolar);
-      --pData->numPolar;
-      free_oi_polar(pPolar);
-      free(pPolar);
+      g_warning("Unreferenced OI_INSPOL table with ARRNAME=%s "
+                "removed from filter output", pInspol->arrname);
+      pData->inspolList = g_list_remove(pData->inspolList, pInspol);
+      --pData->numInspol;
+      free_oi_inspol(pInspol);
+      free(pInspol);
       return TRUE;
     }
     link = link->next;
@@ -772,7 +772,7 @@ void filter_all_oi_corr(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_POLAR tables.
+ * Filter all OI_INSPOL tables.
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -780,57 +780,57 @@ void filter_all_oi_corr(const oi_fits *pInput, const oi_filter_spec *pFilter,
  *                     specifying wavelength channels to accept as values
  * @param pOutput      pointer to output oi_fits struct
  */
-void filter_all_oi_polar(const oi_fits *pInput, const oi_filter_spec *pFilter,
-                         GHashTable *useWaveHash, oi_fits *pOutput)
+void filter_all_oi_inspol(const oi_fits *pInput, const oi_filter_spec *pFilter,
+                          GHashTable *useWaveHash, oi_fits *pOutput)
 {
   GList *link;
-  oi_polar *pInTab, *pOutTab;
+  oi_inspol *pInTab, *pOutTab;
 
-  /* Filter OI_POLAR tables in turn */
-  link = pInput->polarList;
+  /* Filter OI_INSPOL tables in turn */
+  link = pInput->inspolList;
   while(link != NULL) {
 
-    pInTab = (oi_polar *) link->data;
+    pInTab = (oi_inspol *) link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
     /* If applicable, check whether ARRNAME matches */
     if(!ACCEPT_ARRNAME(pInTab, pFilter)) continue;
 
-    pOutTab = malloc(sizeof(oi_polar));
-    filter_oi_polar(pInTab, pFilter, useWaveHash, pOutTab);
+    pOutTab = malloc(sizeof(oi_inspol));
+    filter_oi_inspol(pInTab, pFilter, useWaveHash, pOutTab);
     if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
-      pOutput->polarList = g_list_append(pOutput->polarList, pOutTab);
-      ++pOutput->numPolar;
+      pOutput->inspolList = g_list_append(pOutput->inspolList, pOutTab);
+      ++pOutput->numInspol;
     } else {
-      g_warning("Empty OI_POLAR table removed from filter output");
-      g_debug("Removed empty OI_POLAR with ARRNAME=%s", pOutTab->arrname);
+      g_warning("Empty OI_INSPOL table removed from filter output");
+      g_debug("Removed empty OI_INSPOL with ARRNAME=%s", pOutTab->arrname);
       free(pOutTab);
     }
   }
 }
 
 /**
- * Filter specified OI_POLAR table by TARGET_ID, INSNAME, and MJD.
+ * Filter specified OI_INSPOL table by TARGET_ID, INSNAME, and MJD.
  *
- * @param pInTab   pointer to input oi_polar
+ * @param pInTab   pointer to input oi_inspol
  * @param pFilter  pointer to filter specification
  * @param useWaveHash  hash table with INSAME values as keys and char[]
  *                     specifying wavelength channels to accept as values
- * @param pOutTab  pointer to output oi_polar
+ * @param pOutTab  pointer to output oi_inspol
  */
-void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
-                     GHashTable *useWaveHash, oi_polar *pOutTab)
+void filter_oi_inspol(const oi_inspol *pInTab, const oi_filter_spec *pFilter,
+                      GHashTable *useWaveHash, oi_inspol *pOutTab)
 {
   int i, j, k, nrec;
   char *useWave;
 
   /* Copy table header items */
-  memcpy(pOutTab, pInTab, sizeof(oi_polar));
+  memcpy(pOutTab, pInTab, sizeof(oi_inspol));
 
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
-    malloc(pInTab->numrec*sizeof(oi_polar_record)); /* will reallocate */
+    malloc(pInTab->numrec*sizeof(oi_inspol_record)); /* will reallocate */
   pOutTab->nwave = pInTab->nwave; /* upper limit */
   for(i=0; i<pInTab->numrec; i++) {
     if(pFilter->target_id >= 0 &&
@@ -840,16 +840,16 @@ void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
        !g_pattern_match_string(pFilter->insname_pttn,
                                pInTab->record[i].insname))
       continue;  /* skip record as INSNAME doesn't match */
-    if(pInTab->record[i].mjd < pFilter->mjd_range[0] ||
-       pInTab->record[i].mjd > pFilter->mjd_range[1])
-      continue; /* skip record as MJD out of range */
+    if(pInTab->record[i].mjd_end < pFilter->mjd_range[0] ||
+       pInTab->record[i].mjd_obs > pFilter->mjd_range[1])
+      continue; /* skip record as MJD ranges don't overlap */
     useWave = g_hash_table_lookup(useWaveHash, pInTab->record[i].insname);
     if(useWave == NULL) 
       continue; /* skip record as INSNAME filtered out */
     
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i],
-           sizeof(oi_polar_record));
+           sizeof(oi_inspol_record));
     if(pFilter->target_id >= 0)
       pOutTab->record[nrec].target_id = 1;
     pOutTab->record[nrec].lxx = malloc(pOutTab->nwave *
@@ -887,7 +887,7 @@ void filter_oi_polar(const oi_polar *pInTab, const oi_filter_spec *pFilter,
     ++nrec;
   }
   pOutTab->numrec = nrec;
-  pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_polar_record));
+  pOutTab->record = realloc(pOutTab->record, nrec*sizeof(oi_inspol_record));
 }
 
 /**
@@ -1599,16 +1599,16 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   useWaveHash = filter_all_oi_wavelength(pInput, pFilter, pOutput);
 
   /* Filter tables with spectral data */
-  filter_all_oi_polar(pInput, pFilter, useWaveHash, pOutput);
+  filter_all_oi_inspol(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_vis(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_vis2(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_t3(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_spectrum(pInput, pFilter, useWaveHash, pOutput);
 
-  /* Remove orphaned OI_ARRAY, OI_POLAR, OI_WAVELENGTH and OI_CORR tables */
+  /* Remove orphaned OI_ARRAY, OI_INSPOL, OI_WAVELENGTH and OI_CORR tables */
   list = get_arrname_list(pOutput);
   while(prune_oi_array(pOutput, list)) ;
-  while(prune_oi_polar(pOutput, list)) ;
+  while(prune_oi_inspol(pOutput, list)) ;
   g_list_free(list);
   list = get_insname_list(pOutput);
   while(prune_oi_wavelength(pOutput, list)) ;
@@ -1617,7 +1617,7 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   while(prune_oi_corr(pOutput, list)) ;
   g_list_free(list);
 
-  //:TODO: remove orphaned OI_POLAR records?
+  //:TODO: remove orphaned OI_INSPOL records?
   // Note these do not invalidate the OIFITS file
 
   /* Free compiled patterns */

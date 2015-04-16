@@ -86,29 +86,29 @@ void alloc_oi_corr(oi_corr *pCorr, int ncorr)
 }
 
 /**
- * Allocate storage within oi_polar struct.
+ * Allocate storage within oi_inspol struct.
  *
- * Sets the oi_polar::numrec and oi_polar::nwave attributes of @a pPolar.
+ * Sets the oi_inspol::numrec and oi_inspol::nwave attributes of @a pInspol.
  *
- * @param pPolar  pointer to polar data struct, see exchange.h
- * @param numrec  number of records (table rows) to allocate
- * @param nwave   number of wavelength channels to allocate
+ * @param pInspol  pointer to inspol data struct, see exchange.h
+ * @param numrec   number of records (table rows) to allocate
+ * @param nwave    number of wavelength channels to allocate
  */
-void alloc_oi_polar(oi_polar *pPolar, long numrec, int nwave)
+void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave)
 {
   int i;
-  oi_polar_record *pRec;
+  oi_inspol_record *pRec;
   
-  pPolar->record = malloc(numrec*sizeof(oi_polar_record));
+  pInspol->record = malloc(numrec*sizeof(oi_inspol_record));
   for(i=0; i<numrec; i++) {
-    pRec = &pPolar->record[i];
+    pRec = &pInspol->record[i];
     pRec->lxx = malloc(nwave*sizeof(pRec->lxx[0]));
     pRec->lyy = malloc(nwave*sizeof(pRec->lyy[0]));
     pRec->lxy = malloc(nwave*sizeof(pRec->lxy[0]));
     pRec->lyx = malloc(nwave*sizeof(pRec->lyx[0]));
   }
-  pPolar->numrec = numrec;
-  pPolar->nwave = nwave;
+  pInspol->numrec = numrec;
+  pInspol->nwave = nwave;
 }
 
 /**

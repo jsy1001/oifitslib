@@ -418,82 +418,82 @@ STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
 }
 
 /**
- * Write OI_POLAR fits binary table 
+ * Write OI_INSPOL fits binary table 
  *
  *   @param fptr     see cfitsio documentation
- *   @param polar    polar struct, see exchange.h
+ *   @param inspol   inspol struct, see exchange.h
  *   @param extver   value for EXTVER keyword
  *   @param pStatus  pointer to status variable
  *
  *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
+STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
                       STATUS *pStatus)
 {
-  const char function[] = "write_oi_polar";
+  const char function[] = "write_oi_inspol";
   const int tfields = 9;
-  char *ttype[] = {"TARGET_ID", "INSNAME", "MJD", "INT_TIME",
+  char *ttype[] = {"TARGET_ID", "INSNAME", "MJD_OBS", "MJD_END",
                    "LXX", "LYY", "LXY", "LYX", "STA_INDEX"};
   //:TODO: follow standard in choosing repeat count for INSNAME
   const char *tformTpl[] = {"I", "70A", "D", "D",
 			    "?C", "?C", "?C", "?C", "I"};
   char **tform;
-  char *tunit[] = {"\0", "\0", "day", "s",
+  char *tunit[] = {"\0", "\0", "day", "day",
 		   "\0", "\0", "\0", "\0", "\0"};
-  char extname[] = "OI_POLAR";
+  char extname[] = "OI_INSPOL";
   char *str;
   int revision = 1, irow;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Create table structure */
-  tform = make_tform(tformTpl, tfields, polar.nwave);
+  tform = make_tform(tformTpl, tfields, inspol.nwave);
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
 		  extname, pStatus);
   free_tform(tform, tfields);
 
   /* Write keywords */
-  if (polar.revision != revision) {
-    printf("WARNING! polar.revision != %d on entry to %s. "
+  if (inspol.revision != revision) {
+    printf("WARNING! inspol.revision != %d on entry to %s. "
            "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
 		 "Revision number of the table definition", pStatus);
-  fits_write_key(fptr, TSTRING, "DATE-OBS", &polar.date_obs,
+  fits_write_key(fptr, TSTRING, "DATE-OBS", &inspol.date_obs,
 		 "UTC start date of observations", pStatus);
-  fits_write_key(fptr, TINT, "NPOL", &polar.npol,
+  fits_write_key(fptr, TINT, "NPOL", &inspol.npol,
                  "Number of polarization types", pStatus);
   /* note ARRNAME is mandatory */
-  fits_write_key(fptr, TSTRING, "ARRNAME", &polar.arrname,
+  fits_write_key(fptr, TSTRING, "ARRNAME", &inspol.arrname,
                  "Array name", pStatus);
-  fits_write_key(fptr, TSTRING, "ORIENT", &polar.orient,
+  fits_write_key(fptr, TSTRING, "ORIENT", &inspol.orient,
                  "Orientation of the Jones matrix L..", pStatus);
-  fits_write_key(fptr, TSTRING, "MODEL", &polar.model,
+  fits_write_key(fptr, TSTRING, "MODEL", &inspol.model,
 		 "How Jones matrix L.. was estimated", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
-		 "ID number of this OI_POLAR", pStatus);
+		 "ID number of this OI_INSPOL", pStatus);
 
   /* Write columns */
-  for(irow=1; irow<=polar.numrec; irow++) {
+  for(irow=1; irow<=inspol.numrec; irow++) {
 
     fits_write_col(fptr, TINT, 1, irow, 1, 1,
-                   &polar.record[irow-1].target_id, pStatus);
-    str = polar.record[irow-1].insname;
+                   &inspol.record[irow-1].target_id, pStatus);
+    str = inspol.record[irow-1].insname;
     fits_write_col(fptr, TSTRING, 2, irow, 1, 1, &str, pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1,
-                   &polar.record[irow-1].mjd, pStatus);
+                   &inspol.record[irow-1].mjd_obs, pStatus);
     fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1,
-                   &polar.record[irow-1].int_time, pStatus);
-    fits_write_col(fptr, TCOMPLEX, 5, irow, 1, polar.nwave,
-		   polar.record[irow-1].lxx, pStatus);
-    fits_write_col(fptr, TCOMPLEX, 6, irow, 1, polar.nwave,
-		   polar.record[irow-1].lyy, pStatus);
-    fits_write_col(fptr, TCOMPLEX, 7, irow, 1, polar.nwave,
-		   polar.record[irow-1].lxy, pStatus);
-    fits_write_col(fptr, TCOMPLEX, 8, irow, 1, polar.nwave,
-		   polar.record[irow-1].lyx, pStatus);
+                   &inspol.record[irow-1].mjd_end, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 5, irow, 1, inspol.nwave,
+		   inspol.record[irow-1].lxx, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 6, irow, 1, inspol.nwave,
+		   inspol.record[irow-1].lyy, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 7, irow, 1, inspol.nwave,
+		   inspol.record[irow-1].lxy, pStatus);
+    fits_write_col(fptr, TCOMPLEX, 8, irow, 1, inspol.nwave,
+		   inspol.record[irow-1].lyx, pStatus);
     fits_write_col(fptr, TINT, 9, irow, 1, 1,
-                   &polar.record[irow-1].sta_index, pStatus);
+                   &inspol.record[irow-1].sta_index, pStatus);
   }
 
   fits_write_chksum(fptr, pStatus);

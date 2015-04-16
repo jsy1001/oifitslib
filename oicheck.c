@@ -511,7 +511,7 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
   GList *link;
   int i, j;
   int requireArrname;
-  oi_polar *pPolar;
+  oi_inspol *pInspol;
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
@@ -523,21 +523,21 @@ oi_breach_level check_elements_present(oi_fits *pOi, oi_check_result *pResult)
   init_check_result(pResult);
   requireArrname = is_oi_fits_two(pOi);
 
-  /* Check OI_POLAR tables */
-  link = pOi->polarList;
+  /* Check OI_INSPOL tables */
+  link = pOi->inspolList;
   while(link != NULL) {
-    pPolar = link->data;
-    if(strlen(pPolar->arrname) > 0) {
-      for(i=0; i<pPolar->numrec; i++) {
-        if(oi_fits_lookup_element(pOi, pPolar->arrname,
-                                  pPolar->record[i].sta_index) == NULL) {
-          g_snprintf(location, FLEN_VALUE, "OI_POLAR #%d record %d",
-                     g_list_position(pOi->polarList, link)+1, i+1);
+    pInspol = link->data;
+    if(strlen(pInspol->arrname) > 0) {
+      for(i=0; i<pInspol->numrec; i++) {
+        if(oi_fits_lookup_element(pOi, pInspol->arrname,
+                                  pInspol->record[i].sta_index) == NULL) {
+          g_snprintf(location, FLEN_VALUE, "OI_INSPOL #%d record %d",
+                     g_list_position(pOi->inspolList, link)+1, i+1);
           set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
 	}
       }
     } else {
-      g_snprintf(location, FLEN_VALUE, "OI_POLAR #%d",
+      g_snprintf(location, FLEN_VALUE, "OI_INSPOL #%d",
                  g_list_position(pOi->visList, link)+1);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }

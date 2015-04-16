@@ -59,7 +59,7 @@ void demo_write(void)
   oi_target targets;
   oi_wavelength wave;
   oi_corr corr;
-  oi_polar polar;
+  oi_inspol inspol;
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
@@ -159,43 +159,43 @@ void demo_write(void)
   }
   corr.revision = 1;
 
-  /* Read info for OI_POLAR table */
-  fscanf(fp, "OI_POLAR date-obs %70s ", polar.date_obs);
-  fscanf(fp, "npol %d ", &polar.npol);
-  fscanf(fp, "arrname %70s ", polar.arrname);
-  fscanf(fp, "orient %70s ", polar.orient);
-  fscanf(fp, "model %70s ", polar.model);
+  /* Read info for OI_INSPOL table */
+  fscanf(fp, "OI_INSPOL date-obs %70s ", inspol.date_obs);
+  fscanf(fp, "npol %d ", &inspol.npol);
+  fscanf(fp, "arrname %70s ", inspol.arrname);
+  fscanf(fp, "orient %70s ", inspol.orient);
+  fscanf(fp, "model %70s ", inspol.model);
   fscanf(fp, "numrec %ld ", &numrec);
-  alloc_oi_polar(&polar, numrec, wave.nwave);
-  printf("Reading %ld polar records...\n", polar.numrec);
+  alloc_oi_inspol(&inspol, numrec, wave.nwave);
+  printf("Reading %ld inspol records...\n", inspol.numrec);
   /* loop over records */
-  for(irec=0; irec<polar.numrec; irec++) {
-    fscanf(fp, "target_id %d insname %70s mjd %lf ",
-           &polar.record[irec].target_id, polar.record[irec].insname,
-           &polar.record[irec].mjd);
-    fscanf(fp, "int_time %lf lxx ", &polar.record[irec].int_time);
+  for(irec=0; irec<inspol.numrec; irec++) {
+    fscanf(fp, "target_id %d insname %70s mjd_obs %lf ",
+           &inspol.record[irec].target_id, inspol.record[irec].insname,
+           &inspol.record[irec].mjd_obs);
+    fscanf(fp, "mjd_end %lf lxx ", &inspol.record[irec].mjd_end);
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      polar.record[irec].lxx[iwave] = real + imag*I;
+      inspol.record[irec].lxx[iwave] = real + imag*I;
     }
     fscanf(fp, "lyy ");
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      polar.record[irec].lyy[iwave] = real + imag*I;
+      inspol.record[irec].lyy[iwave] = real + imag*I;
     }
     fscanf(fp, "lxy ");
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      polar.record[irec].lxy[iwave] = real + imag*I;
+      inspol.record[irec].lxy[iwave] = real + imag*I;
     }
     fscanf(fp, "lyx ");
     for(iwave=0; iwave<wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      polar.record[irec].lyx[iwave] = real + imag*I;
+      inspol.record[irec].lyx[iwave] = real + imag*I;
     }
-    fscanf(fp, "sta_index %d ", &polar.record[irec].sta_index);
+    fscanf(fp, "sta_index %d ", &inspol.record[irec].sta_index);
   }
-  polar.revision = 1;
+  inspol.revision = 1;
 
   /* Read info for OI_VIS table */
   fscanf(fp, "OI_VIS date-obs %70s ", vis.date_obs);
@@ -384,7 +384,7 @@ void demo_write(void)
   write_oi_array(fptr, array, 1, &status);
   write_oi_wavelength(fptr, wave, 1, &status);
   write_oi_corr(fptr, corr, 1, &status);
-  write_oi_polar(fptr, polar, 1, &status);
+  write_oi_inspol(fptr, inspol, 1, &status);
 
   if (status) {
     /* Error occurred - delete partially-created file and exit */
@@ -403,7 +403,7 @@ void demo_write(void)
   free_oi_array(&array);
   free_oi_wavelength(&wave);
   free_oi_corr(&corr);
-  free_oi_polar(&polar);
+  free_oi_inspol(&inspol);
 }
 
 
@@ -425,7 +425,7 @@ void demo_read(void)
   oi_target targets;
   oi_wavelength wave;
   oi_corr corr;
-  oi_polar polar;
+  oi_inspol inspol;
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
@@ -563,16 +563,17 @@ void demo_read(void)
   if (status != END_OF_FILE) goto except;
   status = 0;
 
-  /* Read all OI_POLAR tables and corresponding OI_ARRAY tables */
+  /* Read all OI_INSPOL tables and corresponding OI_ARRAY tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (1==1) {
-    if (read_next_oi_polar(fptr, &polar, &status)) break; /* no more OI_POLAR */
-    printf("Read OI_POLAR    with  ARRNAME=%s\n", polar.arrname);
-    read_oi_array(fptr2, polar.arrname, &array, &status);
+    if (read_next_oi_inspol(fptr, &inspol, &status))
+      break; /* no more OI_INSPOL */
+    printf("Read OI_INSPOL   with  ARRNAME=%s\n", inspol.arrname);
+    read_oi_array(fptr2, inspol.arrname, &array, &status);
     if (!status) {
       /* Free storage ready to reuse structs for next table */
       free_oi_array(&array);
-      free_oi_polar(&polar);
+      free_oi_inspol(&inspol);
     }
   }
   if (status != END_OF_FILE) goto except;

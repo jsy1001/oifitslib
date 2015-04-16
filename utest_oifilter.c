@@ -86,7 +86,7 @@ static void check(oi_fits *pData)
   g_assert_cmpint(pData->numWavelength,
                   ==, g_list_length(pData->wavelengthList));
   g_assert_cmpint(pData->numCorr, ==, g_list_length(pData->corrList));
-  g_assert_cmpint(pData->numPolar, ==, g_list_length(pData->polarList));
+  g_assert_cmpint(pData->numInspol, ==, g_list_length(pData->inspolList));
   g_assert_cmpint(pData->numVis, ==, g_list_length(pData->visList));
   g_assert_cmpint(pData->numVis2, ==, g_list_length(pData->vis2List));
   g_assert_cmpint(pData->numT3, ==, g_list_length(pData->t3List));

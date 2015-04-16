@@ -170,20 +170,20 @@ typedef struct {
   double *corr;
 } oi_corr;
 
-/** Polarization record. Corresponds to one row of an OI_POLAR FITS table. */
+/** Polarization record. Corresponds to one row of an OI_INSPOL FITS table. */
 typedef struct {
   int target_id;
   char insname[FLEN_VALUE];
-  double mjd;
-  double int_time;
+  double mjd_obs;
+  double mjd_end;
   float complex *lxx;
   float complex *lyy;
   float complex *lxy;
   float complex *lyx;
   int sta_index;
-} oi_polar_record;
+} oi_inspol_record;
 
-/** Data for OI_POLAR FITS table (new in OIFITS2) */
+/** Data for OI_INSPOL FITS table (new in OIFITS2) */
 typedef struct {
   int revision;
   char date_obs[FLEN_VALUE];
@@ -193,8 +193,8 @@ typedef struct {
   char model[FLEN_VALUE];
   long numrec;
   int nwave;
-  oi_polar_record *record;
-} oi_polar;
+  oi_inspol_record *record;
+} oi_inspol;
 
 /** Complex visibility record. Corresponds to one row of an OI_VIS
     FITS table. */
@@ -332,8 +332,8 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
                            STATUS *pStatus);
 STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver,
                      STATUS *pStatus);
-STATUS write_oi_polar(fitsfile *fptr, oi_polar polar, int extver,
-                      STATUS *pStatus);
+STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
+                       STATUS *pStatus);
 STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus);
 STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver,
                      STATUS *pStatus);
@@ -353,7 +353,7 @@ STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
 STATUS read_oi_corr(fitsfile *fptr, char *corrname, oi_corr *pCorr,
                     STATUS *pStatus);
 STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus);
-STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus);
+STATUS read_next_oi_inspol(fitsfile *fptr, oi_inspol *pInspol, STATUS *pStatus);
 STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus);
 STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus);
 STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus);
@@ -364,7 +364,7 @@ void alloc_oi_array(oi_array *pArray, int nelement);
 void alloc_oi_target(oi_target *pTargets, int ntarget);
 void alloc_oi_wavelength(oi_wavelength *pWave, int nwave);
 void alloc_oi_corr(oi_corr *pCorr, int ncorr);
-void alloc_oi_polar(oi_polar *pPolar, long numrec, int nwave);
+void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave);
 void alloc_oi_vis(oi_vis *pVis, long numrec, int nwave);
 void alloc_oi_vis2(oi_vis2 *pVis2, long numrec, int nwave);
 void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave);
@@ -374,7 +374,7 @@ void free_oi_array(oi_array *pArray);
 void free_oi_target(oi_target *pTargets);
 void free_oi_wavelength(oi_wavelength *pWave);
 void free_oi_corr(oi_corr *pCorr);
-void free_oi_polar(oi_polar *pPolar);
+void free_oi_inspol(oi_inspol *pInspol);
 void free_oi_vis(oi_vis *pVis);
 void free_oi_vis2(oi_vis2 *pVis2);
 void free_oi_t3(oi_t3 *pT3);

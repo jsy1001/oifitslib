@@ -68,7 +68,7 @@ typedef struct {
   int numArray;              /**< Length of arrayList */
   int numWavelength;         /**< Length of wavelengthList */
   int numCorr;               /**< Length of corrList */
-  int numPolar;              /**< Length of polarList */
+  int numInspol;             /**< Length of inspolList */
   int numVis;                /**< Length of visList */
   int numVis2;               /**< Length of vis2List */
   int numT3;                 /**< Length of t3List */
@@ -78,7 +78,7 @@ typedef struct {
   GList *arrayList;          /**< Linked list of oi_array structs */
   GList *wavelengthList;     /**< Linked list of oi_wavelength structs */
   GList *corrList;           /**< Linked list of oi_corr structs */
-  GList *polarList;          /**< Linked list of oi_polar structs */
+  GList *inspolList;         /**< Linked list of oi_inspol structs */
   GList *visList;            /**< Linked list of oi_vis structs */
   GList *vis2List;           /**< Linked list of oi_vis2 structs */
   GList *t3List;             /**< Linked list of oi_t3 structs */
@@ -114,7 +114,7 @@ oi_target *dup_oi_target(const oi_target *);
 oi_array *dup_oi_array(const oi_array *);
 oi_wavelength *dup_oi_wavelength(const oi_wavelength *);
 oi_corr *dup_oi_corr(const oi_corr *);
-oi_polar *dup_oi_polar(const oi_polar *);
+oi_inspol *dup_oi_inspol(const oi_inspol *);
 oi_vis *dup_oi_vis(const oi_vis *);
 oi_vis2 *dup_oi_vis2(const oi_vis2 *);
 oi_t3 *dup_oi_t3(const oi_t3 *);

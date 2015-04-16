@@ -397,17 +397,17 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 
 
 /**
- * Read OI_POLAR fits binary table at current HDU.
+ * Read OI_INSPOL fits binary table at current HDU.
  *
  *   @param fptr     see cfitsio documentation
- *   @param pPolar   ptr to polar struct, see exchange.h
+ *   @param pInspol  ptr to inspol struct, see exchange.h
  *   @param pStatus  pointer to status variable
  *
  *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of polar data struct are undefined
+ *           *pStatus). Contents of inspol data struct are undefined
  */
-static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
-                                 STATUS *pStatus)
+static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
+                                  STATUS *pStatus)
 {
   char *p;
   const int revision = 1;
@@ -417,55 +417,55 @@ static STATUS read_oi_polar_chdu(fitsfile *fptr, oi_polar *pPolar,
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pPolar->revision, NULL, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pInspol->revision, NULL, pStatus);
   if (*pStatus) return *pStatus;
-  if (pPolar->revision > revision) {
-    printf("WARNING! Expecting OI_REVN <= %d in OI_POLAR table. Got %d\n",
-           revision, pPolar->revision);
+  if (pInspol->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_INSPOL table. Got %d\n",
+           revision, pInspol->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pPolar->date_obs, NULL, pStatus);
-  fits_read_key(fptr, TINT, "NPOL", &pPolar->npol, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pInspol->date_obs, NULL, pStatus);
+  fits_read_key(fptr, TINT, "NPOL", &pInspol->npol, NULL, pStatus);
   /* note ARRNAME is mandatory */
-  fits_read_key(fptr, TSTRING, "ARRNAME", pPolar->arrname, NULL, pStatus);
-  fits_read_key(fptr, TSTRING, "ORIENT", pPolar->orient, NULL, pStatus);
-  fits_read_key(fptr, TSTRING, "MODEL", pPolar->model, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "ARRNAME", pInspol->arrname, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "ORIENT", pInspol->orient, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, "MODEL", pInspol->model, NULL, pStatus);
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
   /* note format specifies same repeat count for L* columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   if (*pStatus) return *pStatus;
-  alloc_oi_polar(pPolar, nrows, repeat);
+  alloc_oi_inspol(pInspol, nrows, repeat);
   /* read rows */
-  for (irow=1; irow<=pPolar->numrec; irow++) {
+  for (irow=1; irow<=pInspol->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-		  &pPolar->record[irow-1].target_id, &anynull, pStatus);
+		  &pInspol->record[irow-1].target_id, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INSNAME", &colnum, pStatus);
-    p = pPolar->record[irow-1].insname;
+    p = pInspol->record[irow-1].insname;
     fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
                   &p, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "MJD_OBS", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
-		  &pPolar->record[irow-1].mjd, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
+		  &pInspol->record[irow-1].mjd_obs, &anynull, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "MJD_END", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
-		  &pPolar->record[irow-1].int_time, &anynull, pStatus);
+		  &pInspol->record[irow-1].mjd_end, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave, NULL,
-		  pPolar->record[irow-1].lxx, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
+		  pInspol->record[irow-1].lxx, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LYY", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave, NULL,
-		  pPolar->record[irow-1].lyy, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
+		  pInspol->record[irow-1].lyy, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LXY", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave,
-		  NULL, pPolar->record[irow-1].lxy, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave,
+		  NULL, pInspol->record[irow-1].lxy, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "LYX", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pPolar->nwave, NULL,
-		  pPolar->record[irow-1].lyx, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
+		  pInspol->record[irow-1].lyx, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-		  &pPolar->record[irow-1].sta_index, &anynull, pStatus);
+		  &pInspol->record[irow-1].sta_index, &anynull, pStatus);
   }
   return *pStatus;
 }
@@ -821,26 +821,26 @@ STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
 
 
 /**
- * Read next OI_POLAR fits binary table
+ * Read next OI_INSPOL fits binary table
  *
  *   @param fptr     see cfitsio documentation
- *   @param pPolar   ptr to polar data struct, see exchange.h
+ *   @param pInspol  ptr to inspol data struct, see exchange.h
  *   @param pStatus  pointer to status variable
  *
  *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of polar data struct are undefined
+ *           *pStatus). Contents of inspol data struct are undefined
  */
-STATUS read_next_oi_polar(fitsfile *fptr, oi_polar *pPolar, STATUS *pStatus)
+STATUS read_next_oi_inspol(fitsfile *fptr, oi_inspol *pInspol, STATUS *pStatus)
 {
-  const char function[] = "read_next_oi_polar";
+  const char function[] = "read_next_oi_inspol";
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
-  next_named_hdu(fptr, "OI_POLAR", pStatus);
+  next_named_hdu(fptr, "OI_INSPOL", pStatus);
   if (*pStatus == END_OF_FILE)
     return *pStatus;  /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
-  read_oi_polar_chdu(fptr, pPolar, pStatus);
+  read_oi_inspol_chdu(fptr, pInspol, pStatus);
 
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);

@@ -112,10 +112,10 @@ GHashTable *filter_all_oi_wavelength(const oi_fits *, const oi_filter_spec *,
 void filter_oi_wavelength(const oi_wavelength *, const float[2],
 			  oi_wavelength *, char *);
 void filter_all_oi_corr(const oi_fits *, const oi_filter_spec *, oi_fits *);
-void filter_all_oi_polar(const oi_fits *, const oi_filter_spec *, GHashTable *,
-                         oi_fits *);
-void filter_oi_polar(const oi_polar *, const oi_filter_spec *, GHashTable *,
-                     oi_polar *);
+void filter_all_oi_inspol(const oi_fits *, const oi_filter_spec *, GHashTable *,
+                          oi_fits *);
+void filter_oi_inspol(const oi_inspol *, const oi_filter_spec *, GHashTable *,
+                      oi_inspol *);
 void filter_all_oi_vis(const oi_fits *, const oi_filter_spec *, GHashTable *,
 		       oi_fits *);
 void filter_oi_vis(const oi_vis *, const oi_filter_spec *, const char *,

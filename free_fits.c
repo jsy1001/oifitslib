@@ -71,21 +71,21 @@ void free_oi_corr(oi_corr *pCorr)
 }
 
 /**
- * Free dynamically-allocated storage within oi_polar struct.
+ * Free dynamically-allocated storage within oi_inspol struct.
  *
- *   @param pPolar  pointer to polar data struct, see exchange.h
+ *   @param pInspol  pointer to inspol data struct, see exchange.h
  */
-void free_oi_polar(oi_polar *pPolar)
+void free_oi_inspol(oi_inspol *pInspol)
 {
   int i;
   
-  for(i=0; i<pPolar->numrec; i++) {
-    free(pPolar->record[i].lxx);
-    free(pPolar->record[i].lyy);
-    free(pPolar->record[i].lxy);
-    free(pPolar->record[i].lyx);
+  for(i=0; i<pInspol->numrec; i++) {
+    free(pInspol->record[i].lxx);
+    free(pInspol->record[i].lyy);
+    free(pInspol->record[i].lxy);
+    free(pInspol->record[i].lyx);
   }
-  free(pPolar->record);
+  free(pInspol->record);
 }
 
 /**

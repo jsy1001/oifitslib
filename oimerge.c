@@ -475,7 +475,7 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
   }
 
 /**
- * Copy all input OI_POLAR tables into output dataset.
+ * Copy all input OI_INSPOL tables into output dataset.
  *
  * Modifies ARRNAME, INSNAME, and TARGET_ID to maintain correct
  * cross-references.
@@ -488,14 +488,14 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
  *                          by old
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
-void merge_all_oi_polar(const GList *inList, GHashTable *targetIdHash,
-                        const GList *arrnameHashList,
-                        const GList *insnameHashList,
-                        oi_fits *pOutput)
+void merge_all_oi_inspol(const GList *inList, GHashTable *targetIdHash,
+                         const GList *arrnameHashList,
+                         const GList *insnameHashList,
+                         oi_fits *pOutput)
 {
   const GList *ilink, *jlink, *arrHashLink, *insHashLink;
   oi_fits *pInput;
-  oi_polar *pOutTab;
+  oi_inspol *pOutTab;
   GHashTable *arrnameHash, *insnameHash;
   int i;
   
@@ -507,10 +507,10 @@ void merge_all_oi_polar(const GList *inList, GHashTable *targetIdHash,
     arrnameHash = (GHashTable *) arrHashLink->data;
     insnameHash = (GHashTable *) insHashLink->data;
     pInput = (oi_fits *) ilink->data;
-    /* Loop over polar tables in dataset */
-    jlink = pInput->polarList;
+    /* Loop over inspol tables in dataset */
+    jlink = pInput->inspolList;
     while(jlink != NULL) {
-      pOutTab = dup_oi_polar((oi_polar *) jlink->data);
+      pOutTab = dup_oi_inspol((oi_inspol *) jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       for(i=0; i<pOutTab->numrec; i++) {
@@ -519,8 +519,8 @@ void merge_all_oi_polar(const GList *inList, GHashTable *targetIdHash,
                   FLEN_VALUE);
       }
       /* Append modified copy of table to output */
-      pOutput->polarList = g_list_append(pOutput->polarList, pOutTab); 
-      ++pOutput->numPolar;
+      pOutput->inspolList = g_list_append(pOutput->inspolList, pOutTab); 
+      ++pOutput->numInspol;
       jlink = jlink->next;
     }
     ilink = ilink->next;
@@ -769,8 +769,8 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
   arrnameHashList = merge_all_oi_array(inList, pOutput);
   insnameHashList = merge_all_oi_wavelength(inList, pOutput);
   corrnameHashList = merge_all_oi_corr(inList, pOutput);
-  merge_all_oi_polar(inList, targetIdHash, arrnameHashList,
-                     insnameHashList, pOutput);
+  merge_all_oi_inspol(inList, targetIdHash, arrnameHashList,
+                      insnameHashList, pOutput);
   merge_all_oi_vis(inList, targetIdHash, arrnameHashList,
                    insnameHashList, corrnameHashList, pOutput);
   merge_all_oi_vis2(inList, targetIdHash, arrnameHashList,

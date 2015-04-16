@@ -130,8 +130,8 @@ if __name__ == '__main__':
 %map_out_glist(wavelengthList, oi_wavelength);
 %map_in_glist(corrList, oi_corr);
 %map_out_glist(corrList, oi_corr);
-%map_in_glist(polarList, oi_polar);
-%map_out_glist(polarList, oi_polar);
+%map_in_glist(inspolList, oi_inspol);
+%map_out_glist(inspolList, oi_inspol);
 %map_in_glist(visList, oi_vis);
 %map_out_glist(visList, oi_vis);
 %map_in_glist(vis2List, oi_vis2);
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 // could add __setitem__
 %add_array_access(element);
 %add_array_access(target);
-%add_array_access(oi_polar_record);
+%add_array_access(oi_inspol_record);
 %add_array_access(oi_vis_record);
 %add_array_access(oi_vis2_record);
 %add_array_access(oi_t3_record);
