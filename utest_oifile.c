@@ -42,7 +42,7 @@ static void test_init(void)
 {
   oi_fits data;
   int status;
-  
+
   init_oi_fits(&data);
   status = 0;
   g_assert(write_oi_fits(FILENAME_OUT, data, &status) == 0);

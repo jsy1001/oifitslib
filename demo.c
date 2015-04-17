@@ -74,7 +74,7 @@ void demo_write(void)
   /* get input filename */
   printf("Enter input TEXT filename: ");
   fgets(filename, FLEN_FILENAME, stdin);
-  filename[strlen(filename)-1] = '\0'; /* zap newline */
+  filename[strlen(filename) - 1] = '\0'; /* zap newline */
 
   fp = fopen(filename, "r");
 
@@ -82,19 +82,18 @@ void demo_write(void)
   fscanf(fp, "OI_ARRAY arrname %70s ", array.arrname);
   fscanf(fp, "frame %70s ", array.frame);
   fscanf(fp, "arrayx %lf arrayy %lf arrayz %lf ", &array.arrayx,
-	 &array.arrayy, &array.arrayz);
+         &array.arrayy, &array.arrayz);
   fscanf(fp, "nelement %d ", &nrows);
   alloc_oi_array(&array, nrows);
-  for (i=0; i<array.nelement; i++) {
-    
+  for (i = 0; i < array.nelement; i++) {
     fscanf(fp, "tel_name %16s sta_name %16s ", array.elem[i].tel_name,
-	   array.elem[i].sta_name);
+           array.elem[i].sta_name);
     fscanf(fp, "staxyz %lf %lf %lf diameter %f ", &array.elem[i].staxyz[0],
-	   &array.elem[i].staxyz[1], &array.elem[i].staxyz[2],
-	   &array.elem[i].diameter);
+           &array.elem[i].staxyz[1], &array.elem[i].staxyz[2],
+           &array.elem[i].diameter);
     fscanf(fp, "fov %lf fovtype %s ",
            &array.elem[i].fov, array.elem[i].fovtype);
-    array.elem[i].sta_index = i+1;
+    array.elem[i].sta_index = i + 1;
   }
   array.revision = 2;
 
@@ -102,7 +101,7 @@ void demo_write(void)
   fscanf(fp, "OI_TARGET ntarget %d ", &nrows);
   alloc_oi_target(&targets, nrows);
   targets.usecategory = FALSE;
-  for (itarg=0; itarg<targets.ntarget; itarg++) {
+  for (itarg = 0; itarg < targets.ntarget; itarg++) {
     fscanf(fp, "target_id %d ", &targets.targ[itarg].target_id);
     fscanf(fp, "target %16s ", targets.targ[itarg].target);
     fscanf(fp, "raep0 %lf ", &targets.targ[itarg].raep0);
@@ -120,7 +119,7 @@ void demo_write(void)
     fscanf(fp, "parallax %f ", &targets.targ[itarg].parallax);
     fscanf(fp, "para_err %f ", &targets.targ[itarg].para_err);
     fscanf(fp, "spectyp %16s ", targets.targ[itarg].spectyp);
-    if(scan_opt_string(fp, "category %3s", targets.targ[itarg].category))
+    if (scan_opt_string(fp, "category %3s", targets.targ[itarg].category))
       targets.usecategory = TRUE;
     fscanf(fp, " ");
   }
@@ -131,11 +130,11 @@ void demo_write(void)
   fscanf(fp, "nwave %d ", &nrows);
   alloc_oi_wavelength(&wave, nrows);
   fscanf(fp, "eff_wave ");
-  for(i=0; i<wave.nwave; i++) {
+  for (i = 0; i < wave.nwave; i++) {
     fscanf(fp, "%f ", &wave.eff_wave[i]);
   }
   fscanf(fp, "eff_band ");
-  for(i=0; i<wave.nwave; i++) {
+  for (i = 0; i < wave.nwave; i++) {
     fscanf(fp, "%f ", &wave.eff_band[i]);
   }
   wave.revision = 2;
@@ -146,15 +145,15 @@ void demo_write(void)
   fscanf(fp, "ncorr %d ", &nrows);
   alloc_oi_corr(&corr, nrows);
   fscanf(fp, "iindx ");
-  for(i=0; i<corr.ncorr; i++) {
+  for (i = 0; i < corr.ncorr; i++) {
     fscanf(fp, "%d ", &corr.iindx[i]);
   }
   fscanf(fp, "jindx ");
-  for(i=0; i<corr.ncorr; i++) {
+  for (i = 0; i < corr.ncorr; i++) {
     fscanf(fp, "%d ", &corr.jindx[i]);
   }
   fscanf(fp, "corr ");
-  for(i=0; i<corr.ncorr; i++) {
+  for (i = 0; i < corr.ncorr; i++) {
     fscanf(fp, "%lf ", &corr.corr[i]);
   }
   corr.revision = 1;
@@ -169,29 +168,29 @@ void demo_write(void)
   alloc_oi_inspol(&inspol, numrec, wave.nwave);
   printf("Reading %ld inspol records...\n", inspol.numrec);
   /* loop over records */
-  for(irec=0; irec<inspol.numrec; irec++) {
+  for (irec = 0; irec < inspol.numrec; irec++) {
     fscanf(fp, "target_id %d insname %70s mjd_obs %lf ",
            &inspol.record[irec].target_id, inspol.record[irec].insname,
            &inspol.record[irec].mjd_obs);
     fscanf(fp, "mjd_end %lf lxx ", &inspol.record[irec].mjd_end);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lxx[iwave] = real + imag*I;
+      inspol.record[irec].lxx[iwave] = real + imag * I;
     }
     fscanf(fp, "lyy ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lyy[iwave] = real + imag*I;
+      inspol.record[irec].lyy[iwave] = real + imag * I;
     }
     fscanf(fp, "lxy ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lxy[iwave] = real + imag*I;
+      inspol.record[irec].lxy[iwave] = real + imag * I;
     }
     fscanf(fp, "lyx ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lyx[iwave] = real + imag*I;
+      inspol.record[irec].lyx[iwave] = real + imag * I;
     }
     fscanf(fp, "sta_index %d ", &inspol.record[irec].sta_index);
   }
@@ -210,32 +209,32 @@ void demo_write(void)
   alloc_oi_vis(&vis, numrec, wave.nwave);
   printf("Reading %ld vis records...\n", vis.numrec);
   /* loop over records */
-  for(irec=0; irec<vis.numrec; irec++) {
+  for (irec = 0; irec < vis.numrec; irec++) {
     fscanf(fp, "target_id %d time %lf mjd %lf ", &vis.record[irec].target_id,
-	   &vis.record[irec].time, &vis.record[irec].mjd);
+           &vis.record[irec].time, &vis.record[irec].mjd);
     fscanf(fp, "int_time %lf visamp ", &vis.record[irec].int_time);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamp[iwave]);
     }
     fscanf(fp, "visamperr ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visamperr[iwave]);
     }
     fscanf(fp, "corrindx_visamp %d ", &vis.record[irec].corrindx_visamp);
     fscanf(fp, "visphi ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphi[iwave]);
     }
     fscanf(fp, "visphierr ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis.record[irec].visphierr[iwave]);
     }
     fscanf(fp, "corrindx_visphi %d ", &vis.record[irec].corrindx_visphi);
     fscanf(fp, "ucoord %lf vcoord %lf ", &vis.record[irec].ucoord,
-	   &vis.record[irec].vcoord);
+           &vis.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis.record[irec].sta_index[0],
-	   &vis.record[irec].sta_index[1]);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+           &vis.record[irec].sta_index[1]);
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       vis.record[irec].flag[iwave] = FALSE;
     }
   }
@@ -256,23 +255,23 @@ void demo_write(void)
   alloc_oi_vis2(&vis2, numrec, wave.nwave);
   printf("Reading %ld vis2 records...\n", vis2.numrec);
   /* loop over records */
-  for(irec=0; irec<vis2.numrec; irec++) {
+  for (irec = 0; irec < vis2.numrec; irec++) {
     fscanf(fp, "target_id %d time %lf mjd %lf ", &vis2.record[irec].target_id,
-	   &vis2.record[irec].time, &vis2.record[irec].mjd);
+           &vis2.record[irec].time, &vis2.record[irec].mjd);
     fscanf(fp, "int_time %lf vis2data ", &vis2.record[irec].int_time);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2data[iwave]);
     }
     fscanf(fp, "vis2err ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &vis2.record[irec].vis2err[iwave]);
     }
     fscanf(fp, "corrindx_vis2data %d ", &vis2.record[irec].corrindx_vis2data);
     fscanf(fp, "ucoord %lf vcoord %lf ", &vis2.record[irec].ucoord,
-	   &vis2.record[irec].vcoord);
+           &vis2.record[irec].vcoord);
     fscanf(fp, "sta_index %d %d ", &vis2.record[irec].sta_index[0],
-	   &vis2.record[irec].sta_index[1]);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+           &vis2.record[irec].sta_index[1]);
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       vis2.record[irec].flag[iwave] = FALSE;
     }
   }
@@ -286,35 +285,35 @@ void demo_write(void)
   alloc_oi_t3(&t3, numrec, wave.nwave);
   printf("Reading %ld t3 records...\n", t3.numrec);
   /* loop over records */
-  for(irec=0; irec<t3.numrec; irec++) {
+  for (irec = 0; irec < t3.numrec; irec++) {
     fscanf(fp, "target_id %d time %lf mjd %lf ", &t3.record[irec].target_id,
-	   &t3.record[irec].time, &t3.record[irec].mjd);
+           &t3.record[irec].time, &t3.record[irec].mjd);
     fscanf(fp, "int_time %lf t3amp ", &t3.record[irec].int_time);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amp[iwave]);
     }
     fscanf(fp, "t3amperr ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3amperr[iwave]);
     }
     fscanf(fp, "corrindx_t3amp %d ", &t3.record[irec].corrindx_t3amp);
     fscanf(fp, "t3phi ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phi[iwave]);
     }
     fscanf(fp, "t3phierr ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &t3.record[irec].t3phierr[iwave]);
     }
     fscanf(fp, "corrindx_t3phi %d ", &t3.record[irec].corrindx_t3phi);
     fscanf(fp, "u1coord %lf v1coord %lf ", &t3.record[irec].u1coord,
-	   &t3.record[irec].v1coord);
+           &t3.record[irec].v1coord);
     fscanf(fp, "u2coord %lf v2coord %lf ", &t3.record[irec].u2coord,
-	   &t3.record[irec].v2coord);
+           &t3.record[irec].v2coord);
     fscanf(fp, "sta_index %d %d %d ", &t3.record[irec].sta_index[0],
-	   &t3.record[irec].sta_index[1],
-	   &t3.record[irec].sta_index[2]);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+           &t3.record[irec].sta_index[1],
+           &t3.record[irec].sta_index[2]);
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       t3.record[irec].flag[iwave] = FALSE;
     }
   }
@@ -330,15 +329,15 @@ void demo_write(void)
   alloc_oi_spectrum(&spectrum, numrec, wave.nwave);
   printf("Reading %ld spectrum records...\n", spectrum.numrec);
   /* loop over records */
-  for(irec=0; irec<spectrum.numrec; irec++) {
+  for (irec = 0; irec < spectrum.numrec; irec++) {
     fscanf(fp, "target_id %d mjd %lf ", &spectrum.record[irec].target_id,
-	   &spectrum.record[irec].mjd);
+           &spectrum.record[irec].mjd);
     fscanf(fp, "int_time %lf fluxdata ", &spectrum.record[irec].int_time);
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &spectrum.record[irec].fluxdata[iwave]);
     }
     fscanf(fp, "fluxerr ");
-    for(iwave=0; iwave<wave.nwave; iwave++) {
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%lf ", &spectrum.record[irec].fluxerr[iwave]);
     }
     fscanf(fp, "corrindx_fluxdata %d ",
@@ -367,7 +366,7 @@ void demo_write(void)
   /* Write out FITS file */
   printf("Enter output OIFITS filename: ");
   fgets(filename, FLEN_FILENAME, stdin);
-  filename[strlen(filename)-1] = '\0'; /* zap newline */
+  filename[strlen(filename) - 1] = '\0'; /* zap newline */
   printf("Writing FITS file %s...\n", filename);
   status = 0;
   fits_create_file(&fptr, filename, &status);
@@ -416,7 +415,7 @@ void demo_write(void)
  * receive the data from all tables of the corresponding type!  See
  * read_oi_fits() in oifile.c for a more useful routine (which
  * requires GLib).
- * 
+ *
  */
 void demo_read(void)
 {
@@ -436,7 +435,7 @@ void demo_read(void)
 
   printf("Enter input OIFITS filename: ");
   fgets(filename, FLEN_FILENAME, stdin);
-  filename[strlen(filename)-1] = '\0'; /* zap newline */
+  filename[strlen(filename) - 1] = '\0'; /* zap newline */
   printf("Reading FITS file %s...\n", filename);
   status = 0;
   fits_open_file(&fptr, filename, READONLY, &status);
@@ -453,10 +452,10 @@ void demo_read(void)
 
   /* Read all OI_VIS tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
-  while (1==1) {
-    if (read_next_oi_vis(fptr, &vis, &status)) break; /* no more OI_VIS */
+  while (1 == 1) {
+    if (read_next_oi_vis(fptr, &vis, &status)) break;  /* no more OI_VIS */
     printf("Read OI_VIS      with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
-	   vis.arrname, vis.insname, vis.corrname);
+           vis.arrname, vis.insname, vis.corrname);
     if (strlen(vis.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY
          Note we may have read it previously */
@@ -482,10 +481,10 @@ void demo_read(void)
   /* Read all OI_VIS2 tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1==1) {
-    if (read_next_oi_vis2(fptr, &vis2, &status)) break; /* no more OI_VIS2 */
+  while (1 == 1) {
+    if (read_next_oi_vis2(fptr, &vis2, &status)) break;  /* no more OI_VIS2 */
     printf("Read OI_VIS2     with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
-	   vis2.arrname, vis2.insname, vis.corrname);
+           vis2.arrname, vis2.insname, vis.corrname);
     if (strlen(vis2.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, vis2.arrname, &array, &status);
@@ -510,10 +509,10 @@ void demo_read(void)
   /* Read all OI_T3 tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1==1) {
-    if (read_next_oi_t3(fptr, &t3, &status)) break; /* no more OI_T3 */
+  while (1 == 1) {
+    if (read_next_oi_t3(fptr, &t3, &status)) break;  /* no more OI_T3 */
     printf("Read OI_T3       with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
-	   t3.arrname, t3.insname, t3.corrname);
+           t3.arrname, t3.insname, t3.corrname);
     if (strlen(t3.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, t3.arrname, &array, &status);
@@ -538,10 +537,10 @@ void demo_read(void)
   /* Read all OI_SPECTRUM tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1==1) {
+  while (1 == 1) {
     if (read_next_oi_spectrum(fptr, &spectrum, &status)) break;
     printf("Read OI_SPECTRUM with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
-	   spectrum.arrname, spectrum.insname, spectrum.corrname);
+           spectrum.arrname, spectrum.insname, spectrum.corrname);
     if (strlen(spectrum.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
       read_oi_array(fptr2, spectrum.arrname, &array, &status);
@@ -565,9 +564,9 @@ void demo_read(void)
 
   /* Read all OI_INSPOL tables and corresponding OI_ARRAY tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1==1) {
+  while (1 == 1) {
     if (read_next_oi_inspol(fptr, &inspol, &status))
-      break; /* no more OI_INSPOL */
+      break;  /* no more OI_INSPOL */
     printf("Read OI_INSPOL   with  ARRNAME=%s\n", inspol.arrname);
     read_oi_array(fptr2, inspol.arrname, &array, &status);
     if (!status) {
@@ -584,7 +583,7 @@ void demo_read(void)
   free_oi_target(&targets);
   return;
 
- except:
+except:
   exit(EXIT_FAILURE);
 }
 
@@ -592,7 +591,7 @@ void demo_read(void)
 /**
  * Main function for demonstration program.
  */
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
   demo_write();
   demo_read();

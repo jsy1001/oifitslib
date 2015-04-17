@@ -47,10 +47,10 @@
 static element *lookup_element(const oi_array *pArray, int staIndex)
 {
   int i;
-  
+
   /* We don't assume records are ordered by STA_INDEX */
-  for(i=0; i<pArray->nelement; i++) {
-    if(pArray->elem[i].sta_index == staIndex)
+  for (i = 0; i < pArray->nelement; i++) {
+    if (pArray->elem[i].sta_index == staIndex)
       return &pArray->elem[i];
   }
   return NULL;
@@ -75,28 +75,28 @@ static oi_array *match_oi_array(const oi_array *pArray,
   int i;
 
   link = list;
-  while(link != NULL) {
-    pCmp = (oi_array *) link->data;
+  while (link != NULL) {
+    pCmp = (oi_array *)link->data;
     link = link->next;  /* follow link now so we can use continue statements */
 
-    if(fabs(pArray->arrayx - pCmp->arrayx) > tol) continue;
-    if(fabs(pArray->arrayy - pCmp->arrayy) > tol) continue;
-    if(fabs(pArray->arrayz - pCmp->arrayz) > tol) continue;
-    
-    for(i=0; i<pArray->nelement; i++) {
+    if (fabs(pArray->arrayx - pCmp->arrayx) > tol) continue;
+    if (fabs(pArray->arrayy - pCmp->arrayy) > tol) continue;
+    if (fabs(pArray->arrayz - pCmp->arrayz) > tol) continue;
+
+    for (i = 0; i < pArray->nelement; i++) {
       pCmpEl = lookup_element(pCmp, pArray->elem[i].sta_index);
-      if(pCmpEl == NULL) continue;
-      if(fabs(pArray->elem[i].staxyz[0] - pCmpEl->staxyz[0]) > tol) break;
-      if(fabs(pArray->elem[i].staxyz[1] - pCmpEl->staxyz[1]) > tol) break;
-      if(fabs(pArray->elem[i].staxyz[2] - pCmpEl->staxyz[2]) > tol) break;
-      if(fabs(pArray->elem[i].diameter - pCmpEl->diameter) > ftol) break;
-      if(pArray->revision >= 2 && pCmp->revision >= 2) {
+      if (pCmpEl == NULL) continue;
+      if (fabs(pArray->elem[i].staxyz[0] - pCmpEl->staxyz[0]) > tol) break;
+      if (fabs(pArray->elem[i].staxyz[1] - pCmpEl->staxyz[1]) > tol) break;
+      if (fabs(pArray->elem[i].staxyz[2] - pCmpEl->staxyz[2]) > tol) break;
+      if (fabs(pArray->elem[i].diameter - pCmpEl->diameter) > ftol) break;
+      if (pArray->revision >= 2 && pCmp->revision >= 2) {
         /* compare FOV in OIFITS v2+ */
-        if(fabs(pArray->elem[i].fov - pCmpEl->fov) > tol) break;
-        if(strcmp(pArray->elem[i].fovtype, pCmpEl->fovtype) != 0) break;
+        if (fabs(pArray->elem[i].fov - pCmpEl->fov) > tol) break;
+        if (strcmp(pArray->elem[i].fovtype, pCmpEl->fovtype) != 0) break;
       }
     }
-    if(i == pArray->nelement) 
+    if (i == pArray->nelement)
       return pCmp;  /* all elements match */
   }
   return NULL;
@@ -115,15 +115,15 @@ static oi_wavelength *match_oi_wavelength(const oi_wavelength *pWave,
   int i;
 
   link = list;
-  while(link != NULL) {
-    pCmp = (oi_wavelength *) link->data;
+  while (link != NULL) {
+    pCmp = (oi_wavelength *)link->data;
     if (pCmp->nwave == pWave->nwave) {
-      for(i=0; i<pWave->nwave; i++) {
-	if (fabs(pCmp->eff_wave[i] - pWave->eff_wave[i]) >= tol ||
-	    fabs(pCmp->eff_band[i] - pWave->eff_band[i]) >= tol)
-	  break;
+      for (i = 0; i < pWave->nwave; i++) {
+        if (fabs(pCmp->eff_wave[i] - pWave->eff_wave[i]) >= tol ||
+            fabs(pCmp->eff_band[i] - pWave->eff_band[i]) >= tol)
+          break;
       }
-      if(i == pWave->nwave)
+      if (i == pWave->nwave)
         return pCmp;  /* all wavebands match */
     }
     link = link->next;
@@ -143,7 +143,7 @@ static long files_min_mjd(const GList *list)
   minMjd = 100000;
   link = list;
   while (link != NULL) {
-    pHeader = &((oi_fits *) link->data)->header;
+    pHeader = &((oi_fits *)link->data)->header;
     if (sscanf(pHeader->date_obs, "%4ld-%2ld-%2ld", &year, &month, &day) == 3
         && (mjd = date2mjd(year, month, day)) < minMjd)
       minMjd = mjd;
@@ -160,27 +160,27 @@ static long files_min_mjd(const GList *list)
  */
 
 /** Merge specified primary header keyword */
-#define MERGE_HEADER_KEY(inList, keyattr, pOutput)                      \
-  {                                                                     \
-    int nuniq;                                                          \
-    const GList *link;                                                  \
-    oi_header *pInHeader;                                               \
-    nuniq = 0;                                                          \
-    link = inList;                                                      \
-    while (link != NULL) {                                              \
-      pInHeader = &((oi_fits *) link->data)->header;                    \
-      if (strlen(pInHeader->keyattr) > 0 &&                             \
-          strcmp(pInHeader->keyattr, pOutput->header.keyattr) != 0)     \
-      {                                                                 \
-        if (++nuniq > 1)                                                \
-          break;                                                        \
-        g_strlcpy(pOutput->header.keyattr, pInHeader->keyattr,          \
-                  FLEN_VALUE);                                          \
-      }                                                                 \
-      link = link->next;                                                \
-    }                                                                   \
-    if (nuniq > 1)                                                      \
-      g_strlcpy(pOutput->header.keyattr, "MULTIPLE", FLEN_VALUE);       \
+#define MERGE_HEADER_KEY(inList, keyattr, pOutput)                  \
+  {                                                                 \
+    int nuniq;                                                      \
+    const GList *link;                                              \
+    oi_header *pInHeader;                                           \
+    nuniq = 0;                                                      \
+    link = inList;                                                  \
+    while (link != NULL) {                                          \
+      pInHeader = &((oi_fits *)link->data)->header;                 \
+      if (strlen(pInHeader->keyattr) > 0 &&                         \
+          strcmp(pInHeader->keyattr, pOutput->header.keyattr) != 0) \
+      {                                                             \
+        if (++nuniq > 1)                                            \
+          break;                                                    \
+        g_strlcpy(pOutput->header.keyattr, pInHeader->keyattr,      \
+                  FLEN_VALUE);                                      \
+      }                                                             \
+      link = link->next;                                            \
+    }                                                               \
+    if (nuniq > 1)                                                  \
+      g_strlcpy(pOutput->header.keyattr, "MULTIPLE", FLEN_VALUE);   \
   }
 
 /**
@@ -234,27 +234,27 @@ GHashTable *merge_oi_target(const GList *inList, oi_fits *pOutput)
   pOutTab = &pOutput->targets;
   pOutTab->revision = 1;
   pOutTab->ntarget = 0;
-  pOutTab->targ = chkmalloc(MAX_TARGET*sizeof(target));
+  pOutTab->targ = chkmalloc(MAX_TARGET * sizeof(target));
   targetIdHash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, free);
   link = inList;
-  while(link != NULL) {
-    pInTab = &((oi_fits *) link->data)->targets;
-    if(pInTab->revision > pOutTab->revision)
+  while (link != NULL) {
+    pInTab = &((oi_fits *)link->data)->targets;
+    if (pInTab->revision > pOutTab->revision)
       pOutTab->revision = pInTab->revision;
-    for(i=0; i<pInTab->ntarget; i++) {
-      if(!g_hash_table_lookup(targetIdHash, pInTab->targ[i].target)) {
-	pValue = chkmalloc(sizeof(int));
-	*pValue = ++pOutTab->ntarget;
-	g_assert_cmpint(pOutTab->ntarget, <, MAX_TARGET);
-	g_hash_table_insert(targetIdHash, pInTab->targ[i].target, pValue);
-	memcpy(&pOutTab->targ[pOutTab->ntarget-1], &pInTab->targ[i],
-	       sizeof(target));
-	pOutTab->targ[pOutTab->ntarget-1].target_id = pOutTab->ntarget;
+    for (i = 0; i < pInTab->ntarget; i++) {
+      if (!g_hash_table_lookup(targetIdHash, pInTab->targ[i].target)) {
+        pValue = chkmalloc(sizeof(int));
+        *pValue = ++pOutTab->ntarget;
+        g_assert_cmpint(pOutTab->ntarget, <, MAX_TARGET);
+        g_hash_table_insert(targetIdHash, pInTab->targ[i].target, pValue);
+        memcpy(&pOutTab->targ[pOutTab->ntarget - 1], &pInTab->targ[i],
+               sizeof(target));
+        pOutTab->targ[pOutTab->ntarget - 1].target_id = pOutTab->ntarget;
       }
     }
     link = link->next;
   }
-  pOutTab->targ = realloc(pOutTab->targ, pOutTab->ntarget*sizeof(target));
+  pOutTab->targ = realloc(pOutTab->targ, pOutTab->ntarget * sizeof(target));
   return targetIdHash;
 }
 
@@ -274,39 +274,39 @@ GList *merge_all_oi_array(const GList *inList, oi_fits *pOutput)
   GHashTable *hash;
   oi_array *pInTab, *pOutTab;
   char newName[FLEN_VALUE];
-  
+
   arrnameHashList = NULL;
   g_assert(pOutput->arrayList == NULL);
-  
+
   /* Loop over input datasets */
   ilink = inList;
-  while(ilink != NULL) {
+  while (ilink != NULL) {
     /* Append hash table for this dataset to output list */
     hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
     arrnameHashList = g_list_append(arrnameHashList, hash);
-    arrayList = ((oi_fits *) ilink->data)->arrayList;
+    arrayList = ((oi_fits *)ilink->data)->arrayList;
     /* Loop over array tables in current dataset */
     jlink = arrayList;
-    while(jlink != NULL) {
-      pInTab = (oi_array *) jlink->data;
+    while (jlink != NULL) {
+      pInTab = (oi_array *)jlink->data;
       pOutTab = match_oi_array(pInTab, pOutput->arrayList);
       if (pOutTab == NULL) {
-	/* Add copy of pInTab to output, changing ARRNAME if it clashes */
-	pOutTab = dup_oi_array(pInTab);
-	if (g_hash_table_lookup(pOutput->arrayHash,
-				pOutTab->arrname) != NULL) {
+        /* Add copy of pInTab to output, changing ARRNAME if it clashes */
+        pOutTab = dup_oi_array(pInTab);
+        if (g_hash_table_lookup(pOutput->arrayHash,
+                                pOutTab->arrname) != NULL) {
           /* Avoid truncation at FLEN_VALUE - 1 */
-          if(strlen(pOutTab->arrname) < (FLEN_VALUE - 5))
+          if (strlen(pOutTab->arrname) < (FLEN_VALUE - 5))
             g_snprintf(newName, FLEN_VALUE,
                        "%s_%03d", pOutTab->arrname, pOutput->numArray + 1);
           else
             g_snprintf(newName, FLEN_VALUE,
                        "array%03d", pOutput->numArray + 1);
           g_strlcpy(pOutTab->arrname, newName, FLEN_VALUE);
-	}
-	g_hash_table_insert(pOutput->arrayHash, pOutTab->arrname, pOutTab);
-	pOutput->arrayList = g_list_append(pOutput->arrayList, pOutTab);
-	++pOutput->numArray;
+        }
+        g_hash_table_insert(pOutput->arrayHash, pOutTab->arrname, pOutTab);
+        pOutput->arrayList = g_list_append(pOutput->arrayList, pOutTab);
+        ++pOutput->numArray;
       }
       g_hash_table_insert(hash, pInTab->arrname, pOutTab->arrname);
       jlink = jlink->next;
@@ -332,41 +332,41 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
   GHashTable *hash;
   oi_wavelength *pInTab, *pOutTab;
   char newName[FLEN_VALUE];
-  
+
   insnameHashList = NULL;
   g_assert(pOutput->wavelengthList == NULL);
-  
+
   /* Loop over input datasets */
   ilink = inList;
-  while(ilink != NULL) {
+  while (ilink != NULL) {
     /* Append hash table for this dataset to output list */
     hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
     insnameHashList = g_list_append(insnameHashList, hash);
-    waveList = ((oi_fits *) ilink->data)->wavelengthList;
+    waveList = ((oi_fits *)ilink->data)->wavelengthList;
     /* Loop over wavelength tables in current dataset */
     jlink = waveList;
-    while(jlink != NULL) {
-      pInTab = (oi_wavelength *) jlink->data;
+    while (jlink != NULL) {
+      pInTab = (oi_wavelength *)jlink->data;
       pOutTab = match_oi_wavelength(pInTab, pOutput->wavelengthList);
       if (pOutTab == NULL) {
-	/* Add copy of pInTab to output, changing INSNAME if it clashes */
-	pOutTab = dup_oi_wavelength(pInTab);
-	if (g_hash_table_lookup(pOutput->wavelengthHash,
-				pOutTab->insname) != NULL) {
+        /* Add copy of pInTab to output, changing INSNAME if it clashes */
+        pOutTab = dup_oi_wavelength(pInTab);
+        if (g_hash_table_lookup(pOutput->wavelengthHash,
+                                pOutTab->insname) != NULL) {
           /* Avoid truncation at FLEN_VALUE - 1 */
-          if(strlen(pOutTab->insname) < (FLEN_VALUE - 5))
+          if (strlen(pOutTab->insname) < (FLEN_VALUE - 5))
             g_snprintf(newName, FLEN_VALUE,
                        "%s_%03d", pOutTab->insname, pOutput->numWavelength + 1);
           else
             g_snprintf(newName, FLEN_VALUE,
                        "ins%03d", pOutput->numWavelength + 1);
           g_strlcpy(pOutTab->insname, newName, FLEN_VALUE);
-	}
-	g_hash_table_insert(pOutput->wavelengthHash, pOutTab->insname,
-			    pOutTab);
-	pOutput->wavelengthList = g_list_append(pOutput->wavelengthList,
-						pOutTab);
-	++pOutput->numWavelength;
+        }
+        g_hash_table_insert(pOutput->wavelengthHash, pOutTab->insname,
+                            pOutTab);
+        pOutput->wavelengthList = g_list_append(pOutput->wavelengthList,
+                                                pOutTab);
+        ++pOutput->numWavelength;
       }
       g_hash_table_insert(hash, pInTab->insname, pOutTab->insname);
       jlink = jlink->next;
@@ -392,27 +392,27 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
   GHashTable *hash;
   oi_corr *pInTab, *pOutTab;
   char newName[FLEN_VALUE];
-  
+
   corrnameHashList = NULL;
   g_assert(pOutput->corrList == NULL);
-  
+
   /* Loop over input datasets */
   ilink = inList;
-  while(ilink != NULL) {
+  while (ilink != NULL) {
     /* Append hash table for this dataset to output list */
     hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
     corrnameHashList = g_list_append(corrnameHashList, hash);
-    corrList = ((oi_fits *) ilink->data)->corrList;
+    corrList = ((oi_fits *)ilink->data)->corrList;
     /* Loop over corr tables in current dataset */
     jlink = corrList;
-    while(jlink != NULL) {
-      pInTab = (oi_corr *) jlink->data;
+    while (jlink != NULL) {
+      pInTab = (oi_corr *)jlink->data;
 
       /* Add copy of pInTab to output, changing CORRNAME if it clashes */
       pOutTab = dup_oi_corr(pInTab);
       if (g_hash_table_lookup(pOutput->corrHash, pOutTab->corrname) != NULL) {
         /* Avoid truncation at FLEN_VALUE - 1 */
-        if(strlen(pOutTab->corrname) < (FLEN_VALUE - 5))
+        if (strlen(pOutTab->corrname) < (FLEN_VALUE - 5))
           g_snprintf(newName, FLEN_VALUE,
                      "%s_%03d", pOutTab->corrname, pOutput->numCorr + 1);
         else
@@ -432,45 +432,45 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
 }
 
 /** Replace optional ARRNAME with string from hash table */
-#define REPLACE_ARRNAME(pTab, oldArrname, arrnameHash)                  \
-  do {                                                                  \
-    if (strlen(oldArrname) > 0) {                                       \
-      (void) g_strlcpy((pTab)->arrname,                                 \
-                       g_hash_table_lookup(arrnameHash, oldArrname),    \
-                       FLEN_VALUE);                                     \
-    }                                                                   \
-  } while(0)
+#define REPLACE_ARRNAME(pTab, oldArrname, arrnameHash)              \
+  do {                                                              \
+    if (strlen(oldArrname) > 0) {                                   \
+      (void)g_strlcpy((pTab)->arrname,                              \
+                      g_hash_table_lookup(arrnameHash, oldArrname), \
+                      FLEN_VALUE);                                  \
+    }                                                               \
+  } while (0)
 
 /** Replace INSNAME with string from hash table */
-#define REPLACE_INSNAME(pTab, oldInsname, insnameHash)                  \
-  (void) g_strlcpy((pTab)->insname,                                     \
-                   g_hash_table_lookup(insnameHash, oldInsname),        \
-                   FLEN_VALUE)
+#define REPLACE_INSNAME(pTab, oldInsname, insnameHash)          \
+  (void)g_strlcpy((pTab)->insname,                              \
+                  g_hash_table_lookup(insnameHash, oldInsname), \
+                  FLEN_VALUE)
 
 /** Replace optional CORRNAME with string from hash table */
-#define REPLACE_CORRNAME(pTab, oldCorrname, corrnameHash)               \
-  do {                                                                  \
-    if (strlen(oldCorrname) > 0) {                                      \
-      (void) g_strlcpy((pTab)->corrname,                                \
-                       g_hash_table_lookup(corrnameHash, oldCorrname),  \
-                       FLEN_VALUE);                                     \
-    }                                                                   \
-  } while(0)
- 
+#define REPLACE_CORRNAME(pTab, oldCorrname, corrnameHash)             \
+  do {                                                                \
+    if (strlen(oldCorrname) > 0) {                                    \
+      (void)g_strlcpy((pTab)->corrname,                               \
+                      g_hash_table_lookup(corrnameHash, oldCorrname), \
+                      FLEN_VALUE);                                    \
+    }                                                                 \
+  } while (0)
+
 
 /** Replace TARGET_IDs with values from hash table */
-#define REPLACE_TARGET_ID(pTab, pInOi, targetIdHash)                     \
-  do {                                                                   \
-    int ii;                                                              \
-    for(ii=0; ii<(pTab)->numrec; ii++) {                                 \
-      /* hash table is indexed by target name */                         \
-      (pTab)->record[ii].target_id =                                     \
-      *((int *) g_hash_table_lookup(                                     \
-          targetIdHash,                                                  \
-          oi_fits_lookup_target(pInOi,                                   \
-                                (pTab)->record[ii].target_id)->target)); \
-    }                                                                    \
-  } while(0)
+#define REPLACE_TARGET_ID(pTab, pInOi, targetIdHash)                       \
+  do {                                                                     \
+    int ii;                                                                \
+    for (ii = 0; ii < (pTab)->numrec; ii++) {                              \
+      /* hash table is indexed by target name */                           \
+      (pTab)->record[ii].target_id =                                       \
+        *((int *)g_hash_table_lookup(                                      \
+            targetIdHash,                                                  \
+            oi_fits_lookup_target(pInOi,                                   \
+                                  (pTab)->record[ii].target_id)->target)); \
+    }                                                                      \
+  } while (0)
 
 /**
  * Copy all input OI_INSPOL tables into output dataset.
@@ -496,28 +496,28 @@ void merge_all_oi_inspol(const GList *inList, GHashTable *targetIdHash,
   oi_inspol *pOutTab;
   GHashTable *arrnameHash, *insnameHash;
   int i;
-  
+
   /* Loop over input datasets */
   ilink = inList;
   arrHashLink = arrnameHashList;
   insHashLink = insnameHashList;
-  while(ilink != NULL) {
-    arrnameHash = (GHashTable *) arrHashLink->data;
-    insnameHash = (GHashTable *) insHashLink->data;
-    pInput = (oi_fits *) ilink->data;
+  while (ilink != NULL) {
+    arrnameHash = (GHashTable *)arrHashLink->data;
+    insnameHash = (GHashTable *)insHashLink->data;
+    pInput = (oi_fits *)ilink->data;
     /* Loop over inspol tables in dataset */
     jlink = pInput->inspolList;
-    while(jlink != NULL) {
-      pOutTab = dup_oi_inspol((oi_inspol *) jlink->data);
+    while (jlink != NULL) {
+      pOutTab = dup_oi_inspol((oi_inspol *)jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
-      for(i=0; i<pOutTab->numrec; i++) {
+      for (i = 0; i < pOutTab->numrec; i++) {
         g_strlcpy(pOutTab->record[i].insname,
                   g_hash_table_lookup(insnameHash, pOutTab->record[i].insname),
                   FLEN_VALUE);
       }
       /* Append modified copy of table to output */
-      pOutput->inspolList = g_list_append(pOutput->inspolList, pOutTab); 
+      pOutput->inspolList = g_list_append(pOutput->inspolList, pOutTab);
       ++pOutput->numInspol;
       jlink = jlink->next;
     }
@@ -544,35 +544,35 @@ void merge_all_oi_inspol(const GList *inList, GHashTable *targetIdHash,
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
 void merge_all_oi_vis(const GList *inList, GHashTable *targetIdHash,
-		      const GList *arrnameHashList,
-		      const GList *insnameHashList,
+                      const GList *arrnameHashList,
+                      const GList *insnameHashList,
                       const GList *corrnameHashList, oi_fits *pOutput)
 {
   const GList *ilink, *jlink, *arrHashLink, *insHashLink, *corrHashLink;
   oi_fits *pInput;
   oi_vis *pOutTab;
   GHashTable *arrnameHash, *insnameHash, *corrnameHash;
-  
+
   /* Loop over input datasets */
   ilink = inList;
   arrHashLink = arrnameHashList;
   insHashLink = insnameHashList;
   corrHashLink = corrnameHashList;
-  while(ilink != NULL) {
-    arrnameHash = (GHashTable *) arrHashLink->data;
-    insnameHash = (GHashTable *) insHashLink->data;
-    corrnameHash = (GHashTable *) corrHashLink->data;
-    pInput = (oi_fits *) ilink->data;
+  while (ilink != NULL) {
+    arrnameHash = (GHashTable *)arrHashLink->data;
+    insnameHash = (GHashTable *)insHashLink->data;
+    corrnameHash = (GHashTable *)corrHashLink->data;
+    pInput = (oi_fits *)ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->visList;
-    while(jlink != NULL) {
-      pOutTab = dup_oi_vis((oi_vis *) jlink->data);
+    while (jlink != NULL) {
+      pOutTab = dup_oi_vis((oi_vis *)jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
-      pOutput->visList = g_list_append(pOutput->visList, pOutTab); 
+      pOutput->visList = g_list_append(pOutput->visList, pOutTab);
       ++pOutput->numVis;
       jlink = jlink->next;
     }
@@ -601,34 +601,34 @@ void merge_all_oi_vis(const GList *inList, GHashTable *targetIdHash,
  */
 void merge_all_oi_vis2(const GList *inList, GHashTable *targetIdHash,
                        const GList *arrnameHashList,
-		       const GList *insnameHashList,
+                       const GList *insnameHashList,
                        const GList *corrnameHashList, oi_fits *pOutput)
 {
   const GList *ilink, *jlink, *arrHashLink, *insHashLink, *corrHashLink;
   oi_fits *pInput;
   oi_vis2 *pOutTab;
   GHashTable *arrnameHash, *insnameHash, *corrnameHash;
-  
+
   /* Loop over input datasets */
   ilink = inList;
   arrHashLink = arrnameHashList;
   insHashLink = insnameHashList;
   corrHashLink = corrnameHashList;
-  while(ilink != NULL) {
-    arrnameHash = (GHashTable *) arrHashLink->data;
-    insnameHash = (GHashTable *) insHashLink->data;
-    corrnameHash = (GHashTable *) corrHashLink->data;
-    pInput = (oi_fits *) ilink->data;
+  while (ilink != NULL) {
+    arrnameHash = (GHashTable *)arrHashLink->data;
+    insnameHash = (GHashTable *)insHashLink->data;
+    corrnameHash = (GHashTable *)corrHashLink->data;
+    pInput = (oi_fits *)ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->vis2List;
-    while(jlink != NULL) {
-      pOutTab = dup_oi_vis2((oi_vis2 *) jlink->data);
+    while (jlink != NULL) {
+      pOutTab = dup_oi_vis2((oi_vis2 *)jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
-      pOutput->vis2List = g_list_append(pOutput->vis2List, pOutTab); 
+      pOutput->vis2List = g_list_append(pOutput->vis2List, pOutTab);
       ++pOutput->numVis2;
       jlink = jlink->next;
     }
@@ -656,35 +656,35 @@ void merge_all_oi_vis2(const GList *inList, GHashTable *targetIdHash,
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
 void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
-		     const GList *arrnameHashList,
- 		     const GList *insnameHashList,
+                     const GList *arrnameHashList,
+                     const GList *insnameHashList,
                      const GList *corrnameHashList, oi_fits *pOutput)
 {
   const GList *ilink, *jlink, *arrHashLink, *insHashLink, *corrHashLink;
   oi_fits *pInput;
   oi_t3 *pOutTab;
   GHashTable *arrnameHash, *insnameHash, *corrnameHash;
-  
+
   /* Loop over input datasets */
   ilink = inList;
   arrHashLink = arrnameHashList;
   insHashLink = insnameHashList;
   corrHashLink = corrnameHashList;
-  while(ilink != NULL) {
-    arrnameHash = (GHashTable *) arrHashLink->data;
-    insnameHash = (GHashTable *) insHashLink->data;
-    corrnameHash = (GHashTable *) corrHashLink->data;
-    pInput = (oi_fits *) ilink->data;
+  while (ilink != NULL) {
+    arrnameHash = (GHashTable *)arrHashLink->data;
+    insnameHash = (GHashTable *)insHashLink->data;
+    corrnameHash = (GHashTable *)corrHashLink->data;
+    pInput = (oi_fits *)ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->t3List;
-    while(jlink != NULL) {
-      pOutTab = dup_oi_t3((oi_t3 *) jlink->data);
+    while (jlink != NULL) {
+      pOutTab = dup_oi_t3((oi_t3 *)jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
-      pOutput->t3List = g_list_append(pOutput->t3List, pOutTab); 
+      pOutput->t3List = g_list_append(pOutput->t3List, pOutTab);
       ++pOutput->numT3;
       jlink = jlink->next;
     }
@@ -719,27 +719,27 @@ void merge_all_oi_spectrum(const GList *inList, GHashTable *targetIdHash,
   oi_fits *pInput;
   oi_spectrum *pOutTab;
   GHashTable *arrnameHash, *insnameHash, *corrnameHash;
-  
+
   /* Loop over input datasets */
   ilink = inList;
   arrHashLink = arrnameHashList;
   insHashLink = insnameHashList;
   corrHashLink = corrnameHashList;
-  while(ilink != NULL) {
-    arrnameHash = (GHashTable *) arrHashLink->data;
-    insnameHash = (GHashTable *) insHashLink->data;
-    corrnameHash = (GHashTable *) corrHashLink->data;
-    pInput = (oi_fits *) ilink->data;
+  while (ilink != NULL) {
+    arrnameHash = (GHashTable *)arrHashLink->data;
+    insnameHash = (GHashTable *)insHashLink->data;
+    corrnameHash = (GHashTable *)corrHashLink->data;
+    pInput = (oi_fits *)ilink->data;
     /* Loop over data tables in dataset */
     jlink = pInput->spectrumList;
-    while(jlink != NULL) {
-      pOutTab = dup_oi_spectrum((oi_spectrum *) jlink->data);
+    while (jlink != NULL) {
+      pOutTab = dup_oi_spectrum((oi_spectrum *)jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
-      pOutput->spectrumList = g_list_append(pOutput->spectrumList, pOutTab); 
+      pOutput->spectrumList = g_list_append(pOutput->spectrumList, pOutTab);
       ++pOutput->numSpectrum;
       jlink = jlink->next;
     }
@@ -780,20 +780,20 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
 
   g_hash_table_destroy(targetIdHash);
   link = arrnameHashList;
-  while(link != NULL) {
-    g_hash_table_destroy((GHashTable *) link->data);
+  while (link != NULL) {
+    g_hash_table_destroy((GHashTable *)link->data);
     link = link->next;
   }
   g_list_free(arrnameHashList);
   link = insnameHashList;
-  while(link != NULL) {
-    g_hash_table_destroy((GHashTable *) link->data);
+  while (link != NULL) {
+    g_hash_table_destroy((GHashTable *)link->data);
     link = link->next;
   }
   g_list_free(insnameHashList);
   link = corrnameHashList;
-  while(link != NULL) {
-    g_hash_table_destroy((GHashTable *) link->data);
+  while (link != NULL) {
+    g_hash_table_destroy((GHashTable *)link->data);
     link = link->next;
   }
   g_list_free(corrnameHashList);
@@ -809,7 +809,7 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
  *                 followed by NULL
  */
 void merge_oi_fits(oi_fits *pOutput,
-		   oi_fits *pInput1, oi_fits *pInput2,...)
+                   oi_fits *pInput1, oi_fits *pInput2,...)
 {
   GList *inList;
   va_list ap;
@@ -820,7 +820,7 @@ void merge_oi_fits(oi_fits *pOutput,
   inList = g_list_append(inList, pInput2);
   va_start(ap, pInput2);
   pInput = va_arg(ap, oi_fits *);
-  while(pInput != NULL) {
+  while (pInput != NULL) {
     inList = g_list_append(inList, pInput);
     pInput = va_arg(ap, oi_fits *);
   }

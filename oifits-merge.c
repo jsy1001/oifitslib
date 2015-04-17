@@ -28,7 +28,7 @@
 /**
  * Main function for command-line check utility.
  */
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
   GList *filenameList, *inOiList, *link;
   char *filename, *outFilename;
@@ -37,23 +37,23 @@ int main(int argc, char *argv[])
   int status, i, num;
 
   /* Parse command-line */
-  if(argc < 4) {
+  if (argc < 4) {
     printf("Usage:\n%s OUTFILE INFILE1 INFILE2...\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
   outFilename = argv[1];
   filenameList = NULL;
   num = argc - 2;
-  for(i=0; i<num; i++) {
-    filenameList = g_list_append(filenameList, argv[2+i]);
+  for (i = 0; i < num; i++) {
+    filenameList = g_list_append(filenameList, argv[2 + i]);
   }
 
   /* Read input files */
   status = 0;
   inOiList = NULL;
   link = filenameList;
-  while(link != NULL) {
-    filename = (char *) link->data;
+  while (link != NULL) {
+    filename = (char *)link->data;
     pOi = malloc(sizeof(oi_fits));
     read_oi_fits(filename, pOi, &status);
     if (status) goto except;
@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
   /* Free storage */
   g_list_free(filenameList);
   link = inOiList;
-  while(link != NULL) {
-    pOi = (oi_fits *) link->data;
+  while (link != NULL) {
+    pOi = (oi_fits *)link->data;
     free_oi_fits(pOi);
     free(pOi);
     link = link->next;
@@ -86,6 +86,6 @@ int main(int argc, char *argv[])
 
   exit(EXIT_SUCCESS);
 
- except:
+except:
   exit(EXIT_FAILURE);
 }

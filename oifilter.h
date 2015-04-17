@@ -76,8 +76,8 @@ typedef struct {
   char insname[FLEN_VALUE];  /**< Accept INSNAMEs matching this pattern */
   char corrname[FLEN_VALUE]; /**< Accept CORRNAMEs matching this pattern */
   int target_id;       /**< If >= 0, accept this TARGET_ID only */
-  double mjd_range[2];  /**< Minimum and maximum MJD to accept */
-  float wave_range[2];  /**< Minimum and maximum central wavelength /m */
+  double mjd_range[2]; /**< Minimum and maximum MJD to accept */
+  float wave_range[2]; /**< Minimum and maximum central wavelength /m */
   double bas_range[2]; /**< Minimum and maximum projected baseline /m */
   float snr_range[2];  /**< Minimum and maximum SNR to accept */
   int accept_vis;      /**< If non-zero, accept OI_VIS data */
@@ -108,26 +108,26 @@ void filter_oi_header(const oi_header *, const oi_filter_spec *, oi_header *);
 void filter_oi_target(const oi_target *, const oi_filter_spec *, oi_target *);
 void filter_all_oi_array(const oi_fits *, const oi_filter_spec *, oi_fits *);
 GHashTable *filter_all_oi_wavelength(const oi_fits *, const oi_filter_spec *,
-				     oi_fits *);
+                                     oi_fits *);
 void filter_oi_wavelength(const oi_wavelength *, const float[2],
-			  oi_wavelength *, char *);
+                          oi_wavelength *, char *);
 void filter_all_oi_corr(const oi_fits *, const oi_filter_spec *, oi_fits *);
 void filter_all_oi_inspol(const oi_fits *, const oi_filter_spec *, GHashTable *,
                           oi_fits *);
 void filter_oi_inspol(const oi_inspol *, const oi_filter_spec *, GHashTable *,
                       oi_inspol *);
 void filter_all_oi_vis(const oi_fits *, const oi_filter_spec *, GHashTable *,
-		       oi_fits *);
+                       oi_fits *);
 void filter_oi_vis(const oi_vis *, const oi_filter_spec *, const char *,
-		   oi_vis *);
+                   oi_vis *);
 void filter_all_oi_vis2(const oi_fits *, const oi_filter_spec *, GHashTable *,
-			oi_fits *);
+                        oi_fits *);
 void filter_oi_vis2(const oi_vis2 *, const oi_filter_spec *, const char *,
-		 oi_vis2 *);
+                    oi_vis2 *);
 void filter_all_oi_t3(const oi_fits *, const oi_filter_spec *, GHashTable *,
-		      oi_fits *);
+                      oi_fits *);
 void filter_oi_t3(const oi_t3 *, const oi_filter_spec *, const char *,
-		  oi_t3 *);
+                  oi_t3 *);
 void filter_all_oi_spectrum(const oi_fits *, const oi_filter_spec *,
                             GHashTable *, oi_fits *);
 void filter_oi_spectrum(const oi_spectrum *, const oi_filter_spec *,

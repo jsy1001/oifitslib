@@ -39,12 +39,12 @@
  */
 #define assert_not_null(ptr)                                             \
   do {                                                                   \
-    if((ptr) == NULL) {                                                  \
+    if ((ptr) == NULL) {                                                 \
       fprintf(stderr, "ERROR:%s:%d:%s: Unexpected NULL pointer value\n", \
               __FILE__, __LINE__, __func__);                             \
       abort();                                                           \
     }                                                                    \
-  } while(0)
+  } while (0)
 
 /**
  * Macro to terminate program with useful error message if ret is non-zero.
@@ -53,16 +53,16 @@
  * be used after calls that are expected to succeed, for example
  * pthread_mutex_init().
  */
-#define assert_no_error(ret, errno)                                     \
-  do {                                                                  \
-    if(ret) {                                                           \
-      fprintf(stderr,                                                   \
-              "ERROR:%s:%d:%s: System call failed unexpectedly: %s\n",  \
-              __FILE__, __LINE__, __func__, strerror(errno));           \
-      abort();                                                          \
-    }                                                                   \
-  } while(0)
-    
+#define assert_no_error(ret, errno)                                    \
+  do {                                                                 \
+    if (ret) {                                                         \
+      fprintf(stderr,                                                  \
+              "ERROR:%s:%d:%s: System call failed unexpectedly: %s\n", \
+              __FILE__, __LINE__, __func__, strerror(errno));          \
+      abort();                                                         \
+    }                                                                  \
+  } while (0)
+
 
 /**
  * Replacement for malloc() that either succeeds (returning a non-NULL
@@ -75,7 +75,7 @@
  * non-NULL pointer) or terminates the program with a useful error
  * message.
  */
-#define chkrealloc(ptr, size) ( _chkrealloc(ptr, size,                  \
+#define chkrealloc(ptr, size) ( _chkrealloc(ptr, size, \
                                             __FILE__, __LINE__, __func__) )
 
 void *_chkmalloc(size_t size, const char *file, int line, const char *func);

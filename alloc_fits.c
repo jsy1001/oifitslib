@@ -37,7 +37,7 @@
  */
 void alloc_oi_array(oi_array *pArray, int nelement)
 {
-  pArray->elem = chkmalloc(nelement*sizeof(element));
+  pArray->elem = chkmalloc(nelement * sizeof(element));
   pArray->nelement = nelement;
 }
 
@@ -51,7 +51,7 @@ void alloc_oi_array(oi_array *pArray, int nelement)
  */
 void alloc_oi_target(oi_target *pTargets, int ntarget)
 {
-  pTargets->targ = chkmalloc(ntarget*sizeof(target));
+  pTargets->targ = chkmalloc(ntarget * sizeof(target));
   pTargets->ntarget = ntarget;
 }
 
@@ -65,8 +65,8 @@ void alloc_oi_target(oi_target *pTargets, int ntarget)
  */
 void alloc_oi_wavelength(oi_wavelength *pWave, int nwave)
 {
-  pWave->eff_wave = chkmalloc(nwave*sizeof(pWave->eff_band[0]));
-  pWave->eff_band = chkmalloc(nwave*sizeof(pWave->eff_band[0]));
+  pWave->eff_wave = chkmalloc(nwave * sizeof(pWave->eff_band[0]));
+  pWave->eff_band = chkmalloc(nwave * sizeof(pWave->eff_band[0]));
   pWave->nwave = nwave;
 }
 
@@ -80,9 +80,9 @@ void alloc_oi_wavelength(oi_wavelength *pWave, int nwave)
  */
 void alloc_oi_corr(oi_corr *pCorr, int ncorr)
 {
-  pCorr->iindx = chkmalloc(ncorr*sizeof(pCorr->iindx[0]));
-  pCorr->jindx = chkmalloc(ncorr*sizeof(pCorr->jindx[0]));
-  pCorr->corr = chkmalloc(ncorr*sizeof(pCorr->corr[0]));
+  pCorr->iindx = chkmalloc(ncorr * sizeof(pCorr->iindx[0]));
+  pCorr->jindx = chkmalloc(ncorr * sizeof(pCorr->jindx[0]));
+  pCorr->corr = chkmalloc(ncorr * sizeof(pCorr->corr[0]));
   pCorr->ncorr = ncorr;
 }
 
@@ -99,14 +99,14 @@ void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave)
 {
   int i;
   oi_inspol_record *pRec;
-  
-  pInspol->record = chkmalloc(numrec*sizeof(oi_inspol_record));
-  for(i=0; i<numrec; i++) {
+
+  pInspol->record = chkmalloc(numrec * sizeof(oi_inspol_record));
+  for (i = 0; i < numrec; i++) {
     pRec = &pInspol->record[i];
-    pRec->lxx = chkmalloc(nwave*sizeof(pRec->lxx[0]));
-    pRec->lyy = chkmalloc(nwave*sizeof(pRec->lyy[0]));
-    pRec->lxy = chkmalloc(nwave*sizeof(pRec->lxy[0]));
-    pRec->lyx = chkmalloc(nwave*sizeof(pRec->lyx[0]));
+    pRec->lxx = chkmalloc(nwave * sizeof(pRec->lxx[0]));
+    pRec->lyy = chkmalloc(nwave * sizeof(pRec->lyy[0]));
+    pRec->lxy = chkmalloc(nwave * sizeof(pRec->lxy[0]));
+    pRec->lyx = chkmalloc(nwave * sizeof(pRec->lyx[0]));
   }
   pInspol->numrec = numrec;
   pInspol->nwave = nwave;
@@ -125,15 +125,15 @@ void alloc_oi_vis(oi_vis *pVis, long numrec, int nwave)
 {
   int i;
   oi_vis_record *pRec;
-  
-  pVis->record = chkmalloc(numrec*sizeof(oi_vis_record));
-  for(i=0; i<numrec; i++) {
+
+  pVis->record = chkmalloc(numrec * sizeof(oi_vis_record));
+  for (i = 0; i < numrec; i++) {
     pRec = &pVis->record[i];
-    pRec->visamp = chkmalloc(nwave*sizeof(pRec->visamp[0]));
-    pRec->visamperr = chkmalloc(nwave*sizeof(pRec->visamperr[0]));
-    pRec->visphi = chkmalloc(nwave*sizeof(pRec->visphi[0]));
-    pRec->visphierr = chkmalloc(nwave*sizeof(pRec->visphierr[0]));
-    pRec->flag = chkmalloc(nwave*sizeof(pRec->flag[0]));
+    pRec->visamp = chkmalloc(nwave * sizeof(pRec->visamp[0]));
+    pRec->visamperr = chkmalloc(nwave * sizeof(pRec->visamperr[0]));
+    pRec->visphi = chkmalloc(nwave * sizeof(pRec->visphi[0]));
+    pRec->visphierr = chkmalloc(nwave * sizeof(pRec->visphierr[0]));
+    pRec->flag = chkmalloc(nwave * sizeof(pRec->flag[0]));
     pRec->visrefmap = NULL;
     pRec->rvis = NULL;
     pRec->rviserr = NULL;
@@ -159,13 +159,13 @@ void alloc_oi_vis2(oi_vis2 *pVis2, long numrec, int nwave)
 {
   int i;
   oi_vis2_record *pRec;
-  
-  pVis2->record = chkmalloc(numrec*sizeof(oi_vis2_record));
-  for(i=0; i<numrec; i++) {
+
+  pVis2->record = chkmalloc(numrec * sizeof(oi_vis2_record));
+  for (i = 0; i < numrec; i++) {
     pRec = &pVis2->record[i];
-    pRec->vis2data = chkmalloc(nwave*sizeof(pRec->vis2data[0]));
-    pRec->vis2err = chkmalloc(nwave*sizeof(pRec->vis2err[0]));
-    pRec->flag = chkmalloc(nwave*sizeof(pRec->flag[0]));
+    pRec->vis2data = chkmalloc(nwave * sizeof(pRec->vis2data[0]));
+    pRec->vis2err = chkmalloc(nwave * sizeof(pRec->vis2err[0]));
+    pRec->flag = chkmalloc(nwave * sizeof(pRec->flag[0]));
   }
   pVis2->numrec = numrec;
   pVis2->nwave = nwave;
@@ -184,15 +184,15 @@ void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave)
 {
   int i;
   oi_t3_record *pRec;
-  
-  pT3->record = chkmalloc(numrec*sizeof(oi_t3_record));
-  for(i=0; i<numrec; i++) {
+
+  pT3->record = chkmalloc(numrec * sizeof(oi_t3_record));
+  for (i = 0; i < numrec; i++) {
     pRec = &pT3->record[i];
-    pRec->t3amp = chkmalloc(nwave*sizeof(pRec->t3amp[0]));
-    pRec->t3amperr = chkmalloc(nwave*sizeof(pRec->t3amperr[0]));
-    pRec->t3phi = chkmalloc(nwave*sizeof(pRec->t3phi[0]));
-    pRec->t3phierr = chkmalloc(nwave*sizeof(pRec->t3phierr[0]));
-    pRec->flag = chkmalloc(nwave*sizeof(pRec->flag[0]));
+    pRec->t3amp = chkmalloc(nwave * sizeof(pRec->t3amp[0]));
+    pRec->t3amperr = chkmalloc(nwave * sizeof(pRec->t3amperr[0]));
+    pRec->t3phi = chkmalloc(nwave * sizeof(pRec->t3phi[0]));
+    pRec->t3phierr = chkmalloc(nwave * sizeof(pRec->t3phierr[0]));
+    pRec->flag = chkmalloc(nwave * sizeof(pRec->flag[0]));
   }
   pT3->numrec = numrec;
   pT3->nwave = nwave;
@@ -212,12 +212,12 @@ void alloc_oi_spectrum(oi_spectrum *pSpectrum, long numrec, int nwave)
 {
   int i;
   oi_spectrum_record *pRec;
-  
-  pSpectrum->record = chkmalloc(numrec*sizeof(oi_spectrum_record));
-  for(i=0; i<numrec; i++) {
+
+  pSpectrum->record = chkmalloc(numrec * sizeof(oi_spectrum_record));
+  for (i = 0; i < numrec; i++) {
     pRec = &pSpectrum->record[i];
-    pRec->fluxdata = chkmalloc(nwave*sizeof(pRec->fluxdata[0]));
-    pRec->fluxerr = chkmalloc(nwave*sizeof(pRec->fluxerr[0]));
+    pRec->fluxdata = chkmalloc(nwave * sizeof(pRec->fluxdata[0]));
+    pRec->fluxerr = chkmalloc(nwave * sizeof(pRec->fluxerr[0]));
   }
   pSpectrum->numrec = numrec;
   pSpectrum->nwave = nwave;

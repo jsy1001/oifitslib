@@ -41,7 +41,7 @@ long date2mjd(long year, long month, long day)
 {
   assert(year >= 1901 && year <= 2099);
   return (367 * year -
-          (7 * (year + (month + 9) / 12)) / 4 + 
+          (7 * (year + (month + 9) / 12)) / 4 +
           (275 * month) / 9 + day + 1721013 - 2400000);
 }
 

@@ -221,17 +221,17 @@ typedef struct {
 typedef struct {
   int revision;
   char date_obs[FLEN_VALUE];
-  char arrname[FLEN_VALUE]; /**< empty string "" means not specified */
+  char arrname[FLEN_VALUE];  /**< empty string "" means not specified */
   char insname[FLEN_VALUE];
   char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
-  char amptyp[FLEN_VALUE];  /**< empty string "" means not specified */
+  char amptyp[FLEN_VALUE];   /**< empty string "" means not specified */
   char phityp[FLEN_VALUE];   /**< empty string "" means not specified */
   int amporder;              /**< -1 means not specified */
   int phiorder;              /**< -1 means not specified */
   BOOL usevisrefmap;         /**< is oi_vis_record::visrefmap being used? */
   BOOL usecomplex;           /**< are oi_vis_record::rvis etc. being used? */
   char complexunit[FLEN_VALUE];  /**< TUNITn for RVIS/RVISERR/IVIS/IVISERR */
-  char ampunit[FLEN_VALUE];   /**< TUNITn for VISAMP/VISAMPERR */
+  char ampunit[FLEN_VALUE];  /**< TUNITn for VISAMP/VISAMPERR */
   long numrec;
   int nwave;
   oi_vis_record *record;
@@ -317,7 +317,7 @@ typedef struct {
   int nwave;
   oi_spectrum_record *record;
 } oi_spectrum;
-  
+
 
 /*
  * Function prototypes
@@ -328,7 +328,7 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus);
 STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
                       STATUS *pStatus);
 STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus);
-STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver, 
+STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
                            STATUS *pStatus);
 STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver,
                      STATUS *pStatus);

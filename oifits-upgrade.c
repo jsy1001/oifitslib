@@ -30,14 +30,14 @@
 /**
  * Main function for command-line upgrade utility.
  */
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
   const char *inFilename, *outFilename, *origin, *observer, *insmode;
   oi_fits oi;
   int status;
 
   /* Parse command-line */
-  if(argc < 5) {
+  if (argc < 5) {
     printf("Usage:\n%s INFILE OUTFILE ORIGIN OBSERVER INSMODE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
@@ -50,14 +50,14 @@ int main(int argc, char *argv[])
   /* Read FITS file */
   status = 0;
   read_oi_fits(inFilename, &oi, &status);
-  if(status) goto except;
+  if (status) goto except;
 
-  if(is_oi_fits_two(&oi))
+  if (is_oi_fits_two(&oi))
   {
     printf("Input datafile is already latest OIFITS version\n");
     goto except;
   }
-  if(oi.numArray == 0)
+  if (oi.numArray == 0)
   {
     printf("Input datafile has no OI_ARRAY table - cannot convert\n");
     goto except;
@@ -75,11 +75,11 @@ int main(int argc, char *argv[])
   /* Write out data (automatically uses latest format) */
   //:TODO: suppress version warnings?
   write_oi_fits(outFilename, oi, &status);
-  if(status) goto except;
+  if (status) goto except;
 
   free_oi_fits(&oi);
   exit(EXIT_SUCCESS);
 
- except:
+except:
   exit(EXIT_FAILURE);
 }

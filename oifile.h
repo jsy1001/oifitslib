@@ -55,8 +55,8 @@
  * Macros
  */
 
-#define MEMDUP(dest, src, size)                                         \
-  do { (dest) = malloc(size); memcpy(dest, src, size); } while(0)
+#define MEMDUP(dest, src, size) \
+  do { (dest) = malloc(size); memcpy(dest, src, size); } while (0)
 
 
 /*
@@ -84,8 +84,8 @@ typedef struct {
   GList *t3List;             /**< Linked list of oi_t3 structs */
   GList *spectrumList;       /**< Linked list of oi_spectrum structs */
   GHashTable *arrayHash;     /**< Hash table of oi_array, indexed by ARRNAME */
-  GHashTable *wavelengthHash; /**< Hash table of oi_wavelength, 
-				   indexed by INSNAME */
+  GHashTable *wavelengthHash; /**< Hash table of oi_wavelength,
+                                   indexed by INSNAME */
   GHashTable *corrHash;      /**< Hash table of oi_corr, indexed by CORRNAME */
 } oi_fits;
 

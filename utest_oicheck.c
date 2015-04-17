@@ -67,33 +67,47 @@ static const TestCase passCases[] = {
 
 static const TestCase failCases[] = {
   {DIR1 "bad_dup_target.fits",      check_unique_targets,   OI_BREACH_WARNING},
-  {DIR1 "bad_missing_target.fits",  check_targets_present,  OI_BREACH_NOT_OIFITS},
-  {DIR1 "bad_missing_element.fits", check_elements_present, OI_BREACH_NOT_OIFITS},
-  {DIR1 "bad_neg_error.fits",       check_flagging,         OI_BREACH_NOT_OIFITS},
-  {DIR1 "bad_big_t3amp.fits",       check_t3amp,            OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_missing_target.fits",  check_targets_present,
+   OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_missing_element.fits", check_elements_present,
+   OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_neg_error.fits",       check_flagging,
+   OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_big_t3amp.fits",       check_t3amp,
+   OI_BREACH_NOT_OIFITS},
   {DIR1 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING},
-  {DIR2 "bad_missing_array.fits",   check_tables,           OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_missing_header.fits",  check_header,           OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_fovtype.fits",         check_keywords,         OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_missing_visrefmap.fits", check_visrefmap,      OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_array.fits",   check_tables,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_header.fits",  check_header,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_fovtype.fits",         check_keywords,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_visrefmap.fits", check_visrefmap,
+   OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_dup_target.fits",      check_unique_targets,   OI_BREACH_WARNING},
-  {DIR2 "bad_missing_target.fits",  check_targets_present,  OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_missing_element.fits", check_elements_present, OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_missing_corr.fits",    check_corr_present,     OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_neg_error.fits",       check_flagging,         OI_BREACH_NOT_OIFITS},
-  {DIR2 "bad_big_t3amp.fits",       check_t3amp,            OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_target.fits",  check_targets_present,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_element.fits", check_elements_present,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_corr.fits",    check_corr_present,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_neg_error.fits",       check_flagging,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_big_t3amp.fits",       check_t3amp,
+   OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING},
   {DIR2 "bad_time.fits",            check_time,             OI_BREACH_WARNING},
-  {DIR2 "bad_spectrum.fits",        check_spectrum,         OI_BREACH_NOT_OIFITS}
+  {DIR2 "bad_spectrum.fits",        check_spectrum,
+   OI_BREACH_NOT_OIFITS}
 };
 
 static const TestSet passSet = {
-  sizeof(passCases)/sizeof(passCases[0]),
+  sizeof(passCases) / sizeof(passCases[0]),
   passCases
 };
 
 static const TestSet failSet = {
-  sizeof(failCases)/sizeof(failCases[0]),
+  sizeof(failCases) / sizeof(failCases[0]),
   failCases
 };
 
@@ -116,7 +130,7 @@ static void test_check(gconstpointer userData)
   const TestSet *pSet = userData;
 
   g_test_log_set_fatal_handler(ignoreMissing, NULL);
-  
+
   for (i = 0; i < pSet->numCases; i++) {
     status = 0;
     read_oi_fits(pSet->cases[i].filename, &inData, &status);

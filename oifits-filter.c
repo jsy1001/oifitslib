@@ -28,7 +28,7 @@
 /**
  * Main function for command-line filter utility.
  */
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
   GError *error;
   GOptionContext *context;
@@ -42,14 +42,14 @@ int main(int argc, char *argv[])
     g_option_context_new("INFILE OUTFILE - write filtered dataset to new file");
   g_option_context_set_main_group(context, get_oi_filter_option_group());
   g_option_context_parse(context, &argc, &argv, &error);
-  if(error != NULL) {
+  if (error != NULL) {
     printf("Error parsing command-line options: %s\n", error->message);
     g_error_free(error);
     exit(2); /* standard unix behaviour */
   }
-  if(argc != 3) {
+  if (argc != 3) {
     printf("Wrong number of command-line arguments\n"
-	   "Enter '%s --help' for usage information\n", argv[0]);
+           "Enter '%s --help' for usage information\n", argv[0]);
     exit(2);
   }
   g_strlcpy(inFilename, argv[1], FLEN_FILENAME);
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   /* Read FITS file */
   status = 0;
   read_oi_fits(inFilename, &inData, &status);
-  if(status) goto except;
+  if (status) goto except;
 
   /* Display summary info */
   printf("=== INPUT DATA: ===\n");
@@ -73,13 +73,13 @@ int main(int argc, char *argv[])
 
   /* Write out filtered data */
   write_oi_fits(outFilename, outData, &status);
-  if(status) goto except;
+  if (status) goto except;
 
   free_oi_fits(&inData);
   free_oi_fits(&outData);
   g_option_context_free(context);
   exit(EXIT_SUCCESS);
 
- except:
+except:
   exit(EXIT_FAILURE);
 }

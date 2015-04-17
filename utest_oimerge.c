@@ -74,12 +74,12 @@ static const TestCase v2Cases[] = {
 };
 
 static const TestSet v1Set = {
-  sizeof(v1Cases)/sizeof(v1Cases[0]),
+  sizeof(v1Cases) / sizeof(v1Cases[0]),
   v1Cases
 };
 
 static const TestSet v2Set = {
-  sizeof(v2Cases)/sizeof(v2Cases[0]),
+  sizeof(v2Cases) / sizeof(v2Cases[0]),
   v2Cases
 };
 
@@ -149,7 +149,7 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
   /* Count VISAMP/VISPHI in OI_VIS tables */
   link = pData->visList;
-  while(link != NULL) {
+  while (link != NULL) {
     pVis = link->data;
     pCount->numVis += pVis->numrec * pVis->nwave;
     link = link->next;
@@ -157,7 +157,7 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
   /* Count VIS2DATA in OI_VIS2 tables */
   link = pData->vis2List;
-  while(link != NULL) {
+  while (link != NULL) {
     pVis2 = link->data;
     pCount->numVis2 += pVis2->numrec * pVis2->nwave;
     link = link->next;
@@ -165,7 +165,7 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
   /* Count T3AMP/T3PHI in OI_T3 tables */
   link = pData->t3List;
-  while(link != NULL) {
+  while (link != NULL) {
     pT3 = link->data;
     pCount->numT3 += pT3->numrec * pT3->nwave;
     link = link->next;
@@ -201,7 +201,7 @@ static void test_merge(gconstpointer userData)
     check(&inData2);
     numCorr += inData2.numCorr;
     numInspol += inData2.numInspol;
-    if(pSet->cases[i].filename3 != NULL) {
+    if (pSet->cases[i].filename3 != NULL) {
       read_oi_fits(pSet->cases[i].filename3, &inData3, &status);
       g_assert(!status);
       check(&inData3);

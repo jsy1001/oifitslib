@@ -28,7 +28,7 @@
 /**
  * Main function for command-line check utility.
  */
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
   /** Checking functions to call */
   check_func checks[] = {
@@ -54,37 +54,37 @@ int main(int argc, char *argv[])
   int status, i;
 
   /* Parse command-line */
-  if(argc != 2) {
+  if (argc != 2) {
     printf("Usage:\n%s FILE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
-  (void) g_strlcpy(filename, argv[1], FLEN_FILENAME);
+  (void)g_strlcpy(filename, argv[1], FLEN_FILENAME);
 
   /* Read FITS file */
   status = 0;
   read_oi_fits(filename, &oi, &status);
-  if(status) goto except;
+  if (status) goto except;
 
   /* Display summary info */
   print_oi_fits_summary(&oi);
 
   /* Run checks */
   worst = OI_BREACH_NONE;
-  i=0;
-  while(checks[i] != NULL) {
-    if((*checks[i++])(&oi, &result) != OI_BREACH_NONE) {
+  i = 0;
+  while (checks[i] != NULL) {
+    if ((*checks[i++])(&oi, &result) != OI_BREACH_NONE) {
       print_check_result(&result);
-      if(result.level > worst) worst = result.level;
+      if (result.level > worst) worst = result.level;
     }
     free_check_result(&result);
   }
 
-  if(worst == OI_BREACH_NONE)
+  if (worst == OI_BREACH_NONE)
     printf("All checks passed\n");
 
   free_oi_fits(&oi);
   exit(EXIT_SUCCESS);
 
- except:
+except:
   exit(EXIT_FAILURE);
 }
