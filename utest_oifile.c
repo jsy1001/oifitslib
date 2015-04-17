@@ -47,6 +47,7 @@ static void test_init(void)
   status = 0;
   g_assert(write_oi_fits(FILENAME_OUT, data, &status) == 0);
   unlink(FILENAME_OUT);
+  free_oi_fits(&data);
 }
 
 static void test_version(void)
@@ -80,6 +81,7 @@ static void test_atomic(void)
 
   init_oi_fits(&data);
   g_assert(!is_atomic(&data, 0.5));
+  free_oi_fits(&data);
 
   status = 0;
   read_oi_fits(FILENAME_ATOMIC, &data, &status);
@@ -114,6 +116,7 @@ static void test_count(void)
   g_assert_cmpint(numVis, ==, MULTI_NUM_VIS);
   g_assert_cmpint(numVis2, ==, MULTI_NUM_VIS2);
   g_assert_cmpint(numT3, ==, MULTI_NUM_T3);
+  free_oi_fits(&data);
 }
 
 
