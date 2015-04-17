@@ -55,8 +55,8 @@
  * Macros
  */
 
-#define MEMDUP(dest, src, size) \
-  { (dest) = malloc((size)); memcpy((dest), (src), (size)); } 
+#define MEMDUP(dest, src, size)                                         \
+  do { (dest) = malloc(size); memcpy(dest, src, size); } while(0)
 
 
 /*

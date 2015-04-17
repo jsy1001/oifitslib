@@ -373,17 +373,17 @@ void init_oi_fits(oi_fits *pOi)
 }
 
 
-#define RETURN_VAL_IF_BAD_TAB_REVISION(tabList, tabType, rev, val) \
-  {                                                                     \
+#define RETURN_VAL_IF_BAD_TAB_REVISION(tabList, tabType, rev, val)      \
+  do {                                                                  \
     tabType *tab;                                                       \
     GList *link;                                                        \
     link = (tabList);                                                   \
     while (link != NULL) {                                              \
       tab = (tabType *) link->data;                                     \
-      if (tab->revision != rev) return (val);                           \
+      if (tab->revision != (rev)) return val;                           \
       link = link->next;                                                \
     }                                                                   \
-  }
+  } while(0)
 
 /**
  * Do all table revision numbers match version 1 of the OIFITS standard?
@@ -532,14 +532,15 @@ void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
 }
 
 /** Macro to write FITS table for each oi_* in GList. */
-#define WRITE_OI_LIST(fptr, list, type, link, write_func, \
-                      extver, pStatus) \
-  link = list; \
-  extver = 1; \
-  while(link != NULL) { \
-    write_func(fptr, *((type *) link->data), extver++, pStatus); \
-    link = link->next; \
-  }
+#define WRITE_OI_LIST(fptr, list, type, write_func, pStatus)       \
+  do {                                                             \
+    GList *link = (list);                                          \
+    int extver = 1;                                                \
+    while(link != NULL) {                                          \
+      write_func(fptr, *((type *) link->data), extver++, pStatus); \
+      link = link->next;                                           \
+    }                                                              \
+  } while(0)
 
 /**
  * Set primary header keywords from table contents.
@@ -602,8 +603,6 @@ STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
 {
   const char function[] = "write_oi_fits";
   fitsfile *fptr;
-  GList *link;
-  int extver;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
@@ -618,30 +617,24 @@ STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
   write_oi_target(fptr, oi.targets, pStatus);
 
   /* Write all OI_ARRAY tables */
-  WRITE_OI_LIST(fptr, oi.arrayList, oi_array, link,
-		write_oi_array, extver, pStatus);
+  WRITE_OI_LIST(fptr, oi.arrayList, oi_array, write_oi_array, pStatus);
 
   /* Write all OI_WAVELENGTH tables */
-  WRITE_OI_LIST(fptr, oi.wavelengthList, oi_wavelength, link,
-		write_oi_wavelength, extver, pStatus);
+  WRITE_OI_LIST(fptr, oi.wavelengthList, oi_wavelength, write_oi_wavelength,
+                pStatus);
 
   /* Write all OI_CORR tables */
-  WRITE_OI_LIST(fptr, oi.corrList, oi_corr, link,
-                write_oi_corr, extver, pStatus);
+  WRITE_OI_LIST(fptr, oi.corrList, oi_corr, write_oi_corr, pStatus);
 
   /* Write all OI_INSPOL tables */
-  WRITE_OI_LIST(fptr, oi.inspolList, oi_inspol, link,
-                write_oi_inspol, extver, pStatus);
+  WRITE_OI_LIST(fptr, oi.inspolList, oi_inspol, write_oi_inspol, pStatus);
 
   /* Write all data tables */
-  WRITE_OI_LIST(fptr, oi.visList, oi_vis, link,
-		write_oi_vis, extver, pStatus);
-  WRITE_OI_LIST(fptr, oi.vis2List, oi_vis2, link,
-		write_oi_vis2, extver, pStatus);
-  WRITE_OI_LIST(fptr, oi.t3List, oi_t3, link,
-		write_oi_t3, extver, pStatus);
-  WRITE_OI_LIST(fptr, oi.spectrumList, oi_spectrum, link,
-                write_oi_spectrum, extver, pStatus);
+  WRITE_OI_LIST(fptr, oi.visList, oi_vis, write_oi_vis, pStatus);
+  WRITE_OI_LIST(fptr, oi.vis2List, oi_vis2, write_oi_vis2, pStatus);
+  WRITE_OI_LIST(fptr, oi.t3List, oi_t3, write_oi_t3, pStatus);
+  WRITE_OI_LIST(fptr, oi.spectrumList, oi_spectrum, write_oi_spectrum,
+                pStatus);
   
   fits_close_file(fptr, pStatus);
 
@@ -1029,7 +1022,7 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
 #define FORMAT_OI_LIST_SUMMARY(pGStr, list, type)               \
   {                                                             \
     int nn = 1;                                                 \
-    GList *link = list;                                         \
+    GList *link = (list);                                       \
     while(link != NULL) {                                       \
       g_string_append_printf(                                   \
         pGStr,                                                  \

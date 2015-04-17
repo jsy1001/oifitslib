@@ -247,20 +247,19 @@ static void test_wave(TestFixture *fix, gconstpointer userData)
 }
 
 #define ASSERT_MJD_IN_RANGE(tabList, tabType, range)            \
-{                                                               \
-  tabType *tab;                                                 \
-  int i;                                                        \
-  GList *link = (tabList);                                      \
-  while (link != NULL)                                          \
-  {                                                             \
-    tab = (tabType *) link->data;                               \
-    for (i = 0; i < tab->numrec; i++) {                         \
-      g_assert_cmpfloat(tab->record[i].mjd, >=, (range)[0]);    \
-      g_assert_cmpfloat(tab->record[i].mjd, <=, (range)[1]);    \
+  do {                                                          \
+    tabType *tab;                                               \
+    int i;                                                      \
+    GList *link = (tabList);                                    \
+    while (link != NULL) {                                      \
+      tab = (tabType *) link->data;                             \
+      for (i = 0; i < tab->numrec; i++) {                       \
+        g_assert_cmpfloat(tab->record[i].mjd, >=, (range)[0]);  \
+        g_assert_cmpfloat(tab->record[i].mjd, <=, (range)[1]);  \
+      }                                                         \
+      link = link->next;                                        \
     }                                                           \
-    link = link->next;                                          \
-  }                                                             \
-}
+  } while (0)
 
 static void test_mjd(TestFixture *fix, gconstpointer userData)
 {
@@ -296,25 +295,24 @@ static void test_prune(TestFixture *fix, gconstpointer userData)
 }
 
 
-#define ASSERT_BAS_IN_RANGE(tabList, tabType, range)                \
-{                                                                   \
-  tabType *tab;                                                     \
-  int i;                                                            \
-  double u1, v1, bas;                                                \
-  GList *link = (tabList);                                          \
-  while (link != NULL)                                              \
-  {                                                                 \
-    tab = (tabType *) link->data;                                   \
-    for (i = 0; i < tab->numrec; i++) {                             \
-      u1 = tab->record[i].ucoord;                                   \
-      v1 = tab->record[i].vcoord;                                   \
-      bas = pow(u1*u1 + v1*v1, 0.5);                                \
-      g_assert_cmpfloat(bas, >=, (range)[0]);                       \
-      g_assert_cmpfloat(bas, <=, (range)[1]);                       \
-    }                                                               \
-    link = link->next;                                              \
-  }                                                                 \
-}
+#define ASSERT_BAS_IN_RANGE(tabList, tabType, range)                 \
+  do {                                                               \
+    tabType *tab;                                                    \
+    int i;                                                           \
+    double u1, v1, bas;                                              \
+    GList *link = (tabList);                                         \
+    while (link != NULL) {                                           \
+      tab = (tabType *) link->data;                                  \
+      for (i = 0; i < tab->numrec; i++) {                            \
+        u1 = tab->record[i].ucoord;                                  \
+        v1 = tab->record[i].vcoord;                                  \
+        bas = pow(u1*u1 + v1*v1, 0.5);                               \
+        g_assert_cmpfloat(bas, >=, (range)[0]);                      \
+        g_assert_cmpfloat(bas, <=, (range)[1]);                      \
+      }                                                              \
+      link = link->next;                                             \
+    }                                                                \
+  } while (0)
 
 static void test_bas(TestFixture *fix, gconstpointer userData)
 {

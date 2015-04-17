@@ -432,48 +432,45 @@ GList *merge_all_oi_corr(const GList *inList, oi_fits *pOutput)
 }
 
 /** Replace optional ARRNAME with string from hash table */
-#define REPLACE_ARRNAME(pTab, oldArrname, arrnameHash) \
-  {                                                                     \
-    if (strlen(oldArrname) > 0)                                         \
-    {                                                                   \
-      (void) g_strlcpy(pTab->arrname,                                   \
+#define REPLACE_ARRNAME(pTab, oldArrname, arrnameHash)                  \
+  do {                                                                  \
+    if (strlen(oldArrname) > 0) {                                       \
+      (void) g_strlcpy((pTab)->arrname,                                 \
                        g_hash_table_lookup(arrnameHash, oldArrname),    \
                        FLEN_VALUE);                                     \
     }                                                                   \
-  }
+  } while(0)
 
 /** Replace INSNAME with string from hash table */
 #define REPLACE_INSNAME(pTab, oldInsname, insnameHash)                  \
-  {                                                                     \
-    (void) g_strlcpy(pTab->insname,                                     \
-                     g_hash_table_lookup(insnameHash, oldInsname),      \
-                     FLEN_VALUE);                                       \
-  }
+  (void) g_strlcpy((pTab)->insname,                                     \
+                   g_hash_table_lookup(insnameHash, oldInsname),        \
+                   FLEN_VALUE)
 
 /** Replace optional CORRNAME with string from hash table */
 #define REPLACE_CORRNAME(pTab, oldCorrname, corrnameHash)               \
-  {                                                                     \
-    if (strlen(oldCorrname) > 0)                                        \
-    {                                                                   \
-      (void) g_strlcpy(pTab->corrname,                                  \
+  do {                                                                  \
+    if (strlen(oldCorrname) > 0) {                                      \
+      (void) g_strlcpy((pTab)->corrname,                                \
                        g_hash_table_lookup(corrnameHash, oldCorrname),  \
                        FLEN_VALUE);                                     \
     }                                                                   \
-  }
+  } while(0)
+ 
 
 /** Replace TARGET_IDs with values from hash table */
-#define REPLACE_TARGET_ID(pTab, pInOi, targetIdHash)                    \
-  {                                                                     \
-    int ii;                                                             \
-    for(ii=0; ii<pTab->numrec; ii++) {                                  \
-      /* hash table is indexed by target name */                        \
-      pTab->record[ii].target_id =                                      \
-      *((int *) g_hash_table_lookup(                                    \
-          targetIdHash,                                                 \
-          oi_fits_lookup_target(pInOi,                                  \
-                                pTab->record[ii].target_id)->target));  \
-    }                                                                   \
-  }
+#define REPLACE_TARGET_ID(pTab, pInOi, targetIdHash)                     \
+  do {                                                                   \
+    int ii;                                                              \
+    for(ii=0; ii<(pTab)->numrec; ii++) {                                 \
+      /* hash table is indexed by target name */                         \
+      (pTab)->record[ii].target_id =                                     \
+      *((int *) g_hash_table_lookup(                                     \
+          targetIdHash,                                                  \
+          oi_fits_lookup_target(pInOi,                                   \
+                                (pTab)->record[ii].target_id)->target)); \
+    }                                                                    \
+  } while(0)
 
 /**
  * Copy all input OI_INSPOL tables into output dataset.
