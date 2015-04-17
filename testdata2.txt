@@ -244,7 +244,7 @@ insname COAST_NICMOS
 corrname TEST
 fov 0.5
 fovtype RADIUS
-calstat C
+calstat U
 numrec 2
 
 target_id 1
