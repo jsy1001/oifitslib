@@ -78,9 +78,9 @@ web browser to the file doc/index.html
 The HTML documentation is automatically generated from comments
 in the C code using doxygen.
 
-The command-line utilities oifits-merge, oifits-filter, and
-oifits-check will output brief usage information if invoked with the
-'--help' argument.
+The command-line utilities oifits-merge, oifits-filter, oifits-check,
+and oifits-upgrade will output brief usage information if invoked with
+the '--help' argument.
 
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
