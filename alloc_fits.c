@@ -28,7 +28,7 @@
 
 
 /**
- * Allocate storage within oi_array struct.
+ * Allocate storage within oi_array struct
  *
  * Sets the oi_array::nelement attribute of @a pArray.
  *
@@ -42,7 +42,7 @@ void alloc_oi_array(oi_array *pArray, int nelement)
 }
 
 /**
- * Allocate storage within oi_target struct.
+ * Allocate storage within oi_target struct
  *
  * Sets the oi_target::ntarget attribute of @a pTargets.
  *
@@ -56,7 +56,7 @@ void alloc_oi_target(oi_target *pTargets, int ntarget)
 }
 
 /**
- * Allocate storage within oi_wavelength struct.
+ * Allocate storage within oi_wavelength struct
  *
  * Sets the oi_wavelength::nwave attribute of @a pWave.
  *
@@ -71,7 +71,7 @@ void alloc_oi_wavelength(oi_wavelength *pWave, int nwave)
 }
 
 /**
- * Allocate storage within oi_corr struct.
+ * Allocate storage within oi_corr struct
  *
  * Sets the oi_corr::ncorr attribute of @a pCorr.
  *
@@ -87,7 +87,7 @@ void alloc_oi_corr(oi_corr *pCorr, int ncorr)
 }
 
 /**
- * Allocate storage within oi_inspol struct.
+ * Allocate storage within oi_inspol struct
  *
  * Sets the oi_inspol::numrec and oi_inspol::nwave attributes of @a pInspol.
  *
@@ -113,7 +113,7 @@ void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave)
 }
 
 /**
- * Allocate storage within oi_vis struct.
+ * Allocate storage within oi_vis struct
  *
  * Sets the oi_vis::numrec and oi_vis::nwave attributes of @a pVis.
  *
@@ -147,7 +147,7 @@ void alloc_oi_vis(oi_vis *pVis, long numrec, int nwave)
 }
 
 /**
- * Allocate storage within oi_vis2 struct.
+ * Allocate storage within oi_vis2 struct
  *
  * Sets the oi_vis2::numrec and oi_vis2::nwave attributes of @a pVis2.
  *
@@ -172,7 +172,7 @@ void alloc_oi_vis2(oi_vis2 *pVis2, long numrec, int nwave)
 }
 
 /**
- * Allocate storage within oi_t3 struct.
+ * Allocate storage within oi_t3 struct
  *
  * Sets the oi_t3::numrec and oi_t3::nwave attributes of @a pT3.
  *
@@ -199,7 +199,7 @@ void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave)
 }
 
 /**
- * Allocate storage within oi_spectrum struct.
+ * Allocate storage within oi_spectrum struct
  *
  * Sets the oi_spectrum::numrec and oi_spectrum::nwave attributes of
  * @a pSpectrum.

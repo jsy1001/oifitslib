@@ -40,7 +40,7 @@
 /**
  * Read optional string-valued header keyword.
  *
- * @return TRUE if keyword read successfully, FALSE otherwise.
+ * @return TRUE if keyword read successfully, FALSE otherwise
  */
 static bool read_key_opt_string(fitsfile *fptr, const char *keyname,
                                 char *keyval, STATUS *pStatus)
@@ -62,7 +62,7 @@ static bool read_key_opt_string(fitsfile *fptr, const char *keyname,
 /**
  * Read optional integer-valued header keyword.
  *
- * @return TRUE if keyword read successfully, FALSE otherwise.
+ * @return TRUE if keyword read successfully, FALSE otherwise
  */
 static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
                              int *keyval, STATUS *pStatus)
@@ -88,7 +88,7 @@ static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
  * column matching @a colname does not have a string type or its
  * repeat count exceeds @a maxRepeat.
  *
- * @return TRUE if column read successfully, FALSE otherwise.
+ * @return TRUE if column read successfully, FALSE otherwise
  */
 static bool read_col_string(fitsfile *fptr, bool optional, char *colname,
                             long maxRepeat, long irow,
@@ -164,12 +164,12 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
 /**
  * Move to next binary table HDU with specified EXTNAME.
  *
- *   @param fptr     see cfitsio documentation
- *   @param reqName  required value of EXTNAME keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param reqName  required value of EXTNAME keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus)
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus)
  */
 static STATUS next_named_hdu(fitsfile *fptr, const char *reqName,
                              STATUS *pStatus)
@@ -203,14 +203,14 @@ static STATUS next_named_hdu(fitsfile *fptr, const char *reqName,
 /**
  * Move to first binary table HDU with specified EXTNAME and keyword=value.
  *
- *   @param fptr     see cfitsio documentation
- *   @param reqName  required value of EXTNAME keyword
- *   @param keyword  keyword to check
- *   @param reqVal   required value of specified keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param reqName  required value of EXTNAME keyword
+ * @param keyword  keyword to check
+ * @param reqVal   required value of specified keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus)
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus)
  */
 static STATUS specific_named_hdu(fitsfile *fptr, const char *reqName,
                                  const char *keyword, const char *reqVal,
@@ -252,13 +252,13 @@ static STATUS specific_named_hdu(fitsfile *fptr, const char *reqName,
 /**
  * Read OI_ARRAY fits binary table at current HDU.
  *
- *   @param fptr     see cfitsio documentation
- *   @param pArray   ptr to array data struct, see exchange.h
- *   @param arrname  value of ARRNAME keyword if known, else NULL
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pArray   pointer to array data struct, see exchange.h
+ * @param arrname  value of ARRNAME keyword if known, else NULL
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of array data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of array data struct are undefined
  */
 static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
                                  const char *arrname, STATUS *pStatus)
@@ -334,13 +334,13 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 /**
  * Read OI_WAVELENGTH fits binary table at current HDU.
  *
- *   @param fptr     see cfitsio documentation
- *   @param pWave    ptr to wavelength data struct, see exchange.h
- *   @param insname  value of INSNAME keyword if known, else NULL
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pWave    pointer to wavelength data struct, see exchange.h
+ * @param insname  value of INSNAME keyword if known, else NULL
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of wavelength data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of wavelength data struct are undefined
  */
 static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
                                       const char *insname, STATUS *pStatus)
@@ -384,13 +384,13 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 /**
  * Read OI_CORR fits binary table at current HDU.
  *
- *   @param fptr      see cfitsio documentation
- *   @param pCorr     ptr to corr data struct, see exchange.h
- *   @param corrname  value of CORRNAME keyword if known, else NULL
- *   @param pStatus   pointer to status variable
+ * @param fptr      see cfitsio documentation
+ * @param pCorr     pointer to corr data struct, see exchange.h
+ * @param corrname  value of CORRNAME keyword if known, else NULL
+ * @param pStatus   pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of corr data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of corr data struct are undefined
  */
 static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
                                 const char *corrname, STATUS *pStatus)
@@ -438,12 +438,12 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 /**
  * Read OI_INSPOL fits binary table at current HDU.
  *
- *   @param fptr     see cfitsio documentation
- *   @param pInspol  ptr to inspol struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pInspol  pointer to inspol struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of inspol data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of inspol data struct are undefined
  */
 static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
                                   STATUS *pStatus)
@@ -517,12 +517,12 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
  *
  * Moves to primary HDU.
  *
- *   @param fptr     see cfitsio documentation
- *   @param pHeader  ptr to header data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pHeader  pointer to header data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of header data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of header data struct are undefined
  */
 STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 {
@@ -560,17 +560,16 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 /**
  * Read OI_TARGET fits binary table. Moves to first matching HDU
  *
- *   @param fptr      see cfitsio documentation
- *   @param pTargets  ptr to targets data struct, see exchange.h
- *   @param pStatus   pointer to status variable
+ * @param fptr      see cfitsio documentation
+ * @param pTargets  pointer to targets data struct, see exchange.h
+ * @param pStatus   pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of targets data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of targets data struct are undefined
  */
 STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 {
   const char function[] = "read_oi_target";
-  char *p;
   const int revision = 2;
   int irow, colnum, anynull;
   long nrows;
@@ -664,13 +663,13 @@ except:
 /**
  * Read OI_ARRAY fits binary table with specified ARRNAME
  *
- *   @param fptr     see cfitsio documentation
- *   @param arrname  read table with this value for ARRNAME
- *   @param pArray   ptr to array data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param arrname  read table with this value for ARRNAME
+ * @param pArray   pointer to array data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of array data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of array data struct are undefined
  */
 STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
                      STATUS *pStatus)
@@ -693,12 +692,12 @@ STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
 /**
  * Read next OI_ARRAY fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pArray   ptr to array data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pArray   pointer to array data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
 {
@@ -723,13 +722,13 @@ STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
 /**
  * Read OI_WAVELENGTH fits binary table with specified INSNAME
  *
- *   @param fptr     see cfitsio documentation
- *   @param insname  read table with this value for INSNAME
- *   @param pWave    ptr to wavelength data struct, see exchange.h
- *   @param pStatus  pointer to status variable
- *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of wavelength data struct are undefined
+ * @param fptr     see cfitsio documentation
+ * @param insname  read table with this value for INSNAME
+ * @param pWave    pointer to wavelength data struct, see exchange.h
+ * @param pStatus  pointer to status variable
+*
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of wavelength data struct are undefined
  */
 STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
                           STATUS *pStatus)
@@ -752,12 +751,12 @@ STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
 /**
  * Read next OI_WAVELENGTH fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pWave    ptr to wavelength data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pWave    pointer to wavelength data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
                                STATUS *pStatus)
@@ -783,13 +782,13 @@ STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
 /**
  * Read OI_CORR fits binary table with specified CORRNAME
  *
- *   @param fptr      see cfitsio documentation
- *   @param corrname  read table with this value for CORRNAME
- *   @param pCorr     ptr to corr data struct, see exchange.h
- *   @param pStatus   pointer to status variable
+ * @param fptr      see cfitsio documentation
+ * @param corrname  read table with this value for CORRNAME
+ * @param pCorr     pointer to corr data struct, see exchange.h
+ * @param pStatus   pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of corr data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of corr data struct are undefined
  */
 STATUS read_oi_corr(fitsfile *fptr, char *corrname, oi_corr *pCorr,
                     STATUS *pStatus)
@@ -812,12 +811,12 @@ STATUS read_oi_corr(fitsfile *fptr, char *corrname, oi_corr *pCorr,
 /**
  * Read next OI_CORR fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pCorr    ptr to corr data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pCorr    pointer to corr data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
 {
@@ -842,12 +841,12 @@ STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
 /**
  * Read next OI_INSPOL fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pInspol  ptr to inspol data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pInspol  pointer to inspol data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of inspol data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of inspol data struct are undefined
  */
 STATUS read_next_oi_inspol(fitsfile *fptr, oi_inspol *pInspol, STATUS *pStatus)
 {
@@ -943,7 +942,7 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
 }
 
 /**
- * Read OI_VIS optional content.
+ * Read OI_VIS optional content
  */
 static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
@@ -1009,12 +1008,12 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 /**
  * Read next OI_VIS fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pVis     ptr to data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pVis     pointer to data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
@@ -1106,12 +1105,12 @@ except:
 /**
  * Read next OI_VIS2 fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pVis2    ptr to data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pVis2    pointer to data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 {
@@ -1210,12 +1209,12 @@ except:
 /**
  * Read next OI_T3 fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param pT3      ptr to data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pT3      pointer to data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 {
@@ -1330,12 +1329,12 @@ except:
 /**
  * Read next OI_SPECTRUM fits binary table
  *
- *   @param fptr       see cfitsio documentation
- *   @param pSpectrum  ptr to data struct, see exchange.h
- *   @param pStatus    pointer to status variable
+ * @param fptr       see cfitsio documentation
+ * @param pSpectrum  pointer to data struct, see exchange.h
+ * @param pStatus    pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of data struct are undefined
  */
 STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
                              STATUS *pStatus)

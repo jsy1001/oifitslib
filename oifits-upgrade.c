@@ -28,7 +28,7 @@
 
 
 /**
- * Main function for command-line upgrade utility.
+ * Main function for command-line upgrade utility
  */
 int main(int argc, char *argv[])
 {

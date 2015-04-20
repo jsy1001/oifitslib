@@ -101,11 +101,11 @@ static oi_corr *find_oi_corr(const oi_fits *pOi, const char *corrname)
 
 
 /**
- * Return shortest wavelength in OI_WAVELENGTH table.
+ * Return shortest wavelength in OI_WAVELENGTH table
  *
- *   @param pWave  pointer to wavelength struct
+ * @param pWave  pointer to wavelength struct
  *
- *   @return Minimum of eff_wave values /m
+ * @return Minimum of eff_wave values /m
  */
 static float get_min_wavelength(const oi_wavelength *pWave)
 {
@@ -119,11 +119,11 @@ static float get_min_wavelength(const oi_wavelength *pWave)
 }
 
 /**
- * Return longest wavelength in OI_WAVELENGTH table.
+ * Return longest wavelength in OI_WAVELENGTH table
  *
- *   @param pWave  pointer to wavelength struct
+ * @param pWave  pointer to wavelength struct
  *
- *   @return Maximum of eff_wave values /m
+ * @return Maximum of eff_wave values /m
  */
 static float get_max_wavelength(const oi_wavelength *pWave)
 {
@@ -323,9 +323,9 @@ static double get_max_mjd(const oi_fits *pOi)
  */
 
 /**
- * Initialise empty oi_fits struct.
+ * Initialise empty oi_fits struct
  *
- *   @param pOi  pointer to file data struct, see oifile.h
+ * @param pOi  pointer to file data struct, see oifile.h
  */
 void init_oi_fits(oi_fits *pOi)
 {
@@ -390,9 +390,9 @@ void init_oi_fits(oi_fits *pOi)
  *
  * Ignores any tables defined in OIFITS version 2.
  *
- *   @param pOi  pointer to file data struct, see oifile.h
+ * @param pOi  pointer to file data struct, see oifile.h
  *
- *   @return TRUE if OIFITS v1, FALSE otherwise.
+ * @return TRUE if OIFITS v1, FALSE otherwise
  */
 int is_oi_fits_one(const oi_fits *pOi)
 {
@@ -409,9 +409,9 @@ int is_oi_fits_one(const oi_fits *pOi)
 /**
  * Do all table revision numbers match version 2 of the OIFITS standard?
  *
- *   @param pOi  pointer to file data struct, see oifile.h
+ * @param pOi  pointer to file data struct, see oifile.h
  *
- *   @return TRUE if OIFITS v2, FALSE otherwise.
+ * @return TRUE if OIFITS v2, FALSE otherwise
  */
 int is_oi_fits_two(const oi_fits *pOi)
 {
@@ -433,10 +433,10 @@ int is_oi_fits_two(const oi_fits *pOi)
  *
  * An empty dataset, as created by init_oi_fits(), is not considered atomic.
  *
- *   @param pOi      pointer to file data struct, see oifile.h
- *   @param maxDays  maximum time span to be considered atomic, in days
+ * @param pOi      pointer to file data struct, see oifile.h
+ * @param maxDays  maximum time span to be considered atomic, in days
  *
- *   @return TRUE if atomic, FALSE otherwise.
+ * @return TRUE if atomic, FALSE otherwise
  */
 int is_atomic(const oi_fits *pOi, double maxDays)
 {
@@ -459,14 +459,14 @@ int is_atomic(const oi_fits *pOi, double maxDays)
 }
 
 /**
- * Count unflagged data.
+ * Count unflagged data
  *
- *   @param pOi       pointer to file data struct, see oifile.h
- *   @param pNumVis   return location for number of complex visibility data,
- *                    or NULL
- *   @param pNumVis2  return location for number of squared visibility data,
- *                    or NULL
- *   @param pNumT3    return location for number of bispectrum data, or NULL
+ * @param pOi       pointer to file data struct, see oifile.h
+ * @param pNumVis   return location for number of complex visibility data,
+ *                  or NULL
+ * @param pNumVis2  return location for number of squared visibility data,
+ *                  or NULL
+ * @param pNumT3    return location for number of bispectrum data, or NULL
  */
 void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
                         long *const pNumVis2, long *const pNumT3)
@@ -543,13 +543,13 @@ void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
   } while (0)
 
 /**
- * Set primary header keywords from table contents.
+ * Set primary header keywords from table contents
  *
  * Sets values for DATE-OBS, TELESCOP, INSTRUME and OBJECT from
  * existing data.  Note that the mandatory keywords ORIGIN, OBSERVER
  * and INSMODE are not set.
  *
- *   @param pOi  pointer to file data struct, see oifile.h
+ * @param pOi  pointer to file data struct, see oifile.h
  */
 void set_oi_header(oi_fits *pOi)
 {
@@ -590,14 +590,14 @@ void set_oi_header(oi_fits *pOi)
 }
 
 /**
- * Write OIFITS tables to new FITS file.
+ * Write OIFITS tables to new FITS file
  *
- *   @param filename  name of file to create
- *   @param oi        file data struct, see oifile.h
- *   @param pStatus   pointer to status variable
+ * @param filename  name of file to create
+ * @param oi        file data struct, see oifile.h
+ * @param pStatus   pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus)
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus)
  */
 STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
 {
@@ -647,14 +647,14 @@ except:
 }
 
 /**
- * Read all OIFITS tables from FITS file.
+ * Read all OIFITS tables from FITS file
  *
- *   @param filename  name of file to read
- *   @param pOi       pointer to uninitialised file data struct, see oifile.h
- *   @param pStatus   pointer to status variable
+ * @param filename  name of file to read
+ * @param pOi       pointer to uninitialised file data struct, see oifile.h
+ * @param pStatus   pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code (also assigned to
- *           *pStatus). Contents of file data struct are undefined
+ * @return On error, returns non-zero cfitsio error code (also assigned to
+ *         *pStatus). Contents of file data struct are undefined
  */
 STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
 {
@@ -903,9 +903,9 @@ static void free_list(GList *list, free_func internalFree)
 }
 
 /**
- * Free storage used for OIFITS data.
+ * Free storage used for OIFITS data
  *
- *   @param pOi     pointer to file data struct, see oifile.h
+ * @param pOi  pointer to file data struct, see oifile.h
  */
 void free_oi_fits(oi_fits *pOi)
 {
@@ -932,12 +932,12 @@ void free_oi_fits(oi_fits *pOi)
 }
 
 /**
- * Return oi_array corresponding to specified ARRNAME.
+ * Return oi_array corresponding to specified ARRNAME
  *
- *   @param pOi      pointer to file data struct, see oifile.h
- *   @param arrname  value of ARRNAME keyword
+ * @param pOi      pointer to file data struct, see oifile.h
+ * @param arrname  value of ARRNAME keyword
  *
- *   @return pointer to oi_array matching arrname, or NULL if no match
+ * @return pointer to oi_array matching arrname, or NULL if no match
  */
 oi_array *oi_fits_lookup_array(const oi_fits *pOi, const char *arrname)
 {
@@ -945,13 +945,13 @@ oi_array *oi_fits_lookup_array(const oi_fits *pOi, const char *arrname)
 }
 
 /**
- * Lookup array element corresponding to specified ARRNAME & STA_INDEX.
+ * Lookup array element corresponding to specified ARRNAME & STA_INDEX
  *
- *   @param pOi       pointer to file data struct, see oifile.h
- *   @param arrname   value of ARRNAME keyword
- *   @param staIndex  value of STA_INDEX from data table
+ * @param pOi       pointer to file data struct, see oifile.h
+ * @param arrname   value of ARRNAME keyword
+ * @param staIndex  value of STA_INDEX from data table
  *
- *   @return ptr to 1st element struct matching staIndex, or NULL if no match
+ * @return ptr to 1st element struct matching staIndex, or NULL if no match
  */
 element *oi_fits_lookup_element(const oi_fits *pOi,
                                 const char *arrname, int staIndex)
@@ -970,12 +970,12 @@ element *oi_fits_lookup_element(const oi_fits *pOi,
 }
 
 /**
- * Lookup oi_wavelength corresponding to specified INSNAME.
+ * Lookup oi_wavelength corresponding to specified INSNAME
  *
- *   @param pOi      pointer to file data struct, see oifile.h
- *   @param insname  value of INSNAME keyword
+ * @param pOi      pointer to file data struct, see oifile.h
+ * @param insname  value of INSNAME keyword
  *
- *   @return pointer to oi_wavelength matching insname, or NULL if no match
+ * @return pointer to oi_wavelength matching insname, or NULL if no match
  */
 oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *pOi,
                                          const char *insname)
@@ -984,12 +984,12 @@ oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *pOi,
 }
 
 /**
- * Lookup oi_corr corresponding to specified CORRNAME.
+ * Lookup oi_corr corresponding to specified CORRNAME
  *
- *   @param pOi       pointer to file data struct, see oifile.h
- *   @param corrname  value of CORRNAME keyword
+ * @param pOi       pointer to file data struct, see oifile.h
+ * @param corrname  value of CORRNAME keyword
  *
- *   @return pointer to oi_corr matching corrname, or NULL if no match
+ * @return pointer to oi_corr matching corrname, or NULL if no match
  */
 oi_corr *oi_fits_lookup_corr(const oi_fits *pOi, const char *corrname)
 {
@@ -997,12 +997,12 @@ oi_corr *oi_fits_lookup_corr(const oi_fits *pOi, const char *corrname)
 }
 
 /**
- * Lookup target record corresponding to specified TARGET_ID.
+ * Lookup target record corresponding to specified TARGET_ID
  *
- *   @param pOi       pointer to file data struct, see oifile.h
- *   @param targetId  value of TARGET_ID from data table
+ * @param pOi       pointer to file data struct, see oifile.h
+ * @param targetId  value of TARGET_ID from data table
  *
- *   @return ptr to 1st target struct matching targetId, or NULL if no match
+ * @return ptr to 1st target struct matching targetId, or NULL if no match
  */
 target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
 {
@@ -1040,7 +1040,7 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
   }
 
 /**
- * Generate file summary string.
+ * Generate file summary string
  *
  * @param pOi  pointer to oi_fits struct
  *
@@ -1085,7 +1085,7 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
 }
 
 /**
- * Print file summary to stdout.
+ * Print file summary to stdout
  *
  * @param pOi  pointer to oi_fits struct
  */
@@ -1095,7 +1095,7 @@ void print_oi_fits_summary(const oi_fits *pOi)
 }
 
 /**
- * Make deep copy of a OI_TARGET table.
+ * Make deep copy of a OI_TARGET table
  *
  * @param pInTab  pointer to input table
  *
@@ -1111,7 +1111,7 @@ oi_target *dup_oi_target(const oi_target *pInTab)
   return pOutTab;
 }
 /**
- * Make deep copy of a OI_ARRAY table.
+ * Make deep copy of a OI_ARRAY table
  *
  * @param pInTab  pointer to input table
  *
@@ -1128,7 +1128,7 @@ oi_array *dup_oi_array(const oi_array *pInTab)
 }
 
 /**
- * Make deep copy of a OI_WAVELENGTH table.
+ * Make deep copy of a OI_WAVELENGTH table
  *
  * @param pInTab  pointer to input table
  *
@@ -1147,7 +1147,7 @@ oi_wavelength *dup_oi_wavelength(const oi_wavelength *pInTab)
 }
 
 /**
- * Make deep copy of a OI_CORR table.
+ * Make deep copy of a OI_CORR table
  *
  * @param pInTab  pointer to input table
  *
@@ -1168,7 +1168,7 @@ oi_corr *dup_oi_corr(const oi_corr *pInTab)
 }
 
 /**
- * Make deep copy of a OI_INSPOL table.
+ * Make deep copy of a OI_INSPOL table
  *
  * @param pInTab  pointer to input table
  *
@@ -1199,7 +1199,7 @@ oi_inspol *dup_oi_inspol(const oi_inspol *pInTab)
 }
 
 /**
- * Make deep copy of a OI_VIS table.
+ * Make deep copy of a OI_VIS table
  *
  * @param pInTab  pointer to input table
  *
@@ -1248,7 +1248,7 @@ oi_vis *dup_oi_vis(const oi_vis *pInTab)
 }
 
 /**
- * Make deep copy of a OI_VIS2 table.
+ * Make deep copy of a OI_VIS2 table
  *
  * @param pInTab  pointer to input table
  *
@@ -1277,7 +1277,7 @@ oi_vis2 *dup_oi_vis2(const oi_vis2 *pInTab)
 }
 
 /**
- * Make deep copy of a OI_T3 table.
+ * Make deep copy of a OI_T3 table
  *
  * @param pInTab  pointer to input table
  *
@@ -1310,7 +1310,7 @@ oi_t3 *dup_oi_t3(const oi_t3 *pInTab)
 }
 
 /**
- * Make deep copy of a OI_SPECTRUM table.
+ * Make deep copy of a OI_SPECTRUM table
  *
  * @param pInTab  pointer to input table
  *

@@ -42,8 +42,10 @@ int oi_hush_errors = 0;
  * Private functions
  */
 
-/** Make deep copy of array of n strings, substituting @a value for any
-    initial '?' */
+/**
+ * Make deep copy of array of @a n strings, substituting @a value for any
+ * initial '?' in @a template
+ */
 char **make_tform(const char **template, int n, int value)
 {
   char **tform;
@@ -64,7 +66,9 @@ char **make_tform(const char **template, int n, int value)
   return tform;
 }
 
-/** Free array of n strings returned by make_tform() */
+/**
+ * Free array of n strings returned by make_tform()
+ */
 void free_tform(char **tform, int n)
 {
   int i;
@@ -84,11 +88,11 @@ void free_tform(char **tform, int n)
  *
  * Moves to primary HDU. A zero-size primary array is created if necessary.
  *
- *   @param fptr    see cfitsio documentation
- *   @param header  header data struct, see exchange.h
- *   @param pStatus pointer to status variable
+ * @param fptr    see cfitsio documentation
+ * @param header  header data struct, see exchange.h
+ * @param pStatus pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
 {
@@ -155,12 +159,12 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
 /**
  * Write OI_ARRAY fits binary table
  *
- *   @param fptr    see cfitsio documentation
- *   @param array   array data struct, see exchange.h
- *   @param extver  value for EXTVER keyword
- *   @param pStatus pointer to status variable
+ * @param fptr    see cfitsio documentation
+ * @param array   array data struct, see exchange.h
+ * @param extver  value for EXTVER keyword
+ * @param pStatus pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
                       STATUS *pStatus)
@@ -230,11 +234,11 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
 /**
  * Write OI_TARGET fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param targets  targets data struct, see exchange.h
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param targets  targets data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
 {
@@ -325,12 +329,12 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
 /**
  * Write OI_WAVELENGTH fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param wave     wavelength data struct, see exchange.h
- *   @param extver   value for EXTVER keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param wave     wavelength data struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
                            STATUS *pStatus)
@@ -372,12 +376,12 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
 /**
  * Write OI_CORR fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param corr     corr data struct, see exchange.h
- *   @param extver   value for EXTVER keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param corr     corr data struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
 {
@@ -420,12 +424,12 @@ STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
 /**
  * Write OI_INSPOL fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param inspol   inspol struct, see exchange.h
- *   @param extver   value for EXTVER keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param inspol   inspol struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
                        STATUS *pStatus)
@@ -601,12 +605,12 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
 /**
  * Write OI_VIS fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param vis      data struct, see exchange.h
- *   @param extver   value for EXTVER keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param vis      data struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 {
@@ -700,12 +704,12 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 /**
  * Write OI_VIS2 fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param vis2     data struct, see exchange.h
- *   @param extver   value for EXTVER keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param vis2     data struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 {
@@ -804,12 +808,12 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 /**
  * Write OI_T3 fits binary table
  *
- *   @param fptr     see cfitsio documentation
- *   @param t3       data struct, see exchange.h
- *   @param extver   value for EXTVER keyword
- *   @param pStatus  pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param t3       data struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 {
@@ -922,12 +926,12 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 /**
  * Write OI_SPECTRUM fits binary table
  *
- *   @param fptr      see cfitsio documentation
- *   @param spectrum  data struct, see exchange.h
- *   @param extver    value for EXTVER keyword
- *   @param pStatus   pointer to status variable
+ * @param fptr      see cfitsio documentation
+ * @param spectrum  data struct, see exchange.h
+ * @param extver    value for EXTVER keyword
+ * @param pStatus   pointer to status variable
  *
- *   @return On error, returns non-zero cfitsio error code, and sets *pStatus
+ * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
 STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
                          STATUS *pStatus)

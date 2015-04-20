@@ -26,7 +26,7 @@
 
 
 /**
- * Main function for command-line check utility.
+ * Main function for command-line check utility
  */
 int main(int argc, char *argv[])
 {

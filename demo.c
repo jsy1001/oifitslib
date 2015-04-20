@@ -589,7 +589,7 @@ except:
 
 
 /**
- * Main function for demonstration program.
+ * Main function for demonstration program
  */
 int main(int argc, char *argv[])
 {

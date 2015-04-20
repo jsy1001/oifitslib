@@ -27,13 +27,13 @@
 
 
 /**
- * Convert Gregorian date to Modified Julian Day.
+ * Convert Gregorian date to Modified Julian Day
  *
  * Algorithm adapted from http://aa.usno.navy.mil/faq/docs/JD_Formula.php
  *
- * @param year   Year (1901-2099)
- * @param month  Month (1-12)
- * @param day    Day of month (1-31)
+ * @param year   year (1901-2099) of the date to convert
+ * @param month  month (1-12) of the date to convert
+ * @param day    day of month (1-31) of the date to convert
  *
  * @return MJD at the start of the specified date (i.e. at midnight)
  */
@@ -46,15 +46,15 @@ long date2mjd(long year, long month, long day)
 }
 
 /**
- * Convert Modified Julian Day to Gregorian date.
+ * Convert Modified Julian Day to Gregorian date
  *
  * Adapted from Fliegel & van Flandern (1968), Communications of the
  * ACM 11, no. 10, p. 657
  *
  * @param mjd     Modified Julian Day to convert
- * @param pYear   Return location for year
- * @param pMonth  Return location for month (1-12)
- * @param pDay    Return location for day of month (1-31)
+ * @param pYear   return location for year
+ * @param pMonth  return location for month (1-12)
+ * @param pDay    return location for day of month (1-31)
  */
 void mjd2date(long mjd,
               long *const pYear, long *const pMonth, long *const pDay)

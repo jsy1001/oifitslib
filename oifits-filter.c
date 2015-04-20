@@ -26,7 +26,7 @@
 
 
 /**
- * Main function for command-line filter utility.
+ * Main function for command-line filter utility
  */
 int main(int argc, char *argv[])
 {

@@ -37,12 +37,12 @@
 
 
 /**
- * Lookup array element corresponding to specified STA_INDEX.
+ * Lookup array element corresponding to specified STA_INDEX
  *
- *   @param pArray    pointer to array data struct, see exchange.h
- *   @param staIndex  value of STA_INDEX to match
+ * @param pArray    pointer to array data struct, see exchange.h
+ * @param staIndex  value of STA_INDEX to match
  *
- *   @return ptr to 1st element struct matching staIndex, or NULL if no match
+ * @return ptr to 1st element struct matching staIndex, or NULL if no match
  */
 static element *lookup_element(const oi_array *pArray, int staIndex)
 {

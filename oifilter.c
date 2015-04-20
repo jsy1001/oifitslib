@@ -96,7 +96,7 @@ static GOptionEntry filterEntries[] = {
  */
 
 /**
- * Callback function invoked prior to parsing filter command-line options.
+ * Callback function invoked prior to parsing filter command-line options
  */
 static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
                                  gpointer unusedData, GError **error)
@@ -118,7 +118,7 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
 }
 
 /**
- * Callback function invoked after parsing filter command-line options.
+ * Callback function invoked after parsing filter command-line options
  */
 static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
                                   gpointer unusedData, GError **error)
@@ -144,7 +144,7 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
 
 /**
  * Return new linked list of ARRNAMEs referenced by the
- * OI_VIS/VIS2/T3/SPECTRUM tables.
+ * OI_VIS/VIS2/T3/SPECTRUM tables
  */
 static GList *get_arrname_list(const oi_fits *pData)
 {
@@ -200,7 +200,7 @@ static GList *get_arrname_list(const oi_fits *pData)
 
 /**
  * Return new linked list of INSNAMEs referenced by the
- * OI_VIS/VIS2/T3/SPECTRUM tables.
+ * OI_VIS/VIS2/T3/SPECTRUM tables
  */
 static GList *get_insname_list(const oi_fits *pData)
 {
@@ -251,7 +251,7 @@ static GList *get_insname_list(const oi_fits *pData)
 }
 
 /**
- * Return new linked list of CORRNAMEs referenced by the OI_VIS/VIS2/T3 tables.
+ * Return new linked list of CORRNAMEs referenced by the OI_VIS/VIS2/T3 tables
  */
 static GList *get_corrname_list(const oi_fits *pData)
 {
@@ -296,9 +296,9 @@ static GList *get_corrname_list(const oi_fits *pData)
 }
 
 /**
- * Remove first OI_ARRAY table with ARRNAME not in @a arrnameList.
+ * Remove first OI_ARRAY table with ARRNAME not in @a arrnameList
  *
- * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked
  */
 static gboolean prune_oi_array(oi_fits *pData, GList *arrnameList)
 {
@@ -327,9 +327,9 @@ static gboolean prune_oi_array(oi_fits *pData, GList *arrnameList)
 }
 
 /**
- * Remove first OI_WAVELENGTH table with INSNAME not in @a insnameList.
+ * Remove first OI_WAVELENGTH table with INSNAME not in @a insnameList
  *
- * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked
  */
 static gboolean prune_oi_wavelength(oi_fits *pData, GList *insnameList)
 {
@@ -358,9 +358,9 @@ static gboolean prune_oi_wavelength(oi_fits *pData, GList *insnameList)
 }
 
 /**
- * Remove first OI_CORR table with CORRNAME not in @a corrnameList.
+ * Remove first OI_CORR table with CORRNAME not in @a corrnameList
  *
- * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked
  */
 static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
 {
@@ -389,9 +389,9 @@ static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
 }
 
 /**
- * Remove first OI_INSPOL table with ARRNAME not in @a arrnameList.
+ * Remove first OI_INSPOL table with ARRNAME not in @a arrnameList
  *
- * @return gboolean  TRUE if a table was removed, FALSE if all checked.
+ * @return gboolean  TRUE if a table was removed, FALSE if all checked
  */
 static gboolean prune_oi_inspol(oi_fits *pData, GList *arrnameList)
 {
@@ -425,7 +425,7 @@ static gboolean prune_oi_inspol(oi_fits *pData, GList *arrnameList)
 
 /**
  * Return a GOptionGroup for the filtering command-line options
- * recognized by oifitslib.
+ * recognized by oifitslib
  *
  * You should add this group to your GOptionContext with
  * g_option_context_add_group() or g_option_context_set_main_group(),
@@ -444,7 +444,7 @@ GOptionGroup *get_oi_filter_option_group(void)
 }
 
 /**
- * Get command-line filter obtained by by g_option_context_parse().
+ * Get command-line filter obtained by by g_option_context_parse()
  *
  * @return  Pointer to filter
  */
@@ -456,7 +456,7 @@ oi_filter_spec *get_user_oi_filter(void)
 
 /**
  * Filter OIFITS data using filter specified on commandline. Makes a
- * deep copy.
+ * deep copy
  *
  * @param pInput   pointer to input file data struct, see oifile.h
  * @param pOutput  pointer to uninitialised output data struct
@@ -467,7 +467,7 @@ void apply_user_oi_filter(const oi_fits *pInput, oi_fits *pOutput)
 }
 
 /**
- * Initialise filter specification to accept all data.
+ * Initialise filter specification to accept all data
  *
  * @param pFilter  pointer to filter specification
  */
@@ -498,7 +498,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
 }
 
 /**
- * Generate string representation of filter spec.
+ * Generate string representation of filter spec
  *
  * @param pFilter  pointer to filter specification
  *
@@ -555,7 +555,7 @@ const char *format_oi_filter(const oi_filter_spec *pFilter)
 }
 
 /**
- * Print filter spec to stdout.
+ * Print filter spec to stdout
  *
  * @param pFilter  pointer to filter specification
  */
@@ -578,7 +578,7 @@ void print_oi_filter(const oi_filter_spec *pFilter)
     g_pattern_match_string((pFilter)->corrname_pttn, (pObject)->corrname) )
 
 /**
- * Filter primary header keywords.
+ * Filter primary header keywords
  *
  * @param pInHeader   pointer to input oi_header
  * @param pFilter     pointer to filter specification
@@ -593,7 +593,7 @@ void filter_oi_header(const oi_header *pInHeader,
 }
 
 /**
- * Filter OI_TARGET table.
+ * Filter OI_TARGET table
  *
  * @param pInTargets   pointer to input oi_target
  * @param pFilter      pointer to filter specification
@@ -624,7 +624,7 @@ void filter_oi_target(const oi_target *pInTargets,
 }
 
 /**
- * Filter OI_ARRAY tables.
+ * Filter OI_ARRAY tables
  *
  * Tables are either removed or copied verbatim.
  *
@@ -655,14 +655,14 @@ void filter_all_oi_array(const oi_fits *pInput, const oi_filter_spec *pFilter,
 
 /**
  * Filter all OI_WAVELENGTH tables, remembering which wavelength
- * channels have been accepted for each.
+ * channels have been accepted for each
  *
- * @param pInput       pointer to input dataset
- * @param pFilter      pointer to filter specification
- * @param pOutput      pointer to oi_fits struct to write filtered tables to
+ * @param pInput   pointer to input dataset
+ * @param pFilter  pointer to filter specification
+ * @param pOutput  pointer to oi_fits struct to write filtered tables to
  *
  * @return Hash table of boolean arrays giving accepted wavelength
- * channels, indexed by INSNAME
+ *         channels, indexed by INSNAME
  */
 GHashTable *filter_all_oi_wavelength(const oi_fits *pInput,
                                      const oi_filter_spec *pFilter,
@@ -702,7 +702,7 @@ GHashTable *filter_all_oi_wavelength(const oi_fits *pInput,
 }
 
 /**
- * Filter specified OI_WAVELENGTH table.
+ * Filter specified OI_WAVELENGTH table
  *
  * @param pInWave    pointer to input oi_wavelength
  * @param waveRange  minimum and maximum wavelengths to accept /m
@@ -742,7 +742,7 @@ void filter_oi_wavelength(const oi_wavelength *pInWave,
 }
 
 /**
- * Filter OI_CORR tables.
+ * Filter OI_CORR tables
  *
  * Tables are either removed or copied verbatim.
  *
@@ -772,7 +772,7 @@ void filter_all_oi_corr(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_INSPOL tables.
+ * Filter all OI_INSPOL tables
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -809,7 +809,7 @@ void filter_all_oi_inspol(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter specified OI_INSPOL table by TARGET_ID, INSNAME, and MJD.
+ * Filter specified OI_INSPOL table by TARGET_ID, INSNAME, and MJD
  *
  * @param pInTab   pointer to input oi_inspol
  * @param pFilter  pointer to filter specification
@@ -898,7 +898,7 @@ void filter_oi_inspol(const oi_inspol *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_VIS tables.
+ * Filter all OI_VIS tables
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -967,7 +967,7 @@ static bool any_vis_snr_ok(const oi_vis_record *pRec,
 }
 
 /**
- * Filter OI_VIS table row by wavelength and SNR.
+ * Filter OI_VIS table row by wavelength and SNR
  */
 static void filter_oi_vis_record(const oi_vis_record *pInRec,
                                  const oi_filter_spec *pFilter,
@@ -1047,12 +1047,12 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
 }
 
 /**
- * Filter specified OI_VIS table by TARGET_ID, MJD, wavelength, and SNR.
+ * Filter specified OI_VIS table by TARGET_ID, MJD, wavelength, and SNR
  *
- * @param pInTab       pointer to input oi_vis
- * @param pFilter      pointer to filter specification
- * @param useWave      boolean array giving wavelength channels to accept
- * @param pOutTab      pointer to output oi_vis
+ * @param pInTab   pointer to input oi_vis
+ * @param pFilter  pointer to filter specification
+ * @param useWave  boolean array giving wavelength channels to accept
+ * @param pOutTab  pointer to output oi_vis
  */
 void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
                    const char *useWave, oi_vis *pOutTab)
@@ -1097,7 +1097,7 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_VIS2 tables.
+ * Filter all OI_VIS2 tables
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -1163,7 +1163,7 @@ static bool any_vis2_snr_ok(const oi_vis2_record *pRec,
 }
 
 /**
- * Filter OI_VIS2 table row by wavelength and SNR.
+ * Filter OI_VIS2 table row by wavelength and SNR
  */
 static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
                                   const oi_filter_spec *pFilter,
@@ -1201,12 +1201,12 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
 }
 
 /**
- * Filter specified OI_VIS2 table by TARGET_ID, MJD, wavelength, and SNR.
+ * Filter specified OI_VIS2 table by TARGET_ID, MJD, wavelength, and SNR
  *
- * @param pInTab       pointer to input oi_vis2
- * @param pFilter      pointer to filter specification
- * @param useWave      boolean array giving wavelength channels to accept
- * @param pOutTab      pointer to output oi_vis2
+ * @param pInTab   pointer to input oi_vis2
+ * @param pFilter  pointer to filter specification
+ * @param useWave  boolean array giving wavelength channels to accept
+ * @param pOutTab  pointer to output oi_vis2
  */
 void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
                     const char *useWave, oi_vis2 *pOutTab)
@@ -1250,7 +1250,7 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_T3 tables.
+ * Filter all OI_T3 tables
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -1324,7 +1324,7 @@ static bool any_t3_snr_ok(const oi_t3_record *pRec,
 }
 
 /**
- * Filter OI_T3 table row by wavelength and SNR.
+ * Filter OI_T3 table row by wavelength and SNR
  */
 static void filter_oi_t3_record(const oi_t3_record *pInRec,
                                 const oi_filter_spec *pFilter,
@@ -1387,7 +1387,7 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
 }
 
 /**
- * Filter specified OI_T3 table by TARGET_ID, MJD, wavelength, and SNR.
+ * Filter specified OI_T3 table by TARGET_ID, MJD, wavelength, and SNR
  *
  * @param pInTab       pointer to input oi_t3
  * @param pFilter      pointer to filter specification
@@ -1444,7 +1444,7 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_SPECTRUM tables.
+ * Filter all OI_SPECTRUM tables
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -1491,7 +1491,7 @@ void filter_all_oi_spectrum(const oi_fits *pInput,
 }
 
 /**
- * Filter OI_SPECTRUM table row by wavelength and SNR.
+ * Filter OI_SPECTRUM table row by wavelength and SNR
  */
 static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
                                       const oi_filter_spec *pFilter,
@@ -1529,7 +1529,7 @@ static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
 }
 
 /**
- * Filter specified OI_SPECTRUM table by TARGET_ID, MJD, wavelength, and SNR.
+ * Filter specified OI_SPECTRUM table by TARGET_ID, MJD, wavelength, and SNR
  *
  * @param pInTab       pointer to input oi_spectrum
  * @param pFilter      pointer to filter specification
@@ -1570,7 +1570,7 @@ void filter_oi_spectrum(const oi_spectrum *pInTab,
 }
 
 /**
- * Filter OIFITS data. Makes a deep copy.
+ * Filter OIFITS data. Makes a deep copy
  *
  * @param pInput   pointer to input file data struct, see oifile.h
  * @param pFilter  pointer to filter specification

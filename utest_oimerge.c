@@ -34,8 +34,8 @@ typedef struct {
   const char *filename1;
   const char *filename2;
   const char *filename3;
-  int numArray;       /**< Number of OI_ARRAY expected in output */
-  int numWavelength;  /**< Number of OI_WAVELENGTH expected in output */
+  int numArray;       /**< number of OI_ARRAY expected in output */
+  int numWavelength;  /**< number of OI_WAVELENGTH expected in output */
 } TestCase;
 
 typedef struct {
