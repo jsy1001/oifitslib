@@ -115,6 +115,7 @@ oi_breach_level check_keywords(const oi_fits *, oi_check_result *);
 oi_breach_level check_visrefmap(const oi_fits *, oi_check_result *);
 oi_breach_level check_unique_targets(const oi_fits *, oi_check_result *);
 oi_breach_level check_targets_present(const oi_fits *, oi_check_result *);
+oi_breach_level check_arrname(const oi_fits *, oi_check_result *);
 oi_breach_level check_elements_present(const oi_fits *, oi_check_result *);
 oi_breach_level check_corr_present(const oi_fits *, oi_check_result *);
 oi_breach_level check_flagging(const oi_fits *, oi_check_result *);

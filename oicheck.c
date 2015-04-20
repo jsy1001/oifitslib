@@ -142,6 +142,7 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
   const char desc2[] = "Mixed table revisions";
   char location[FLEN_VALUE];
 
+  /* note desc1 and desc2 must not be mixed in pResult */
   init_check_result(pResult);
   if (is_oi_fits_one(pOi)) {
     if (pOi->numWavelength == 0) {
@@ -496,11 +497,101 @@ oi_breach_level check_targets_present(const oi_fits *pOi,
   return pResult->level;
 }
 
+/**
+ * Check ARRNAME is set (mandatory in OIFITS v2).
+ *
+ * @sa check_elements_present() which checks that the OI_ARRAY table
+ * referenced by ARRNAME contains the elements referenced by
+ * STA_INDEX.
+ *
+ * @param pOi      pointer to oi_fits struct to check
+ * @param pResult  pointer to oi_check_result struct to store result in
+ *
+ * @return oi_breach_level indicating overall test result
+ */
+oi_breach_level check_arrname(const oi_fits *pOi, oi_check_result *pResult)
+{
+  GList *link;
+  oi_inspol *pInspol;
+  oi_vis *pVis;
+  oi_vis2 *pVis2;
+  oi_t3 *pT3;
+  oi_spectrum *pSpectrum;
+  const char desc[] = "ARRNAME missing";
+  char location[FLEN_VALUE];
+
+  init_check_result(pResult);
+  if(is_oi_fits_two(pOi))
+  {
+    /* Check OI_INSPOL tables */
+    link = pOi->inspolList;
+    while (link != NULL) {
+      pInspol = link->data;
+      if (strlen(pInspol->arrname) == 0) {
+        g_snprintf(location, FLEN_VALUE, "OI_INSPOL #%d",
+                   g_list_position(pOi->visList, link) + 1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      link = link->next;
+    }
+
+    /* Check OI_VIS tables (file is v2) */
+    link = pOi->visList;
+    while (link != NULL) {
+      pVis = link->data;
+      if (strlen(pVis->arrname) == 0) {
+        g_snprintf(location, FLEN_VALUE, "OI_VIS #%d",
+                   g_list_position(pOi->visList, link) + 1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      link = link->next;
+    }
+
+    /* Check OI_VIS2 tables (file is v2) */
+    link = pOi->vis2List;
+    while (link != NULL) {
+      pVis2 = link->data;
+      if (strlen(pVis2->arrname) == 0) {
+        g_snprintf(location, FLEN_VALUE, "OI_VIS2 #%d",
+                   g_list_position(pOi->vis2List, link) + 1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      link = link->next;
+    }
+
+    /* Check OI_T3 tables (file is v2) */
+    link = pOi->t3List;
+    while (link != NULL) {
+      pT3 = link->data;
+      if (strlen(pT3->arrname) == 0) {
+        g_snprintf(location, FLEN_VALUE, "OI_T3 #%d",
+                   g_list_position(pOi->t3List, link) + 1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      link = link->next;
+    }
+
+    /* Check OI_SPECTRUM tables */
+    link = pOi->spectrumList;
+    while (link != NULL) {
+      pSpectrum = link->data;
+      if (pSpectrum->calstat == 'U' && strlen(pSpectrum->arrname) == 0) {
+        /* ARRNAME required in OI_SPECTRUM only if uncalibrated */
+        g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
+                   g_list_position(pOi->spectrumList, link) + 1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      link = link->next;
+    }
+  }
+  
+  return pResult->level;
+}
 
 /**
  * Check all referenced array elements are present.
  *
- * If OIFITS v2, complains if ARRNAME is not present.
+ * @sa check_arrname() which checks that the ARRNAME keyword is present.
  *
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
@@ -512,7 +603,6 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
 {
   GList *link;
   int i, j;
-  int requireArrname;
   oi_inspol *pInspol;
   oi_vis *pVis;
   oi_vis2 *pVis2;
@@ -523,7 +613,6 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
-  requireArrname = is_oi_fits_two(pOi);
 
   /* Check OI_INSPOL tables */
   link = pOi->inspolList;
@@ -561,10 +650,6 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
           }
         }
       }
-    } else if (requireArrname) {
-      g_snprintf(location, FLEN_VALUE, "OI_VIS #%d",
-                 g_list_position(pOi->visList, link) + 1);
-      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
@@ -584,10 +669,6 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
           }
         }
       }
-    } else if (requireArrname) {
-      g_snprintf(location, FLEN_VALUE, "OI_VIS2 #%d",
-                 g_list_position(pOi->vis2List, link) + 1);
-      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
@@ -607,10 +688,6 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
           }
         }
       }
-    } else if (requireArrname) {
-      g_snprintf(location, FLEN_VALUE, "OI_T3 #%d",
-                 g_list_position(pOi->t3List, link) + 1);
-      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }
@@ -629,11 +706,6 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
           set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
         }
       }
-    } else if (pSpectrum->calstat == 'U') {
-      /* ARRNAME required in OI_SPECTRUM only if uncalibrated */
-      g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
-                 g_list_position(pOi->spectrumList, link) + 1);
-      set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
     }
     link = link->next;
   }

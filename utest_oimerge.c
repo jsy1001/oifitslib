@@ -93,6 +93,7 @@ static void check(const oi_fits *pData)
     check_visrefmap,
     check_unique_targets,
     check_targets_present,
+    check_arrname,
     check_elements_present,
     check_corr_present,
     check_flagging,

@@ -33,8 +33,8 @@ human-readable description of the result.
 >>> from oicheck import *
 >>> checks = [check_tables, check_header, check_keywords, check_visrefmap,
 ...           check_unique_targets, check_targets_present, check_corr_present,
-...           check_elements_present, check_flagging, check_t3amp,
-...           check_waveorder, check_time, check_spectrum]
+...           check_arrname, check_elements_present, check_flagging,
+...           check_t3amp, check_waveorder, check_time, check_spectrum]
 >>> o = oifits.OiFits('test/OIFITS2/bigtest2.fits')
 >>> for c in checks:
 ...     level, result = c(o)
@@ -81,6 +81,7 @@ oi_breach_level check_visrefmap(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_unique_targets(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_targets_present(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_corr_present(oi_fits *, oi_check_result *pResult);
+oi_breach_level check_arrname(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_elements_present(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_flagging(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_t3amp(oi_fits *, oi_check_result *pResult);
