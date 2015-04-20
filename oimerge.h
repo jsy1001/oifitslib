@@ -29,11 +29,9 @@
  * This module implements merging of a list of OIFITS datasets into a
  * single dataset.
  *
- * To simplify the implementation, OI_ARRAY tables are not copied into
- * the output dataset (these are not required by the OIFITS
- * standard). Target records with the same target name are merged
- * (without checking that the coordinates etc. are identical), as are
- * duplicate OI_WAVELENGTH tables.
+ * Target records with the same target name are merged (without
+ * checking that the coordinates etc. are identical), as are duplicate
+ * OI_WAVELENGTH tables.
  *
  * A merged dataset should be obtained by calling merge_oi_fits()
  * (which takes a variable number of arguments) or
