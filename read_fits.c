@@ -82,6 +82,49 @@ static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
 }
 
 /**
+ * Read string column.
+ *
+ * Sets the CFITSIO error status to BAD_BTABLE_FORMAT if the first
+ * column matching @a colname does not have a string type or its
+ * repeat count exceeds @a maxRepeat.
+ *
+ * @return TRUE if column read successfully, FALSE otherwise.
+ */
+static bool read_col_string(fitsfile *fptr, bool optional, char *colname,
+                            long maxRepeat, long irow,
+                            char *value, STATUS *pStatus)
+{
+  int colnum, typecode, anynull;
+  long actualRepeat;
+
+  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+
+  fits_write_errmark();
+  fits_get_colnum(fptr, CASEINSEN, colname, &colnum, pStatus);
+  if (*pStatus == COL_NOT_FOUND) {
+    if (optional) {
+      *pStatus = 0;
+      fits_clear_errmark();
+    }
+    return FALSE;
+  } else {
+    fits_get_coltype(fptr, colnum, &typecode, &actualRepeat, NULL, pStatus);
+    if (typecode != TSTRING) {
+      *pStatus = BAD_BTABLE_FORMAT;
+      return FALSE;
+    }
+    if (actualRepeat > maxRepeat) {
+      *pStatus = BAD_BTABLE_FORMAT;
+      return FALSE;
+    }
+    if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                      &value, &anynull, pStatus))
+      return FALSE;
+    return TRUE;
+  }
+}
+
+/**
  * Verify current HDU against CHECKSUM and DATASUM keywords.
  *
  * The checksum keyword convention is described at
@@ -221,7 +264,6 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
                                  const char *arrname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
-  char *p;
   double nan;
   const int revision = 2;
   int irow, colnum, anynull;
@@ -256,14 +298,10 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   alloc_oi_array(pArray, nrows);
   /* read rows */
   for (irow = 1; irow <= pArray->nelement; irow++) {
-    fits_get_colnum(fptr, CASEINSEN, "TEL_NAME", &colnum, pStatus);
-    p = pArray->elem[irow - 1].tel_name;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "STA_NAME", &colnum, pStatus);
-    p = pArray->elem[irow - 1].sta_name;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
+    read_col_string(fptr, FALSE, "TEL_NAME", 16, irow,
+                    pArray->elem[irow - 1].tel_name, pStatus);
+    read_col_string(fptr, FALSE, "STA_NAME", 16, irow,
+                    pArray->elem[irow - 1].sta_name, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pArray->elem[irow - 1].sta_index, &anynull, pStatus);
@@ -277,10 +315,8 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
       fits_get_colnum(fptr, CASEINSEN, "FOV", &colnum, pStatus);
       fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                     &pArray->elem[irow - 1].fov, &anynull, pStatus);
-      fits_get_colnum(fptr, CASEINSEN, "FOVTYPE", &colnum, pStatus);
-      p = pArray->elem[irow - 1].fovtype;
-      fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                    &p, &anynull, pStatus);
+      read_col_string(fptr, FALSE, "FOVTYPE", 6, irow,
+                      pArray->elem[irow - 1].fovtype, pStatus);
     } else {
       pArray->elem[irow - 1].fov = nan;
       strncpy(pArray->elem[irow - 1].fovtype, "FWHM", 7);
@@ -412,7 +448,6 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
                                   STATUS *pStatus)
 {
-  char *p;
   const int revision = 1;
   int irow, colnum, anynull;
   long nrows, repeat;
@@ -444,10 +479,9 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pInspol->record[irow - 1].target_id, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "INSNAME", &colnum, pStatus);
-    p = pInspol->record[irow - 1].insname;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
+    read_col_string(fptr, FALSE, "INSNAME",
+                    sizeof(pInspol->record[irow - 1].insname) - 1, irow,
+                    pInspol->record[irow - 1].insname, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "MJD_OBS", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                   &pInspol->record[irow - 1].mjd_obs, &anynull, pStatus);
@@ -560,10 +594,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].target_id, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "TARGET", &colnum, pStatus);
-    p = pTargets->targ[irow - 1].target;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
+    read_col_string(fptr, FALSE, "TARGET", 16, irow,
+                    pTargets->targ[irow - 1].target, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "RAEP0", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].raep0, &anynull, pStatus);
@@ -582,14 +614,10 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "SYSVEL", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].sysvel, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "VELTYP", &colnum, pStatus);
-    p = pTargets->targ[irow - 1].veltyp;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "VELDEF", &colnum, pStatus);
-    p = pTargets->targ[irow - 1].veldef;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
+    read_col_string(fptr, FALSE, "VELTYP", 8, irow,
+                    pTargets->targ[irow - 1].veltyp, pStatus);
+    read_col_string(fptr, FALSE, "VELDEF", 8, irow,
+                    pTargets->targ[irow - 1].veldef, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "PMRA", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].pmra, &anynull, pStatus);
@@ -608,10 +636,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "PARA_ERR", &colnum, pStatus);
     fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].para_err, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "SPECTYP", &colnum, pStatus);
-    p = pTargets->targ[irow - 1].spectyp;
-    fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                  &p, &anynull, pStatus);
+    read_col_string(fptr, FALSE, "SPECTYP", 16, irow,
+                    pTargets->targ[irow - 1].spectyp, pStatus);
     /*printf("%16s  %10f %10f  %8s\n",
            pTargets->targ[irow-1].target,
            pTargets->targ[irow-1].raep0, pTargets->targ[irow-1].decep0,
@@ -621,19 +647,9 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   /* Read optional column */
   pTargets->usecategory = FALSE;  /* default */
   if (pTargets->revision >= 2) {
-    fits_write_errmark();
-    fits_get_colnum(fptr, CASEINSEN, "CATEGORY", &colnum, pStatus);
-    if (*pStatus == COL_NOT_FOUND) {
-      *pStatus = 0;
-      fits_clear_errmark();
-    } else {
-      pTargets->usecategory = TRUE;
-      for (irow = 1; irow <= pTargets->ntarget; irow++) {
-        p = pTargets->targ[irow - 1].category;
-        fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                      &p, &anynull, pStatus);
-      }
-    }
+    pTargets->usecategory = read_col_string(fptr, TRUE, "CATEGORY", 3, irow,
+                                            pTargets->targ[irow - 1].category,
+                                            pStatus);
   }
 
 except:
