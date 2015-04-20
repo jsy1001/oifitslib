@@ -1357,7 +1357,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
     correlated = FALSE;
   }
   fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, NULL, pStatus);
-  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, NULL, pStatus); //:BUG: buffer overrun
+  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, NULL, pStatus);
   fits_read_key(fptr, TSTRING, "CALSTAT", value, NULL, pStatus);
   pSpectrum->calstat = value[0];
   /* get dimensions and allocate storage */
