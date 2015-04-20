@@ -701,7 +701,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   /* Read all OI_ARRAY tables */
   pOi->numArray = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pArray = chkmalloc(sizeof(oi_array));
     fits_write_errmark();
     if (read_next_oi_array(fptr, pArray, pStatus))
@@ -717,7 +717,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   /* Read all OI_WAVELENGTH tables */
   pOi->numWavelength = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pWave = chkmalloc(sizeof(oi_wavelength));
     fits_write_errmark();
     if (read_next_oi_wavelength(fptr, pWave, pStatus))
@@ -733,7 +733,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   /* Read all OI_CORR tables */
   pOi->numCorr = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pCorr = chkmalloc(sizeof(oi_corr));
     fits_write_errmark();
     if (read_next_oi_corr(fptr, pCorr, pStatus))
@@ -749,7 +749,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   /* Read all OI_INSPOL tables */
   pOi->numInspol = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pInspol = chkmalloc(sizeof(oi_inspol));
     fits_write_errmark();
     if (read_next_oi_inspol(fptr, pInspol, pStatus))
@@ -766,7 +766,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
    * corr tables */
   pOi->numVis = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pVis = chkmalloc(sizeof(oi_vis));
     fits_write_errmark();
     if (read_next_oi_vis(fptr, pVis, pStatus)) break;  /* no more OI_VIS */
@@ -795,7 +795,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
    * and corr tables */
   pOi->numVis2 = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pVis2 = chkmalloc(sizeof(oi_vis2));
     fits_write_errmark();
     if (read_next_oi_vis2(fptr, pVis2, pStatus)) break;  /* no more OI_VIS2 */
@@ -824,7 +824,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
    * corr tables */
   pOi->numT3 = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pT3 = chkmalloc(sizeof(oi_t3));
     fits_write_errmark();
     if (read_next_oi_t3(fptr, pT3, pStatus)) break;  /* no more OI_T3 */
@@ -853,7 +853,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
    * wavelength tables */
   pOi->numSpectrum = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     pSpectrum = chkmalloc(sizeof(oi_spectrum));
     fits_write_errmark();
     if (read_next_oi_spectrum(fptr, pSpectrum, pStatus))

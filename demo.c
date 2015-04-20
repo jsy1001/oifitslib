@@ -452,7 +452,7 @@ void demo_read(void)
 
   /* Read all OI_VIS tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
-  while (1 == 1) {
+  while (TRUE) {
     if (read_next_oi_vis(fptr, &vis, &status)) break;  /* no more OI_VIS */
     printf("Read OI_VIS      with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
            vis.arrname, vis.insname, vis.corrname);
@@ -481,7 +481,7 @@ void demo_read(void)
   /* Read all OI_VIS2 tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     if (read_next_oi_vis2(fptr, &vis2, &status)) break;  /* no more OI_VIS2 */
     printf("Read OI_VIS2     with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
            vis2.arrname, vis2.insname, vis.corrname);
@@ -509,7 +509,7 @@ void demo_read(void)
   /* Read all OI_T3 tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     if (read_next_oi_t3(fptr, &t3, &status)) break;  /* no more OI_T3 */
     printf("Read OI_T3       with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
            t3.arrname, t3.insname, t3.corrname);
@@ -537,7 +537,7 @@ void demo_read(void)
   /* Read all OI_SPECTRUM tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     if (read_next_oi_spectrum(fptr, &spectrum, &status)) break;
     printf("Read OI_SPECTRUM with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
            spectrum.arrname, spectrum.insname, spectrum.corrname);
@@ -564,7 +564,7 @@ void demo_read(void)
 
   /* Read all OI_INSPOL tables and corresponding OI_ARRAY tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
-  while (1 == 1) {
+  while (TRUE) {
     if (read_next_oi_inspol(fptr, &inspol, &status))
       break;  /* no more OI_INSPOL */
     printf("Read OI_INSPOL   with  ARRNAME=%s\n", inspol.arrname);
