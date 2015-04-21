@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: oitable
+Description: OIFITSlib oitable module
+URL: https://github.com/jsy1001/oifitslib
+Version: 2.1.0
+Requires.private: cfitsio
+Cflags: -I${includedir}
+Libs: -L${libdir} -loitable

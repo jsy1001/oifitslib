@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: oifitslib
+Description: OIFITSlib - a C library for reading/writing OIFITS files
+URL: https://github.com/jsy1001/oifitslib
+Version: 2.1.0
+Requires.private: cfitsio glib-2.0 >= 2.16
+Cflags: -I${includedir}
+Libs: -L${libdir} -loifits

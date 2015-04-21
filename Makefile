@@ -59,6 +59,7 @@ prefix = /usr/local
 includedir = $(prefix)/include
 bindir = $(prefix)/bin
 libdir = $(prefix)/lib
+pkgconfigdir = $(prefix)/lib/pkgconfig
 
 
 # Rules to make .o file from .c file
@@ -86,16 +87,18 @@ TEST_EXES = utest_datemjd utest_oifile \
 LIBRARIES = liboifits.a
 INCFILES = chkmalloc.h datemjd.h \
  exchange.h oifile.h oicheck.h oifilter.h oimerge.h
+PKGMODULES = oitable.pc oifitslib.pc
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
 
 # List targets that don't require GLib first
 default: $(OITABLE) $(LIBRARIES) $(EXES) $(TEST_EXES) $(PYTHONMODULES);
 
-install: $(OITABLE) $(LIBRARIES) $(INCFILES) $(EXES)
+install: $(OITABLE) $(LIBRARIES) $(INCFILES) $(EXES) $(PKGMODULES)
 	$(INSTALL) -m 755 $(EXES) $(bindir)
 	$(INSTALL) -m 644 $(OITABLE) $(LIBRARIES) $(libdir)
 	$(INSTALL) -m 644 $(INCFILES) $(includedir)
+	$(INSTALL) -m 644 $(PKGMODULES) $(pkgconfigdir)
 
 clean:
 	rm -f $(OITABLE) $(LIBRARIES) $(EXES) $(TEST_EXES) *.o *.libexists
