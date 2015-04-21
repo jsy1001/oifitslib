@@ -28,7 +28,7 @@ INSTALL = install
 PYTHON = python2.7
 PYINCFLAGS = `$(PYTHON)-config --cflags`
 
-CPPFLAGS = `$(PKGCONFIG) --cflags glib-2.0`
+CPPFLAGS = `$(PKGCONFIG) --cflags cfitsio glib-2.0`
 CFLAGS =  -Wall -g -fPIC -std=c99
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -37,7 +37,7 @@ ifeq ($(UNAME_S),Darwin)
   # if you have a required library installed in both systems, the Homebrew
   # one will take precedence.
   CPPFLAGS += -I/opt/local/include
-  override LDLIBS += -L/opt/local/lib -lcfitsio -lm
+  override LDLIBS += `$(PKGCONFIG) --libs cfitsio` -lm
   ifeq ($(CC),cc)
     SHAREDFLAGS = -bundle
   else
@@ -49,7 +49,7 @@ else ifeq ($(UNAME_S),SunOS)
   # assume gcc
   SHAREDFLAGS = -shared
 else
-  override LDLIBS += -lcfitsio -lm
+  override LDLIBS += `$(PKGCONFIG) --libs cfitsio` -lm
   SHAREDFLAGS = -shared
 endif
 LDLIBS_GLIB = `$(PKGCONFIG) --libs glib-2.0`
