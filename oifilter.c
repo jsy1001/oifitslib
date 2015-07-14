@@ -43,9 +43,9 @@ extern GString *pGStr;
 /** Filter specified on command-line via g_option_context_parse() */
 static oi_filter_spec parsedFilter;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
-char *arrname, *insname, *corrname, *mjdMinStr, *mjdMaxStr;
+char *arrname, *insname, *corrname;
 /** Values set by g_option_context_parse(), used to set parsedFilter */
-char *waveMinStr, *waveMaxStr, *basMinStr, *basMaxStr, *snrMinStr, *snrMaxStr;
+double waveMinNm, waveMaxNm, snrMin, snrMax;
 /** Flag set by filter_post_parse */
 static gboolean doneParse = FALSE;
 
@@ -59,21 +59,21 @@ static GOptionEntry filterEntries[] = {
    "Accept CORRNAMEs matching this pattern (use * and ?)", "PATTERN" },
   {"target-id", 0, 0, G_OPTION_ARG_INT, &parsedFilter.target_id,
    "Accept only this TARGET_ID", "ID" },
-  {"mjd-min", 0, 0, G_OPTION_ARG_STRING, &mjdMinStr,
+  {"mjd-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.mjd_range[0],
    "Minimum MJD to accept", "MJD" },
-  {"mjd-max", 0, 0, G_OPTION_ARG_STRING, &mjdMaxStr,
+  {"mjd-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.mjd_range[1],
    "Maximum MJD to accept", "MJD" },
-  {"wave-min", 0, 0, G_OPTION_ARG_STRING, &waveMinStr,
+  {"wave-min", 0, 0, G_OPTION_ARG_DOUBLE, &waveMinNm,
    "Minimum wavelength to accept /nm", "WL" },
-  {"wave-max", 0, 0, G_OPTION_ARG_STRING, &waveMaxStr,
+  {"wave-max", 0, 0, G_OPTION_ARG_DOUBLE, &waveMaxNm,
    "Maximum wavelength to accept /nm", "WL" },
-  {"bas-min", 0, 0, G_OPTION_ARG_STRING, &basMinStr,
+  {"bas-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[0],
    "Minimum baseline to accept /m", "BASE" },
-  {"bas-max", 0, 0, G_OPTION_ARG_STRING, &basMaxStr,
+  {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[1],
    "Maximum baseline to accept /m", "BASE" },
-  {"snr-min", 0, 0, G_OPTION_ARG_STRING, &snrMinStr,
+  {"snr-min", 0, 0, G_OPTION_ARG_DOUBLE, &snrMin,
    "Minimum SNR to accept", "SNR" },
-  {"snr-max", 0, 0, G_OPTION_ARG_STRING, &snrMaxStr,
+  {"snr-max", 0, 0, G_OPTION_ARG_DOUBLE, &snrMax,
    "Maximum SNR to accept", "SNR" },
   {"accept-vis", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis,
    "If non-zero, accept complex visibilities (default 1)", "0/1" },
@@ -105,15 +105,11 @@ static gboolean filter_pre_parse(GOptionContext *context, GOptionGroup *group,
   arrname = NULL;
   insname = NULL;
   corrname = NULL;
-  mjdMinStr = g_strdup_printf("%lf", parsedFilter.mjd_range[0]);
-  mjdMaxStr = g_strdup_printf("%lf", parsedFilter.mjd_range[1]);
   /* Convert m -> nm */
-  waveMinStr = g_strdup_printf("%f", 1e9 * parsedFilter.wave_range[0]);
-  waveMaxStr = g_strdup_printf("%f", 1e9 * parsedFilter.wave_range[1]);
-  basMinStr = g_strdup_printf("%lf", parsedFilter.bas_range[0]);
-  basMaxStr = g_strdup_printf("%lf", parsedFilter.bas_range[1]);
-  snrMinStr = g_strdup_printf("%f", parsedFilter.snr_range[0]);
-  snrMaxStr = g_strdup_printf("%f", parsedFilter.snr_range[1]);
+  waveMinNm = 1e9 * parsedFilter.wave_range[0];
+  waveMaxNm = 1e9 * parsedFilter.wave_range[1];
+  snrMin = (double)parsedFilter.snr_range[0];
+  snrMax = (double)parsedFilter.snr_range[1];
   return TRUE;
 }
 
@@ -130,15 +126,11 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
     g_strlcpy(parsedFilter.insname, insname, FLEN_VALUE);
   if (corrname != NULL)
     g_strlcpy(parsedFilter.corrname, corrname, FLEN_VALUE);
-  parsedFilter.mjd_range[0] = atof(mjdMinStr);
-  parsedFilter.mjd_range[1] = atof(mjdMaxStr);
   /* Convert nm -> m */
-  parsedFilter.wave_range[0] = (float)(1e-9 * atof(waveMinStr));
-  parsedFilter.wave_range[1] = (float)(1e-9 * atof(waveMaxStr));
-  parsedFilter.bas_range[0] = atof(basMinStr);
-  parsedFilter.bas_range[1] = atof(basMaxStr);
-  parsedFilter.snr_range[0] = (float)atof(snrMinStr);
-  parsedFilter.snr_range[1] = (float)atof(snrMaxStr);
+  parsedFilter.wave_range[0] = (float)(1e-9 * waveMinNm);
+  parsedFilter.wave_range[1] = (float)(1e-9 * waveMaxNm);
+  parsedFilter.snr_range[0] = (float)snrMin;
+  parsedFilter.snr_range[1] = (float)snrMax;
   return TRUE;
 }
 
