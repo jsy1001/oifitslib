@@ -122,18 +122,20 @@ demo.o: demo.c exchange.h
 # Targets requiring GLib
 #
 liboifits.a: read_fits.o write_fits.o alloc_fits.o free_fits.o chkmalloc.o \
- datemjd.o oifile.o oifilter.o oicheck.o oimerge.o
+ datemjd.o oifile.o oifilter.o oicheck.o oimerge.o oiiter.o
 	$(AR) -ruc $@ $^
 datemjd.o: datemjd.c datemjd.h
 oifile.o: oifile.c oifile.h exchange.h chkmalloc.h datemjd.h glib-2.0.libexists
 oifilter.o: oifilter.c oifilter.h oifile.h exchange.h chkmalloc.h glib-2.0.libexists
 oicheck.o: oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 oimerge.o: oimerge.c oimerge.h oifile.h exchange.h chkmalloc.h datemjd.h glib-2.0.libexists
+oiiter.o: oiiter.c oiiter.h oifile.h oifilter.h exchange.h glib-2.0.libexists
 utest_datemjd.o: utest_datemjd.c datemjd.h glib-2.0.libexists
 utest_oifile.o: utest_oifile.c oifile.h exchange.h glib-2.0.libexists
 utest_oicheck.o: utest_oicheck.c oicheck.h oifile.h exchange.h glib-2.0.libexists
 utest_oimerge.o: utest_oimerge.c oimerge.h oifile.h oicheck.h exchange.h glib-2.0.libexists
 utest_oifilter.o: utest_oifilter.c oifilter.h oifile.h oicheck.h exchange.h glib-2.0.libexists
+utest_oiiter.o: utest_oiiter.c oiiter.h oifile.h oifilter.h exchange.h glib-2.0.libexists
 
 oifits-filter: oifits-filter.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
@@ -160,6 +162,9 @@ utest_oimerge: utest_oimerge.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 utest_oifilter: utest_oifilter.o liboifits.a
+	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
+
+utest_oiiter: utest_oiiter.o liboifits.a
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS) $(LDLIBS_GLIB)
 
 # Python interface
