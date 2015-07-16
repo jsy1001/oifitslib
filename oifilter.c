@@ -71,6 +71,10 @@ static GOptionEntry filterEntries[] = {
    "Minimum baseline to accept /m", "BASE" },
   {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[1],
    "Maximum baseline to accept /m", "BASE" },
+  {"uvrad-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.uvrad_range[0],
+   "Minimum UV radius to accept /wavelength", "UVRADIUS" },
+  {"uvrad-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.uvrad_range[1],
+   "Maximum UV radius to accept /wavelength", "UVRADIUS" },
   {"snr-min", 0, 0, G_OPTION_ARG_DOUBLE, &snrMin,
    "Minimum SNR to accept", "SNR" },
   {"snr-max", 0, 0, G_OPTION_ARG_DOUBLE, &snrMax,
@@ -475,6 +479,8 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->wave_range[1] = 1e-4;
   pFilter->bas_range[0] = 0.;
   pFilter->bas_range[1] = 1e4;
+  pFilter->uvrad_range[0] = 0.;
+  pFilter->uvrad_range[1] = 1e11;
   pFilter->snr_range[0] = -5.;
   pFilter->snr_range[1] = 1e10;
   pFilter->accept_vis = 1;
@@ -509,13 +515,15 @@ const char *format_oi_filter(const oi_filter_spec *pFilter)
     g_string_append_printf(pGStr, "  TARGET_ID=%d\n", pFilter->target_id);
   else
     g_string_append_printf(pGStr, "  [Any TARGET_ID]\n");
-  g_string_append_printf(pGStr, "  MJD: %.2f - %.2f\n",
+  g_string_append_printf(pGStr, "  MJD: %.2lf - %.2lf\n",
                          pFilter->mjd_range[0], pFilter->mjd_range[1]);
   g_string_append_printf(pGStr, "  Wavelength: %.1f - %.1fnm\n",
                          1e9 * pFilter->wave_range[0],
                          1e9 * pFilter->wave_range[1]);
-  g_string_append_printf(pGStr, "  Baseline: %.1f - %.1fm\n",
+  g_string_append_printf(pGStr, "  Baseline: %.1lf - %.1lfm\n",
                          pFilter->bas_range[0], pFilter->bas_range[1]);
+  g_string_append_printf(pGStr, "  UV Radius: %.1lg - %.1lg waves\n",
+                         pFilter->uvrad_range[0], pFilter->uvrad_range[1]);
   g_string_append_printf(pGStr, "  SNR: %.1f - %.1f\n",
                          pFilter->snr_range[0], pFilter->snr_range[1]);
   if (pFilter->accept_vis)
@@ -694,7 +702,7 @@ GHashTable *filter_all_oi_wavelength(const oi_fits *pInput,
 }
 
 /**
- * Filter specified OI_WAVELENGTH table
+ * Filter an OI_WAVELENGTH table
  *
  * @param pInWave    pointer to input oi_wavelength
  * @param waveRange  minimum and maximum wavelengths to accept /m
@@ -801,7 +809,7 @@ void filter_all_oi_inspol(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter specified OI_INSPOL table by TARGET_ID, INSNAME, and MJD
+ * Filter an OI_INSPOL table by TARGET_ID, INSNAME, and MJD
  *
  * @param pInTab   pointer to input oi_inspol
  * @param pFilter  pointer to filter specification
@@ -902,6 +910,7 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
                        GHashTable *useWaveHash, oi_fits *pOutput)
 {
   GList *link;
+  oi_wavelength *pWave;
   oi_vis *pInTab, *pOutTab;
   char *useWave;
 
@@ -921,7 +930,10 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
       pOutTab = chkmalloc(sizeof(oi_vis));
-      filter_oi_vis(pInTab, pFilter, useWave, pOutTab);
+      pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
+      if (pWave == NULL)
+        g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
+      filter_oi_vis(pInTab, pFilter, pWave, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
         pOutput->visList = g_list_append(pOutput->visList, pOutTab);
         ++pOutput->numVis;
@@ -933,6 +945,30 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
       }
     }
   }
+}
+
+/**
+ * Do any of selected channels in @a pRec have an acceptable UV radius?
+ */
+static bool any_vis_uvrad_ok(const oi_vis_record *pRec,
+                             const oi_filter_spec *pFilter,
+                             const oi_wavelength *pWave, const char *useWave,
+                             int nwave)
+{
+  int j;
+  double bas, uvrad;
+
+  if (pWave == NULL)
+    return TRUE;  /* cannot filter by UV radius, so keep record */
+  bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
+  for (j = 0; j < nwave; j++) {
+    if (useWave[j]) {
+      uvrad = bas / pWave->eff_wave[j];
+      if (uvrad >= pFilter->uvrad_range[0] && uvrad <= pFilter->uvrad_range[1])
+        return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -959,10 +995,11 @@ static bool any_vis_snr_ok(const oi_vis_record *pRec,
 }
 
 /**
- * Filter OI_VIS table row by wavelength and SNR
+ * Filter OI_VIS table row by wavelength, UV radius and SNR
  */
 static void filter_oi_vis_record(const oi_vis_record *pInRec,
                                  const oi_filter_spec *pFilter,
+                                 const oi_wavelength *pWave,
                                  const char *useWave,
                                  int nwaveIn, int nwaveOut,
                                  BOOL usevisrefmap, BOOL usecomplex,
@@ -971,6 +1008,7 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
   bool someUnflagged;
   int j, k, l, m;
   float snrAmp, snrPhi;
+  double uvrad;
 
   memcpy(pOutRec, pInRec, sizeof(oi_vis_record));
   if (pFilter->target_id >= 0)
@@ -1007,14 +1045,17 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
       pOutRec->visphi[k] = pInRec->visphi[j];
       pOutRec->visphierr[k] = pInRec->visphierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
+      if (pWave != NULL) {
+        uvrad = pow(pInRec->ucoord * pInRec->ucoord +
+                    pInRec->vcoord * pInRec->vcoord, 0.5) / pWave->eff_wave[j];
+        if (uvrad < pFilter->uvrad_range[0] || uvrad > pFilter->uvrad_range[1])
+          pOutRec->flag[k] = 1; /* UV radius out of range, flag datum */
+      }
       snrAmp = pInRec->visamp[j] / pInRec->visamperr[j];
       snrPhi = RAD2DEG / pInRec->visphierr[j];
       if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
-          snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1]) {
+          snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
         pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
-      } else {
-        pOutRec->flag[k] = pInRec->flag[j];
-      }
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
       if (usevisrefmap) {
         m = 0;
@@ -1039,15 +1080,17 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
 }
 
 /**
- * Filter specified OI_VIS table by TARGET_ID, MJD, wavelength, and SNR
+ * Filter an OI_VIS table by TARGET_ID, MJD, wavelength, UV radius, and SNR
  *
  * @param pInTab   pointer to input oi_vis
  * @param pFilter  pointer to filter specification
+ * @param pWave    pointer to oi_wavelength referenced by this table
  * @param useWave  boolean array giving wavelength channels to accept
  * @param pOutTab  pointer to output oi_vis
  */
 void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
-                   const char *useWave, oi_vis *pOutTab)
+                   const oi_wavelength *pWave, const char *useWave,
+                   oi_vis *pOutTab)
 {
   int i, j, nrec;
   double u1, v1, bas;
@@ -1075,11 +1118,13 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue;  /* skip record as projected baseline out of range */
     if (!pFilter->accept_flagged &&
+        !any_vis_uvrad_ok(&pInTab->record[i], pFilter,
+                          pWave, useWave, pInTab->nwave) &&
         !any_vis_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
       continue;  /* filter out all-flagged record */
 
     /* Create output record */
-    filter_oi_vis_record(&pInTab->record[i], pFilter, useWave,
+    filter_oi_vis_record(&pInTab->record[i], pFilter, pWave, useWave,
                          pInTab->nwave, pOutTab->nwave,
                          pInTab->usevisrefmap, pInTab->usecomplex,
                          &pOutTab->record[nrec++]);
@@ -1101,6 +1146,7 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
                         GHashTable *useWaveHash, oi_fits *pOutput)
 {
   GList *link;
+  oi_wavelength *pWave;
   oi_vis2 *pInTab, *pOutTab;
   char *useWave;
 
@@ -1120,7 +1166,10 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
       pOutTab = chkmalloc(sizeof(oi_vis2));
-      filter_oi_vis2(pInTab, pFilter, useWave, pOutTab);
+      pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
+      if (pWave == NULL)
+        g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
+      filter_oi_vis2(pInTab, pFilter, pWave, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
         pOutput->vis2List = g_list_append(pOutput->vis2List, pOutTab);
         ++pOutput->numVis2;
@@ -1132,6 +1181,30 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
       }
     }
   }
+}
+
+/**
+ * Do any of selected channels in @a pRec have an acceptable UV radius?
+ */
+static bool any_vis2_uvrad_ok(const oi_vis2_record *pRec,
+                              const oi_filter_spec *pFilter,
+                              const oi_wavelength *pWave, const char *useWave,
+                              int nwave)
+{
+  int j;
+  double bas, uvrad;
+
+  if (pWave == NULL)
+    return TRUE;  /* cannot filter by UV radius, so keep record */
+  bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
+  for (j = 0; j < nwave; j++) {
+    if (useWave[j]) {
+      uvrad = bas / pWave->eff_wave[j];
+      if (uvrad >= pFilter->uvrad_range[0] && uvrad <= pFilter->uvrad_range[1])
+        return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -1155,10 +1228,11 @@ static bool any_vis2_snr_ok(const oi_vis2_record *pRec,
 }
 
 /**
- * Filter OI_VIS2 table row by wavelength and SNR
+ * Filter OI_VIS2 table row by wavelength, UV radius and SNR
  */
 static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
                                   const oi_filter_spec *pFilter,
+                                  const oi_wavelength *pWave,
                                   const char *useWave,
                                   int nwaveIn, int nwaveOut,
                                   oi_vis2_record *pOutRec)
@@ -1166,6 +1240,7 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
   bool someUnflagged;
   int j, k;
   float snr;
+  double uvrad;
 
   memcpy(pOutRec, pInRec, sizeof(oi_vis2_record));
   if (pFilter->target_id >= 0)
@@ -1179,12 +1254,16 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
     if (useWave[j]) {
       pOutRec->vis2data[k] = pInRec->vis2data[j];
       pOutRec->vis2err[k] = pInRec->vis2err[j];
-      snr = pInRec->vis2data[j] / pInRec->vis2err[j];
-      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
-        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
-      } else {
-        pOutRec->flag[k] = pInRec->flag[j];
+      pOutRec->flag[k] = pInRec->flag[j];
+      if (pWave != NULL) {
+        uvrad = pow(pInRec->ucoord * pInRec->ucoord +
+                    pInRec->vcoord * pInRec->vcoord, 0.5) / pWave->eff_wave[j];
+        if (uvrad < pFilter->uvrad_range[0] || uvrad > pFilter->uvrad_range[1])
+          pOutRec->flag[k] = 1; /* UV radius out of range, flag datum */
       }
+      snr = pInRec->vis2data[j] / pInRec->vis2err[j];
+      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
+        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
       ++k;
     }
@@ -1193,15 +1272,17 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
 }
 
 /**
- * Filter specified OI_VIS2 table by TARGET_ID, MJD, wavelength, and SNR
+ * Filter an OI_VIS2 table by TARGET_ID, MJD, wavelength, UV radius and SNR
  *
  * @param pInTab   pointer to input oi_vis2
  * @param pFilter  pointer to filter specification
+ * @param pWave    pointer to oi_wavelength referenced by this table
  * @param useWave  boolean array giving wavelength channels to accept
  * @param pOutTab  pointer to output oi_vis2
  */
 void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
-                    const char *useWave, oi_vis2 *pOutTab)
+                    const oi_wavelength *pWave, const char *useWave,
+                    oi_vis2 *pOutTab)
 {
   int i, j, nrec;
   double bas, u1, v1;
@@ -1229,11 +1310,13 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue;  /* skip record as projected baseline out of range */
     if (!pFilter->accept_flagged &&
+        !any_vis2_uvrad_ok(&pInTab->record[i], pFilter, pWave, useWave,
+                           pInTab->nwave) &&
         !any_vis2_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
       continue;  /* filter out all-flagged record */
 
     /* Create output record */
-    filter_oi_vis2_record(&pInTab->record[i], pFilter, useWave,
+    filter_oi_vis2_record(&pInTab->record[i], pFilter, pWave, useWave,
                           pInTab->nwave, pOutTab->nwave,
                           &pOutTab->record[nrec++]);
   }
@@ -1254,6 +1337,7 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
                       GHashTable *useWaveHash, oi_fits *pOutput)
 {
   GList *link;
+  oi_wavelength *pWave;
   oi_t3 *pInTab, *pOutTab;
   char *useWave;
 
@@ -1273,7 +1357,10 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
       pOutTab = chkmalloc(sizeof(oi_t3));
-      filter_oi_t3(pInTab, pFilter, useWave, pOutTab);
+      pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
+      if (pWave == NULL)
+        g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
+      filter_oi_t3(pInTab, pFilter, pWave, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
         pOutput->t3List = g_list_append(pOutput->t3List, pOutTab);
         ++pOutput->numT3;
@@ -1285,6 +1372,40 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
       }
     }
   }
+}
+/**
+ * Do any of selected channels in @a pRec have acceptable UV radii?
+ */
+static bool any_t3_uvrad_ok(const oi_t3_record *pRec,
+                            const oi_filter_spec *pFilter,
+                            const oi_wavelength *pWave, const char *useWave,
+                            int nwave)
+{
+  int j;
+  double u1, v1, u2, v2, abRad, bcRad, acRad;
+
+  if (pWave == NULL)
+    return TRUE;  /* cannot filter by UV radius, so keep record */
+  u1 = pRec->u1coord;
+  v1 = pRec->v1coord;
+  u2 = pRec->u2coord;
+  v2 = pRec->v2coord;
+  for (j = 0; j < nwave; j++) {
+    if (useWave[j]) {
+      abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
+      bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
+      acRad = (pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
+               pWave->eff_wave[j]);
+      if (abRad >= pFilter->uvrad_range[0] &&
+          abRad <= pFilter->uvrad_range[1] &&
+          bcRad >= pFilter->uvrad_range[0] &&
+          bcRad <= pFilter->uvrad_range[1] &&
+          acRad >= pFilter->uvrad_range[0] &&
+          acRad <= pFilter->uvrad_range[1])
+        return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -1320,13 +1441,14 @@ static bool any_t3_snr_ok(const oi_t3_record *pRec,
  */
 static void filter_oi_t3_record(const oi_t3_record *pInRec,
                                 const oi_filter_spec *pFilter,
+                                const oi_wavelength *pWave,
                                 const char *useWave,
                                 int nwaveIn, int nwaveOut,
                                 oi_t3_record *pOutRec)
 {
   bool someUnflagged;
   int j, k;
-  double nan;
+  double nan, u1, v1, u2, v2, abRad, bcRad, acRad;
   float snrAmp, snrPhi;
 
   /* If needed, make a NaN */
@@ -1345,6 +1467,10 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
   pOutRec->flag = chkmalloc(nwaveOut * sizeof(pOutRec->flag[0]));
   k = 0;
   someUnflagged = FALSE;
+  u1 = pInRec->u1coord;
+  v1 = pInRec->v1coord;
+  u2 = pInRec->u2coord;
+  v2 = pInRec->v2coord;
   for (j = 0; j < nwaveIn; j++) {
     if (useWave[j]) {
       if (pFilter->accept_t3amp) {
@@ -1359,18 +1485,27 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
         pOutRec->t3phi[k] = nan;
       }
       pOutRec->t3phierr[k] = pInRec->t3phierr[j];
+      pOutRec->flag[k] = pInRec->flag[j];
       snrAmp = pInRec->t3amp[j] / pInRec->t3amperr[j];
       snrPhi = RAD2DEG / pInRec->t3phierr[j];
+      if (pWave != NULL) {
+        abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
+        if (abRad < pFilter->uvrad_range[0] || abRad > pFilter->uvrad_range[1])
+          pOutRec->flag[k] = 1; /* UV radius ab out of range, flag datum */
+        bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
+        if (bcRad < pFilter->uvrad_range[0] || bcRad > pFilter->uvrad_range[1])
+          pOutRec->flag[k] = 1; /* UV radius bc out of range, flag datum */
+        acRad = pow((u1 + u2) * (u1 + u2) +
+                    (v1 + v2) * (v1 + v2), 0.5) / pWave->eff_wave[j];
+        if (acRad < pFilter->uvrad_range[0] || acRad > pFilter->uvrad_range[1])
+          pOutRec->flag[k] = 1; /* UV radius ac out of range, flag datum */
+      }
       if (pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
-                                    snrAmp > pFilter->snr_range[1])) {
+                                    snrAmp > pFilter->snr_range[1]))
         pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
-      }
       else if (pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
-                                         snrPhi > pFilter->snr_range[1])) {
+                                         snrPhi > pFilter->snr_range[1]))
         pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
-      } else {
-        pOutRec->flag[k] = pInRec->flag[j];
-      }
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
       ++k;
     }
@@ -1379,15 +1514,17 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
 }
 
 /**
- * Filter specified OI_T3 table by TARGET_ID, MJD, wavelength, and SNR
+ * Filter an OI_T3 table by TARGET_ID, MJD, wavelength, UV radius and SNR
  *
- * @param pInTab       pointer to input oi_t3
- * @param pFilter      pointer to filter specification
- * @param useWave      boolean array giving wavelength channels to accept
- * @param pOutTab      pointer to output oi_t3
+ * @param pInTab   pointer to input oi_t3
+ * @param pFilter  pointer to filter specification
+ * @param pWave    pointer to oi_wavelength referenced by this table
+ * @param useWave  boolean array giving wavelength channels to accept
+ * @param pOutTab  pointer to output oi_t3
  */
 void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
-                  const char *useWave, oi_t3 *pOutTab)
+                  const oi_wavelength *pWave, const char *useWave,
+                  oi_t3 *pOutTab)
 {
   int i, j, nrec;
   double u1, v1, u2, v2, bas;
@@ -1423,11 +1560,13 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue;  /* skip record as projected baseline ac out of range */
     if (!pFilter->accept_flagged &&
+        !any_t3_uvrad_ok(&pInTab->record[i], pFilter, pWave, useWave,
+                         pInTab->nwave) &&
         !any_t3_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
       continue;  /* filter out all-flagged record */
 
     /* Create output record */
-    filter_oi_t3_record(&pInTab->record[i], pFilter, useWave,
+    filter_oi_t3_record(&pInTab->record[i], pFilter, pWave, useWave,
                         pInTab->nwave, pOutTab->nwave,
                         &pOutTab->record[nrec++]);
   }
@@ -1521,7 +1660,7 @@ static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
 }
 
 /**
- * Filter specified OI_SPECTRUM table by TARGET_ID, MJD, wavelength, and SNR
+ * Filter an OI_SPECTRUM table by TARGET_ID, MJD, wavelength and SNR
  *
  * @param pInTab       pointer to input oi_spectrum
  * @param pFilter      pointer to filter specification
