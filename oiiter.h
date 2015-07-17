@@ -52,6 +52,8 @@ typedef struct {
   oi_fits *pData;
   oi_filter_spec filter;
   GList *link;
+  oi_vis2 *pTable;
+  oi_wavelength *pWave;
   int extver;
   long irec;
   int iwave;
@@ -59,8 +61,8 @@ typedef struct {
 } oi_vis2_iter;
 
 void oi_vis2_iter_init(oi_vis2_iter *, oi_fits *, oi_filter_spec *const);
-bool oi_vis2_iter_next(oi_vis2_iter *, int *const, long *const,
-                       oi_vis2_record **, int *const);
+bool oi_vis2_iter_next(oi_vis2_iter *, int *const, oi_vis2 **,
+                       long *const, oi_vis2_record **, int *const);
 
 #endif  /* #ifndef OIITER_H */
 
