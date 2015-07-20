@@ -115,19 +115,6 @@ static bool oi_vis2_iter_accept_channel(oi_vis2_iter *pIter)
 }
 
 /**
- * Advance iterator to next wavelength channel, skipping filtered data.
- */
-static bool oi_vis2_iter_next_accepted_channel(oi_vis2_iter *pIter)
-{
-  /* Iterate over remaining channels */
-  while (oi_vis2_iter_next_channel(pIter)) {
-    if (oi_vis2_iter_accept_channel(pIter))
-      return true;  /* stop at first channel that passes filter */
-  }
-  return false;
-}
-
-/**
  * Advance iterator to next record (row) in current OI_VIS2 table.
  */
 static bool oi_vis2_iter_next_record(oi_vis2_iter *pIter)
@@ -165,19 +152,6 @@ static bool oi_vis2_iter_accept_record(oi_vis2_iter *pIter)
 }
 
 /**
- * Advance iterator to next OI_VIS2 record, perhaps skipping filtered data.
- */
-static bool oi_vis2_iter_next_accepted_record(oi_vis2_iter *pIter)
-{
-  /* Iterate over remaining records in current table */
-  while (oi_vis2_iter_next_record(pIter)) {
-    if (oi_vis2_iter_accept_record(pIter))
-      return true;  /* stop at first record that passes filter */
-  }
-  return false;
-}
-
-/**
  * Advance iterator to next OI_VIS2 table in file.
  */
 static bool oi_vis2_iter_next_table(oi_vis2_iter *pIter)
@@ -202,19 +176,6 @@ static bool oi_vis2_iter_accept_table(oi_vis2_iter *pIter)
           ACCEPT_INSNAME(pIter->pTable, &pIter->filter) &&
           ACCEPT_CORRNAME(pIter->pTable, &pIter->filter));
   return true;
-}
-
-/**
- * Advance iterator to next OI_VIS2 table, perhaps skipping filtered data.
- */
-static bool oi_vis2_iter_next_accepted_table(oi_vis2_iter *pIter)
-{
-  /* Iterate over remaining tables */
-  while (oi_vis2_iter_next_table(pIter)) {
-    if (oi_vis2_iter_accept_table(pIter))
-      return true;  /* stop at first table that passes filter */
-  }
-  return false;
 }
 
 /**
@@ -250,9 +211,9 @@ bool oi_vis2_iter_next(oi_vis2_iter *pIter,
 
   /* Advance to next data point */
   do {
-    if (!(oi_vis2_iter_next_accepted_channel(pIter) ||
-          oi_vis2_iter_next_accepted_record(pIter) ||
-          oi_vis2_iter_next_accepted_table(pIter)))
+    if (!(oi_vis2_iter_next_channel(pIter) ||
+          oi_vis2_iter_next_record(pIter) ||
+          oi_vis2_iter_next_table(pIter)))
       goto finally;
   } while (!(oi_vis2_iter_accept_table(pIter) &&
              oi_vis2_iter_accept_record(pIter) &&
