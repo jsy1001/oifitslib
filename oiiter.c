@@ -254,7 +254,9 @@ bool oi_vis2_iter_next(oi_vis2_iter *pIter,
           oi_vis2_iter_next_accepted_record(pIter) ||
           oi_vis2_iter_next_accepted_table(pIter)))
       goto finally;
-  } while (!oi_vis2_iter_accept_channel(pIter));
+  } while (!(oi_vis2_iter_accept_table(pIter) &&
+             oi_vis2_iter_accept_record(pIter) &&
+             oi_vis2_iter_accept_channel(pIter)));
 
   /* Return new current data point */
   //:TODO: provide access to wavelength or u/lambda, v/lambda
