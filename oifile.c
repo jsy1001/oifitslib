@@ -997,7 +997,7 @@ oi_corr *oi_fits_lookup_corr(const oi_fits *pOi, const char *corrname)
 }
 
 /**
- * Lookup target record corresponding to specified TARGET_ID
+ * Lookup target record by TARGET_ID
  *
  * @param pOi       pointer to file data struct, see oifile.h
  * @param targetId  value of TARGET_ID from data table
@@ -1016,6 +1016,24 @@ target *oi_fits_lookup_target(const oi_fits *pOi, int targetId)
   return NULL;
 }
 
+/**
+ * Lookup target record by name
+ *
+ * @param pOi       pointer to file data struct, see oifile.h
+ * @param target    value of TARGET (the name) to match
+ *
+ * @return ptr to 1st target struct matching target, or NULL if no match
+ */
+target *oi_fits_lookup_target_by_name(const oi_fits *pOi, const char *target)
+{
+  int i;
+
+  for (i = 0; i < pOi->targets.ntarget; i++) {
+    if (strcmp(pOi->targets.targ[i].target, target) == 0)
+      return &pOi->targets.targ[i];
+  }
+  return NULL;
+}
 
 /** Generate summary string for each oi_vis/vis2/t3 in GList. */
 #define FORMAT_OI_LIST_SUMMARY(pGStr, list, type)         \

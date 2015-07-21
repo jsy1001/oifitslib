@@ -108,6 +108,7 @@ element *oi_fits_lookup_element(const oi_fits *, const char *, int);
 oi_wavelength *oi_fits_lookup_wavelength(const oi_fits *, const char *);
 oi_corr *oi_fits_lookup_corr(const oi_fits *, const char *);
 target *oi_fits_lookup_target(const oi_fits *, int);
+target *oi_fits_lookup_target_by_name(const oi_fits *, const char *);
 const char *format_oi_fits_summary(const oi_fits *);
 void print_oi_fits_summary(const oi_fits *);
 oi_target *dup_oi_target(const oi_target *);

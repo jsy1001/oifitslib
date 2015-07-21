@@ -26,6 +26,7 @@
 #include "oifile.h"
 #include <unistd.h>  /* unlink() */
 #include <math.h>
+#include <string.h>
 
 #define FILENAME_OUT "utest_oifile.fits"
 #define FILENAME_V1 "test/OIFITS1/alp_aur--COAST_NICMOS.fits"
@@ -119,6 +120,53 @@ static void test_count(void)
   free_oi_fits(&data);
 }
 
+static void test_lookup(void)
+{
+  oi_fits data;
+  int status;
+  char msg[FLEN_ERRMSG];
+  oi_vis2 *pVis2;
+  oi_array *pArray;
+  element *pElem;
+  oi_wavelength *pWave;
+  oi_corr *pCorr;
+  target *pTarg1, *pTarg2;
+
+  status = 0;
+  read_oi_fits(FILENAME_MULTI, &data, &status);
+
+  if (fits_read_errmsg(msg))
+    g_error("Uncleared CFITSIO error message: %s", msg);
+
+  pVis2 = (oi_vis2 *)data.vis2List->data;
+
+  if (strlen(pVis2->arrname) > 0) {
+    pArray = oi_fits_lookup_array(&data, pVis2->arrname);
+    g_assert(pArray != NULL);
+    g_assert_cmpstr(pArray->arrname, ==, pVis2->arrname);
+    pElem = oi_fits_lookup_element(&data, pVis2->arrname, 1);
+    g_assert(pElem != NULL);
+    g_assert_cmpint(pElem->sta_index, ==, 1);
+  }
+
+  pWave = oi_fits_lookup_wavelength(&data, pVis2->insname);
+  g_assert(pWave != NULL);
+  g_assert_cmpstr(pWave->insname, ==, pVis2->insname);
+  
+  if (strlen(pVis2->corrname) > 0) {
+    pCorr = oi_fits_lookup_corr(&data, pVis2->corrname);
+    g_assert(pCorr != NULL);
+    g_assert_cmpstr(pCorr->corrname, ==, pVis2->corrname);
+  }
+
+  pTarg1 = oi_fits_lookup_target(&data, 1);
+  g_assert_cmpint(pTarg1->target_id, ==, 1);
+  pTarg2 = oi_fits_lookup_target_by_name(&data, pTarg1->target);
+  g_assert_cmpstr(pTarg2->target, ==, pTarg1->target);
+
+  free_oi_fits(&data);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -128,6 +176,7 @@ int main(int argc, char *argv[])
   g_test_add_func("/oifitslib/oifile/version", test_version);
   g_test_add_func("/oifitslib/oifile/atomic", test_atomic);
   g_test_add_func("/oifitslib/oifile/count", test_count);
+  g_test_add_func("/oifitslib/oifile/lookup", test_lookup);
 
   return g_test_run();
 }
