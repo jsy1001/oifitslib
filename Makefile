@@ -86,7 +86,7 @@ TEST_EXES = utest_datemjd utest_oifile \
  utest_oicheck utest_oimerge utest_oifilter
 LIBRARIES = liboifits.a
 INCFILES = chkmalloc.h datemjd.h \
- exchange.h oifile.h oicheck.h oifilter.h oimerge.h
+ exchange.h oifile.h oicheck.h oifilter.h oimerge.h oiiter.h
 PKGMODULES = oitable.pc oifitslib.pc
 PYTHONMODULES = _oifitsmodule.so \
  _oifiltermodule.so _oicheckmodule.so _oimergemodule.so
@@ -180,6 +180,7 @@ test: $(TEST_EXES) $(PYTHONMODULES)
 	./utest_oicheck	
 	./utest_oimerge
 	./utest_oifilter
+	./utest_oiiter
 	$(PYTHON) oifits.py
 	$(PYTHON) oifilter.py
 	$(PYTHON) oicheck.py
