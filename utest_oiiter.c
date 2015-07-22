@@ -442,17 +442,12 @@ static void test_bas(TestFixture *fix, gconstpointer userData)
 static void test_uvrad_vis(TestFixture *fix, const oi_filter_spec *pFilter)
 {
   oi_vis_iter iter;
-  oi_vis *pTable;
-  oi_vis_record *pRec;
-  oi_wavelength *pWave;
-  int iwave;
-  double uvrad;
+  double u, v, uvrad;
 
   oi_vis_iter_init(&iter, &fix->inData, pFilter);
-  while (oi_vis_iter_next(&iter, NULL, &pTable, NULL, &pRec, &iwave)) {
-    pWave = oi_fits_lookup_wavelength(&fix->inData, pTable->insname);
-    uvrad = (pow(pRec->ucoord * pRec->ucoord +
-                 pRec->vcoord * pRec->vcoord, 0.5) / pWave->eff_wave[iwave]);
+  while (oi_vis_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
+    oi_vis_iter_get_uv(&iter, &u, &v);
+    uvrad = pow(u * u + v * v, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
   }
@@ -461,17 +456,12 @@ static void test_uvrad_vis(TestFixture *fix, const oi_filter_spec *pFilter)
 static void test_uvrad_vis2(TestFixture *fix, const oi_filter_spec *pFilter)
 {
   oi_vis2_iter iter;
-  oi_vis2 *pTable;
-  oi_vis2_record *pRec;
-  oi_wavelength *pWave;
-  int iwave;
-  double uvrad;
+  double u, v, uvrad;
 
   oi_vis2_iter_init(&iter, &fix->inData, pFilter);
-  while (oi_vis2_iter_next(&iter, NULL, &pTable, NULL, &pRec, &iwave)) {
-    pWave = oi_fits_lookup_wavelength(&fix->inData, pTable->insname);
-    uvrad = (pow(pRec->ucoord * pRec->ucoord +
-                 pRec->vcoord * pRec->vcoord, 0.5) / pWave->eff_wave[iwave]);
+  while (oi_vis2_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
+    oi_vis2_iter_get_uv(&iter, &u, &v);
+    uvrad = pow(u * u + v * v, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
   }
@@ -480,27 +470,18 @@ static void test_uvrad_vis2(TestFixture *fix, const oi_filter_spec *pFilter)
 static void test_uvrad_t3(TestFixture *fix, const oi_filter_spec *pFilter)
 {
   oi_t3_iter iter;
-  oi_t3 *pTable;
-  oi_t3_record *pRec;
-  oi_wavelength *pWave;
-  int iwave;
   double u1, v1, u2, v2, uvrad;
 
   oi_t3_iter_init(&iter, &fix->inData, pFilter);
-  while (oi_t3_iter_next(&iter, NULL, &pTable, NULL, &pRec, &iwave)) {
-    pWave = oi_fits_lookup_wavelength(&fix->inData, pTable->insname);
-    u1 = pRec->u1coord;
-    v1 = pRec->v1coord;
-    u2 = pRec->u2coord;
-    v2 = pRec->v2coord;
-    uvrad = (pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[iwave]);
+  while (oi_t3_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
+    oi_t3_iter_get_uv(&iter, &u1, &v1, &u2, &v2);
+    uvrad = pow(u1 * u1 + v1 * v1, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
-    uvrad = (pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[iwave]);
+    uvrad = pow(u2 * u2 + v2 * v2, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
-    uvrad = (pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
-             pWave->eff_wave[iwave]);
+    uvrad = pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
   }

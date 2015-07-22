@@ -80,12 +80,17 @@ typedef _oi_iter oi_t3_iter;
 void oi_vis_iter_init(oi_vis_iter *, const oi_fits *, const oi_filter_spec *);
 bool oi_vis_iter_next(oi_vis_iter *, int *const, oi_vis **,
                       long *const, oi_vis_record **, int *const);
+void oi_vis_iter_get_uv(const oi_vis_iter *, double *const, double *const);
 void oi_vis2_iter_init(oi_vis2_iter *, const oi_fits *, const oi_filter_spec *);
 bool oi_vis2_iter_next(oi_vis2_iter *, int *const, oi_vis2 **,
                        long *const, oi_vis2_record **, int *const);
+void oi_vis2_iter_get_uv(const oi_vis2_iter *, double *const, double *const);
 void oi_t3_iter_init(oi_t3_iter *, const oi_fits *, const oi_filter_spec *);
 bool oi_t3_iter_next(oi_t3_iter *, int *const, oi_t3 **,
                      long *const, oi_t3_record **, int *const);
+void oi_t3_iter_get_uv(const oi_t3_iter *,
+                       double *const, double *const,
+                       double *const, double *const);
 
 #endif  /* #ifndef OIITER_H */
 

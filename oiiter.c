@@ -581,3 +581,73 @@ finally:
 
   return ret;
 }
+
+/**
+ * Get uv coordinates, in wavelengths, for current complex visibility.
+ *
+ * @param pIter  Initialised iterator struct.
+ * @param u      Return location for u coordinate /wavelengths.
+ * @param v      Return location for v coordinate /wavelengths.
+ */
+void oi_vis_iter_get_uv(const oi_vis_iter *pIter,
+                        double *const pU, double *const pV)
+{
+  g_assert(pIter != NULL);
+
+  oi_vis *pTable = (oi_vis *)pIter->link->data;
+  oi_vis_record *pRec = &pTable->record[pIter->irec];
+  double eff_wave = pIter->pWave->eff_wave[pIter->iwave];
+  if (pU != NULL)
+    *pU = pRec->ucoord / eff_wave;
+  if (pV != NULL)
+    *pV = pRec->vcoord / eff_wave;
+}
+
+/**
+ * Get uv coordinates, in wavelengths, for current squared visibility.
+ *
+ * @param pIter  Initialised iterator struct.
+ * @param u      Return location for u coordinate /wavelengths.
+ * @param v      Return location for v coordinate /wavelengths.
+ */
+void oi_vis2_iter_get_uv(const oi_vis2_iter *pIter,
+                         double *const pU, double *const pV)
+{
+  g_assert(pIter != NULL);
+
+  oi_vis2 *pTable = (oi_vis2 *)pIter->link->data;
+  oi_vis2_record *pRec = &pTable->record[pIter->irec];
+  double eff_wave = pIter->pWave->eff_wave[pIter->iwave];
+  if (pU != NULL)
+    *pU = pRec->ucoord / eff_wave;
+  if (pV != NULL)
+    *pV = pRec->vcoord / eff_wave;
+}
+
+/**
+ * Get uv coordinates, in wavelengths, for current triple product.
+ *
+ * @param pIter  Initialised iterator struct.
+ * @param u1     Return location for baseline AB u coordinate /wavelengths.
+ * @param v1     Return location for baseline AB v coordinate /wavelengths.
+ * @param u2     Return location for baseline BC u coordinate /wavelengths.
+ * @param v2     Return location for baseline BC v coordinate /wavelengths.
+ */
+void oi_t3_iter_get_uv(const oi_t3_iter *pIter,
+                       double *const pU1, double *const pV1,
+                       double *const pU2, double *const pV2)
+{
+  g_assert(pIter != NULL);
+
+  oi_t3 *pTable = (oi_t3 *)pIter->link->data;
+  oi_t3_record *pRec = &pTable->record[pIter->irec];
+  double eff_wave = pIter->pWave->eff_wave[pIter->iwave];
+  if (pU1 != NULL)
+    *pU1 = pRec->u1coord / eff_wave;
+  if (pV1 != NULL)
+    *pV1 = pRec->v1coord / eff_wave;
+  if (pU2 != NULL)
+    *pU2 = pRec->u1coord / eff_wave;
+  if (pV2 != NULL)
+    *pV2 = pRec->v1coord / eff_wave;
+}
