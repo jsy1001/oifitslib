@@ -647,7 +647,7 @@ void oi_t3_iter_get_uv(const oi_t3_iter *pIter,
   if (pV1 != NULL)
     *pV1 = pRec->v1coord / eff_wave;
   if (pU2 != NULL)
-    *pU2 = pRec->u1coord / eff_wave;
+    *pU2 = pRec->u2coord / eff_wave;
   if (pV2 != NULL)
-    *pV2 = pRec->v1coord / eff_wave;
+    *pV2 = pRec->v2coord / eff_wave;
 }
