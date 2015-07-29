@@ -83,7 +83,7 @@ pkgconfigdir = $(prefix)/lib/pkgconfig
 OITABLE = liboitable.a demo
 EXES = oifits-check oifits-merge oifits-filter oifits-upgrade
 TEST_EXES = utest_datemjd utest_oifile \
- utest_oicheck utest_oimerge utest_oifilter
+ utest_oicheck utest_oimerge utest_oifilter utest_oiiter
 LIBRARIES = liboifits.a
 INCFILES = chkmalloc.h datemjd.h \
  exchange.h oifile.h oicheck.h oifilter.h oimerge.h oiiter.h

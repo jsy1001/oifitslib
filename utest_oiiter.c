@@ -295,8 +295,6 @@ static void test_wave(TestFixture *fix, gconstpointer userData)
 {
   const float range[2] = {1500.0e-9, 1700.0e-9};
   oi_filter_spec filt;
-  oi_wavelength *pWave;
-  int iwave;
   
   init_oi_filter(&filt);
   filt.wave_range[0] = range[0];
@@ -304,32 +302,32 @@ static void test_wave(TestFixture *fix, gconstpointer userData)
 
   {
     oi_vis_iter iter;
-    oi_vis *pTable;
     oi_vis_iter_init(&iter, &fix->inData, &filt);
-    while (oi_vis_iter_next(&iter, NULL, &pTable, NULL, NULL, &iwave)) {
-      pWave = oi_fits_lookup_wavelength(&fix->inData, pTable->insname);
-      g_assert_cmpfloat(pWave->eff_wave[iwave], >=, range[0]);
-      g_assert_cmpfloat(pWave->eff_wave[iwave], <=, range[1]);
+    while (oi_vis_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
+      double effWave;
+      oi_vis_iter_get_uv(&iter, &effWave, NULL, NULL);
+      g_assert_cmpfloat(effWave, >=, range[0]);
+      g_assert_cmpfloat(effWave, <=, range[1]);
     }
   }
   {
     oi_vis2_iter iter;
-    oi_vis2 *pTable;
     oi_vis2_iter_init(&iter, &fix->inData, &filt);
-    while (oi_vis2_iter_next(&iter, NULL, &pTable, NULL, NULL, &iwave)) {
-      pWave = oi_fits_lookup_wavelength(&fix->inData, pTable->insname);
-      g_assert_cmpfloat(pWave->eff_wave[iwave], >=, range[0]);
-      g_assert_cmpfloat(pWave->eff_wave[iwave], <=, range[1]);
+    while (oi_vis2_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
+      double effWave;
+      oi_vis2_iter_get_uv(&iter, &effWave, NULL, NULL);
+      g_assert_cmpfloat(effWave, >=, range[0]);
+      g_assert_cmpfloat(effWave, <=, range[1]);
     }
   }
   {
     oi_t3_iter iter;
-    oi_t3 *pTable;
     oi_t3_iter_init(&iter, &fix->inData, &filt);
-    while (oi_t3_iter_next(&iter, NULL, &pTable, NULL, NULL, &iwave)) {
-      pWave = oi_fits_lookup_wavelength(&fix->inData, pTable->insname);
-      g_assert_cmpfloat(pWave->eff_wave[iwave], >=, range[0]);
-      g_assert_cmpfloat(pWave->eff_wave[iwave], <=, range[1]);
+    while (oi_t3_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
+      double effWave;
+      oi_t3_iter_get_uv(&iter, &effWave, NULL, NULL, NULL, NULL);
+      g_assert_cmpfloat(effWave, >=, range[0]);
+      g_assert_cmpfloat(effWave, <=, range[1]);
     }
   }
 }
@@ -446,7 +444,7 @@ static void test_uvrad_vis(TestFixture *fix, const oi_filter_spec *pFilter)
 
   oi_vis_iter_init(&iter, &fix->inData, pFilter);
   while (oi_vis_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
-    oi_vis_iter_get_uv(&iter, &u, &v);
+    oi_vis_iter_get_uv(&iter, NULL, &u, &v);
     uvrad = pow(u * u + v * v, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
@@ -460,7 +458,7 @@ static void test_uvrad_vis2(TestFixture *fix, const oi_filter_spec *pFilter)
 
   oi_vis2_iter_init(&iter, &fix->inData, pFilter);
   while (oi_vis2_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
-    oi_vis2_iter_get_uv(&iter, &u, &v);
+    oi_vis2_iter_get_uv(&iter, NULL, &u, &v);
     uvrad = pow(u * u + v * v, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
@@ -474,7 +472,7 @@ static void test_uvrad_t3(TestFixture *fix, const oi_filter_spec *pFilter)
 
   oi_t3_iter_init(&iter, &fix->inData, pFilter);
   while (oi_t3_iter_next(&iter, NULL, NULL, NULL, NULL, NULL)) {
-    oi_t3_iter_get_uv(&iter, &u1, &v1, &u2, &v2);
+    oi_t3_iter_get_uv(&iter, NULL, &u1, &v1, &u2, &v2);
     uvrad = pow(u1 * u1 + v1 * v1, 0.5);
     g_assert_cmpfloat(uvrad, >=, pFilter->uvrad_range[0]);
     g_assert_cmpfloat(uvrad, <=, pFilter->uvrad_range[1]);
