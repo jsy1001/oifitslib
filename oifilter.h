@@ -27,7 +27,8 @@
  * @defgroup oifilter  Filter for OIFITS data
  *
  * This module implements a filter for OIFITS data, intended for use
- * in selecting a subset of the data in a OIFITS file for analysis.
+ * in selecting a subset of the data in a OIFITS file for analysis or
+ * output to a new file.
  *
  * The criteria by which data are accepted or rejected are specified
  * by an oi_filter_spec struct. A pointer to this struct is passed to

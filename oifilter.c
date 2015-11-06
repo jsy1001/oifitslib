@@ -23,7 +23,6 @@
  * http://www.gnu.org/licenses/
  */
 
-
 #include "oifilter.h"
 #include "chkmalloc.h"
 
