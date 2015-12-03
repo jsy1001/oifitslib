@@ -19,6 +19,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(oifitslib C)
 
+enable_testing()
+
 find_package(PkgConfig)
 pkg_check_modules(CFITSIO REQUIRED cfitsio)
 pkg_check_modules(GLIB2 glib-2.0>=2.16.0)
@@ -54,5 +56,16 @@ if(GLIB2_FOUND)
 
   install(TARGETS oifits DESTINATION lib)
   install(TARGETS oifits-check oifits-merge oifits-filter oifits-upgrade DESTINATION bin)
-endif()
 
+  function(add_unit_test name)
+    add_executable(utest_${name} utest_${name}.c)
+    target_link_libraries(utest_${name} ${util_LIBRARIES})
+    add_test(NAME ${name} WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND utest_${name})
+  endfunction()
+  add_unit_test(datemjd)
+  add_unit_test(oifile)
+  add_unit_test(oicheck)
+  add_unit_test(oimerge)
+  add_unit_test(oifilter)
+  add_unit_test(oiiter)
+endif()
