@@ -31,7 +31,7 @@ set(oifits_SOURCES ${oitable_SOURCES} datemjd.c oifile.c oifilter.c oicheck.c oi
 include_directories(${CFITSIO_INCLUDE_DIRS})
 include_directories(${GLIB2_INCLUDE_DIRS})
 
-add_library(oitable STATIC ${oitable_SOURCES})
+add_library(oitable SHARED ${oitable_SOURCES})
 target_link_libraries(oitable ${CFITSIO_LIBRARIES}) # PUBLIC
 
 add_executable(oitable-demo oitable-demo.c)
