@@ -46,6 +46,10 @@ if(GLIB2_FOUND)
   target_link_libraries(oifits ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}) # PUBLIC
   target_link_libraries(oifits m) # PRIVATE
   install(TARGETS oifits DESTINATION lib)
+
+  configure_file(oitable.pc.in oitable.pc @ONLY)
+  configure_file(oifitslib.pc.in oifitslib.pc @ONLY)
+  install(FILES ${PROJECT_BINARY_DIR}/oitable.pc ${PROJECT_BINARY_DIR}/oifitslib.pc DESTINATION lib/pkgconfig)
 endif()
 
 add_subdirectory(test)
