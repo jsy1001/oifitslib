@@ -31,7 +31,7 @@ merges instances supplied in a list.
 
 >>> import oifits, oimerge
 >>> o1 = oifits.OiFits('testdata.fits')
->>> o2 = oifits.OiFits('test/OIFITS2/bigtest2.fits')
+>>> o2 = oifits.OiFits('OIFITS2/bigtest2.fits')
 >>> merged = oimerge.merge(o1, o2)
 >>> print len(merged.vis2List)
 3

@@ -29,7 +29,7 @@
 #include <math.h>
 #include <unistd.h>  /* unlink() */
 
-#define FILENAME "test/OIFITS2/bigtest2.fits"
+#define FILENAME "OIFITS2/bigtest2.fits"
 #define RAD2DEG (180.0 / 3.14159)
 
 typedef struct {

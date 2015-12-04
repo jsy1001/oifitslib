@@ -29,10 +29,10 @@
 #include <string.h>
 
 #define FILENAME_OUT "utest_oifile.fits"
-#define FILENAME_V1 "test/OIFITS1/alp_aur--COAST_NICMOS.fits"
-#define FILENAME_V2 "test/OIFITS2/alp_aur--COAST_NICMOS.fits"
-#define FILENAME_ATOMIC "test/OIFITS2/alp_aur--COAST_NICMOS.fits"
-#define FILENAME_MULTI "test/OIFITS2/bigtest2.fits"
+#define FILENAME_V1 "OIFITS1/alp_aur--COAST_NICMOS.fits"
+#define FILENAME_V2 "OIFITS2/alp_aur--COAST_NICMOS.fits"
+#define FILENAME_ATOMIC "OIFITS2/alp_aur--COAST_NICMOS.fits"
+#define FILENAME_MULTI "OIFITS2/bigtest2.fits"
 
 #define MULTI_NUM_VIS 40
 #define MULTI_NUM_VIS2 40

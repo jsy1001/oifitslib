@@ -26,8 +26,8 @@
 #include "oicheck.h"
 #include "oifile.h"
 
-#define DIR1 "test/OIFITS1/"
-#define DIR2 "test/OIFITS2/"
+#define DIR1 "OIFITS1/"
+#define DIR2 "OIFITS2/"
 
 typedef struct {
   char filename[FLEN_VALUE];
