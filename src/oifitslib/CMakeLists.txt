@@ -16,7 +16,7 @@
 # License along with OIFITSlib.  If not, see
 # http://www.gnu.org/licenses/
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.6)
 project(oifitslib C)
 
 find_package(PkgConfig)
@@ -32,7 +32,7 @@ include_directories(${CFITSIO_INCLUDE_DIRS})
 include_directories(${GLIB2_INCLUDE_DIRS})
 
 add_library(oitable STATIC ${oitable_SOURCES})
-target_link_libraries(oitable PUBLIC ${CFITSIO_LIBRARIES})
+target_link_libraries(oitable ${CFITSIO_LIBRARIES}) # PUBLIC
 
 add_executable(oitable-demo oitable-demo.c)
 target_link_libraries(oitable-demo oitable)
@@ -43,8 +43,8 @@ install(TARGETS oitable-demo DESTINATION bin)
 
 if(GLIB2_FOUND)
   add_library(oifits SHARED ${oifits_SOURCES})
-  target_link_libraries(oifits PUBLIC ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES})
-  target_link_libraries(oifits PRIVATE m)
+  target_link_libraries(oifits ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}) # PUBLIC
+  target_link_libraries(oifits m) # PRIVATE
   install(TARGETS oifits DESTINATION lib)
 endif()
 
