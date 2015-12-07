@@ -25,47 +25,6 @@
  */
 
 /**
- * @mainpage
- *
- * OIFITSlib is a C library for input/output, merging, filtering and
- * checking of optical/IR interferometry datasets in the OIFITS
- * exchange format. The latest version of OIFITSlib is available at
- * https://github.com/jsy1001/oifitslib
- *
- * OIFITS is a standard for exchanging calibrated, time-averaged data
- * from astronomical optical interferometers, based on the FITS
- * Standard. OIFITS may be used to combine data from multiple
- * interferometer arrays for joint analysis and/or image
- * reconstruction.
- *
- * The original version of the OIFITS standard is described in Pauls
- * et al. (2005) PASP 117, 1255. A PDF reprint of this paper and other
- * OIFITS resources are available from the OIFITS website
- * http://www.mrao.cam.ac.uk/research/optical-interferometry/oifits/
- *
- * Version 2 of the OIFITS standard has now been drafted by a working
- * group of IAU Commission 54 and will be submitted to A&A
- * shortly. For the moment, a preprint of the specification is
- * available from
- * http://ipag.obs.ujf-grenoble.fr/twiki/bin/view/Jmmc/OIFITSTwoProject
- *
- * Version 2.x of OIFITSlib supports the draft OIFITS v2 standard: the
- * library can read either v1 or v2 OIFITS files, and writes v2
- * files. The OIFITS standard has been designed such that v2 files are
- * backwards-compatible with reading software intended for v1; hence a
- * capability to write v1 files should not be needed. However, version
- * 1.x of OIFITSlib is available for writing v1 OIFITS files if
- * required.
-
- * OIFITSlib incorporates the following modules:
- * - @ref oitable
- * - @ref oifile
- * - @ref oimerge
- * - @ref oifilter
- * - @ref oicheck
- */
-
-/**
  * @defgroup oitable  Table-level OIFITS I/O
  *
  * This module is derived from the "OIFITS example software in C". It
