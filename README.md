@@ -1,5 +1,5 @@
-OIFITSlib Release Notes
-=======================
+OIFITSlib
+=========
 
 John Young <jsy1001@cam.ac.uk>
 
@@ -8,21 +8,22 @@ WHAT IS OIFITSlib?
 
 OIFITSlib is a C library for input/output, merging, filtering and
 checking of optical/IR interferometry datasets in the OIFITS exchange
-format.
+format. A preprint of the draft specification for OIFITS version 2 is
+available at <http://arxiv.org/abs/1510.04556>.
 
-The table-level input/output code (see exchange.h) in OIFITSlib is
-derived from the previously-released "OIFITS example software in C",
-and provides the same Application Programming Interface
-(API). OIFITSlib provides a file-level API built on top of the
-table-level code, containing functions to read and write an entire
-OIFITS file (see oifile.h).
+The table-level input/output code (see src/oifitslib/exchange.h) in
+OIFITSlib is derived from the previously-released "OIFITS example
+software in C", and provides the same Application Programming
+Interface (API). OIFITSlib provides a file-level API built on top of
+the table-level code, containing functions to read and write an entire
+OIFITS file (see src/oifitslib/oifile.h).
 
-Command-line utilities oifits-merge, oifits-filter and oifits-check
-are also provided - these provide simple user interfaces to
-OIFITSlib routines.
+Command-line utilities `oifits-merge`, `oifits-filter` and
+`oifits-check` are also provided - these provide simple user
+interfaces to OIFITSlib routines.
 
-A python interface to OIFITSlib is also provided (created using
-SWIG). To build this you will need SWIG 1.3.
+A python interface to OIFITSlib is also included (created using
+SWIG). To build this you will need SWIG 1.3 or later.
 
 
 LICENSING
@@ -40,7 +41,7 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with OIFITSlib (in the file lgpl.txt).  If not, see
-<http://www.gnu.org/licenses/>
+<http://www.gnu.org/licenses/>.
  
 
 GETTING THE SOFTWARE
@@ -53,40 +54,46 @@ The source code for OIFITSlib is available from github:
 BUILDING THE SOFTWARE
 ---------------------
 
-Use the supplied Makefile, which requires Gnu Make (sometimes
-installed as gmake). You may have to add explicit search paths to the
-Makefile variables CPPFLAGS, PYINCFLAGS, LDLIBS and LDLIBS_GLIB in
-order to find all the required include files and libraries.
-
-The following libraries are required:
+The following libraries are required - please install them first:
 - CFITSIO (version 3.x recommended):
-  http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
+  <http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html>
 - GLib    (version 2.16 or later required):
-  http://www.gtk.org/
+  <http://www.gtk.org/>
 
-Note that the "oitable" module can be built without GLib. The supplied
-Makefile attempts to detect whether and where GLib is installed (using
-the pkg-config utility). If GLib is not detected or pkg-config is not
-installed, only liboitable and its demonstration program "demo" will
-be built.
+CMake is now used for building - this should be more portable than the
+previous Makefile. For those not familiar with CMake, instructions can
+be found at <https://cmake.org/runningcmake/>. If you are using a
+Unix-like operating system the following commands should build and
+install OIFITSlib:
 
-OIFITSlib has been tested under Linux, Solaris and MacOS X. The author
-is interested in hearing about successes or failures under other
-operating systems.
+    cd build
+    cmake ..
+    make
+    sudo make install
+
+Optionally, run `make doc` to generate the API reference documentation.
+
+Note that the "oitable" library can be built without GLib. If GLib is
+not detected or the `pkg-config` utility is not installed, only
+liboitable and its demonstration program `oitable-demo` will be built.
+
+OIFITSlib has been tested under Linux (Ubuntu and CentOS) and
+MacOS X. The author is interested in hearing about successes or failures
+under other operating systems.
 
 
 DOCUMENTATION
 -------------
 
-The documentation for OIFITSlib is supplied in HTML format. Point your
-web browser to the file doc/index.html
+The API reference documentation for OIFITSlib is supplied in HTML
+format. Point your web browser to the file doc/oifitslib/html/index.html
 
 The HTML documentation is automatically generated from comments
 in the C code using doxygen.
 
-The command-line utilities oifits-merge, oifits-filter, oifits-check,
-and oifits-upgrade will output brief usage information if invoked with
-the `--help` argument.
+The command-line utilities `oifits-merge`, `oifits-filter`,
+`oifits-check`, and `oifits-upgrade` will output brief usage
+information if invoked with the `--help` argument.
 
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
