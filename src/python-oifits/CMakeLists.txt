@@ -32,20 +32,15 @@ if(GLIB2_FOUND)
 
     include(${SWIG_USE_FILE})
 
-    find_package(PythonLibs)
-    find_package(PythonInterp)
-
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+    find_package(PythonLibrary)
 
     function(add_swig_test module)
       add_test(NAME python-${module} WORKING_DIRECTORY ${TESTDATA_DIR} COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/${module}.py)
     endfunction()
 
-    # :TODO: this ignores CMAKE_INSTALL_PREFIX,
-    # and in any case gives the wrong result on Ubuntu
     function(install_swig module)
-      install(TARGETS _${module} DESTINATION ${PYTHON_SITE_PACKAGES})
-      install(FILES ${PROJECT_BINARY_DIR}/${module}.py DESTINATION ${PYTHON_SITE_PACKAGES})
+      install(TARGETS _${module} DESTINATION ${PYTHON_SITE_PACKAGES_INSTALL_DIR})
+      install(FILES ${PROJECT_BINARY_DIR}/${module}.py DESTINATION ${PYTHON_SITE_PACKAGES_INSTALL_DIR})
     endfunction()
 
     include_directories(../oifitslib)

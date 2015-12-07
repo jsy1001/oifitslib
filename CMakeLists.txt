@@ -19,6 +19,8 @@
 cmake_minimum_required(VERSION 2.8.6)
 project(oifitslib-dist)
 
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 enable_testing()
 
 add_subdirectory(src/oifitslib)
