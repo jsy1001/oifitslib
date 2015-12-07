@@ -29,6 +29,9 @@ if(GLIB2_FOUND)
   include_directories(${CFITSIO_INCLUDE_DIRS})
   include_directories(${GLIB2_INCLUDE_DIRS})
 
+  link_directories(${CFITSIO_LIBRARY_DIRS})
+  link_directories(${GLIB2_LIBRARY_DIRS})
+
   add_executable(oifits-check oifits-check.c)
   add_executable(oifits-merge oifits-merge.c)
   add_executable(oifits-filter oifits-filter.c)

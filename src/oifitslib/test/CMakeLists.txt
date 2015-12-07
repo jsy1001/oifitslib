@@ -37,6 +37,9 @@ if(GLIB2_FOUND)
   include_directories(${CFITSIO_INCLUDE_DIRS})
   include_directories(${GLIB2_INCLUDE_DIRS})
 
+  link_directories(${CFITSIO_LIBRARY_DIRS})
+  link_directories(${GLIB2_LIBRARY_DIRS})
+
   add_unit_test(datemjd)
   add_unit_test(oifile)
   add_unit_test(oicheck)
