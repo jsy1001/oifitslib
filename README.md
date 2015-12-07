@@ -1,8 +1,10 @@
-                      OIFITSlib Release Notes
+OIFITSlib Release Notes
+=======================
 
-                    John Young <jsy1001@cam.ac.uk>
+John Young <jsy1001@cam.ac.uk>
 
 WHAT IS OIFITSlib?
+------------------
 
 OIFITSlib is a C library for input/output, merging, filtering and
 checking of optical/IR interferometry datasets in the OIFITS exchange
@@ -24,6 +26,7 @@ SWIG). To build this you will need SWIG 1.3.
 
 
 LICENSING
+---------
 
 OIFITSlib is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published
@@ -37,16 +40,18 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with OIFITSlib (in the file lgpl.txt).  If not, see
-http://www.gnu.org/licenses/
+<http://www.gnu.org/licenses/>
  
 
 GETTING THE SOFTWARE
+--------------------
 
 The source code for OIFITSlib is available from github:
-https://github.com/jsy1001/oifitslib
+<https://github.com/jsy1001/oifitslib>
 
 
 BUILDING THE SOFTWARE
+---------------------
 
 Use the supplied Makefile, which requires Gnu Make (sometimes
 installed as gmake). You may have to add explicit search paths to the
@@ -71,6 +76,7 @@ operating systems.
 
 
 DOCUMENTATION
+-------------
 
 The documentation for OIFITSlib is supplied in HTML format. Point your
 web browser to the file doc/index.html
@@ -80,7 +86,7 @@ in the C code using doxygen.
 
 The command-line utilities oifits-merge, oifits-filter, oifits-check,
 and oifits-upgrade will output brief usage information if invoked with
-the '--help' argument.
+the `--help` argument.
 
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
