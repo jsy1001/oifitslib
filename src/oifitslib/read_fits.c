@@ -644,11 +644,18 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   }
 
   /* Read optional column */
-  pTargets->usecategory = FALSE;  /* default */
   if (pTargets->revision >= 2) {
-    pTargets->usecategory = read_col_string(fptr, TRUE, "CATEGORY", 3, irow,
-                                            pTargets->targ[irow - 1].category,
+    pTargets->usecategory = read_col_string(fptr, TRUE, "CATEGORY", 3, 1,
+                                            pTargets->targ[0].category,
                                             pStatus);
+    if (pTargets->usecategory) {
+      for (irow = 2; irow <= pTargets->ntarget; irow++)
+        read_col_string(fptr, FALSE, "CATEGORY", 3, irow,
+                        pTargets->targ[irow - 1].category, pStatus);
+    }
+  } else {
+    /* ignore CATEGORY column in revision 1 table */
+    pTargets->usecategory = FALSE;
   }
 
 except:
