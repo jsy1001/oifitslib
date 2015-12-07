@@ -947,47 +947,32 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Do any of selected channels in @a pRec have an acceptable UV radius?
+ * Do any of selected channels in @a pRec have acceptable UV radius and SNR?
  */
-static bool any_vis_uvrad_ok(const oi_vis_record *pRec,
-                             const oi_filter_spec *pFilter,
-                             const oi_wavelength *pWave, const char *useWave,
-                             int nwave)
+static bool any_vis_chan_ok(const oi_vis_record *pRec,
+                            const oi_filter_spec *pFilter,
+                            const oi_wavelength *pWave, const char *useWave,
+                            int nwave)
 {
   int j;
   double bas, uvrad;
+  float snrAmp, snrPhi;
 
-  if (pWave == NULL)
-    return TRUE;  /* cannot filter by UV radius, so keep record */
   bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
   for (j = 0; j < nwave; j++) {
     if (useWave[j]) {
-      uvrad = bas / pWave->eff_wave[j];
-      if (uvrad >= pFilter->uvrad_range[0] && uvrad <= pFilter->uvrad_range[1])
-        return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Do any of selected channels in @a pRec have an acceptable SNR?
- */
-static bool any_vis_snr_ok(const oi_vis_record *pRec,
-                           const oi_filter_spec *pFilter,
-                           const char *useWave, int nwave)
-{
-  int j;
-  float snrAmp, snrPhi;
-
-  for (j = 0; j < nwave; j++) {
-    if (useWave[j]) {
+      if (pWave != NULL) {
+        uvrad = bas / pWave->eff_wave[j];
+        if (uvrad < pFilter->uvrad_range[0] ||
+            uvrad > pFilter->uvrad_range[1])
+          continue;
+      }  /* else accept uv radius */
       snrAmp = pRec->visamp[j] / pRec->visamperr[j];
-      if (snrAmp >= pFilter->snr_range[0] && snrAmp <= pFilter->snr_range[1])
-        return TRUE;
       snrPhi = RAD2DEG / pRec->visphierr[j];
-      if (snrPhi >= pFilter->snr_range[0] && snrPhi <= pFilter->snr_range[1])
-        return TRUE;
+      if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
+          snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
+        continue;
+      return TRUE;  /* this channel is OK */
     }
   }
   return FALSE;
@@ -1117,9 +1102,8 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue;  /* skip record as projected baseline out of range */
     if (!pFilter->accept_flagged &&
-        !any_vis_uvrad_ok(&pInTab->record[i], pFilter,
-                          pWave, useWave, pInTab->nwave) &&
-        !any_vis_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
+        !any_vis_chan_ok(&pInTab->record[i], pFilter,
+                         pWave, useWave, pInTab->nwave))
       continue;  /* filter out all-flagged record */
 
     /* Create output record */
@@ -1183,45 +1167,31 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Do any of selected channels in @a pRec have an acceptable UV radius?
+ * Do any of selected channels in @a pRec have acceptable UV radius and SNR?
  */
-static bool any_vis2_uvrad_ok(const oi_vis2_record *pRec,
-                              const oi_filter_spec *pFilter,
-                              const oi_wavelength *pWave, const char *useWave,
-                              int nwave)
+static bool any_vis2_chan_ok(const oi_vis2_record *pRec,
+                             const oi_filter_spec *pFilter,
+                             const oi_wavelength *pWave, const char *useWave,
+                             int nwave)
 {
   int j;
   double bas, uvrad;
+  float snr;
 
-  if (pWave == NULL)
-    return TRUE;  /* cannot filter by UV radius, so keep record */
   bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
   for (j = 0; j < nwave; j++) {
     if (useWave[j]) {
-      uvrad = bas / pWave->eff_wave[j];
-      if (uvrad >= pFilter->uvrad_range[0] && uvrad <= pFilter->uvrad_range[1])
-        return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Do any of selected channels in @a pRec have an acceptable SNR?
- */
-static bool any_vis2_snr_ok(const oi_vis2_record *pRec,
-                            const oi_filter_spec *pFilter,
-                            const char *useWave, int nwave)
-{
-  int j;
-  float snr;
-
-  for (j = 0; j < nwave; j++) {
-    if (useWave[j]) {
+      if (pWave != NULL) {
+        uvrad = bas / pWave->eff_wave[j];
+        if (uvrad < pFilter->uvrad_range[0] ||
+            uvrad > pFilter->uvrad_range[1])
+          continue;
+      }  /* else accept uv radius */
       snr = pRec->vis2data[j] / pRec->vis2err[j];
-      if (snr >= pFilter->snr_range[0] && snr <= pFilter->snr_range[1])
-        return TRUE;
-    }
+      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
+        continue;
+      return TRUE;  /* this channel is OK */
+    }  
   }
   return FALSE;
 }
@@ -1309,9 +1279,8 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue;  /* skip record as projected baseline out of range */
     if (!pFilter->accept_flagged &&
-        !any_vis2_uvrad_ok(&pInTab->record[i], pFilter, pWave, useWave,
-                           pInTab->nwave) &&
-        !any_vis2_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
+        !any_vis2_chan_ok(&pInTab->record[i], pFilter, pWave, useWave,
+                          pInTab->nwave))
       continue;  /* filter out all-flagged record */
 
     /* Create output record */
@@ -1373,15 +1342,16 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
   }
 }
 /**
- * Do any of selected channels in @a pRec have acceptable UV radii?
+ * Do any of selected channels in @a pRec have acceptable UV radii and SNR?
  */
-static bool any_t3_uvrad_ok(const oi_t3_record *pRec,
-                            const oi_filter_spec *pFilter,
-                            const oi_wavelength *pWave, const char *useWave,
-                            int nwave)
+static bool any_t3_chan_ok(const oi_t3_record *pRec,
+                           const oi_filter_spec *pFilter,
+                           const oi_wavelength *pWave, const char *useWave,
+                           int nwave)
 {
   int j;
   double u1, v1, u2, v2, abRad, bcRad, acRad;
+  float snrAmp, snrPhi;
 
   if (pWave == NULL)
     return TRUE;  /* cannot filter by UV radius, so keep record */
@@ -1391,45 +1361,30 @@ static bool any_t3_uvrad_ok(const oi_t3_record *pRec,
   v2 = pRec->v2coord;
   for (j = 0; j < nwave; j++) {
     if (useWave[j]) {
-      abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
-      bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
-      acRad = (pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
-               pWave->eff_wave[j]);
-      if (abRad >= pFilter->uvrad_range[0] &&
-          abRad <= pFilter->uvrad_range[1] &&
-          bcRad >= pFilter->uvrad_range[0] &&
-          bcRad <= pFilter->uvrad_range[1] &&
-          acRad >= pFilter->uvrad_range[0] &&
-          acRad <= pFilter->uvrad_range[1])
-        return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Do any of selected channels in @a pRec have an acceptable SNR?
- */
-static bool any_t3_snr_ok(const oi_t3_record *pRec,
-                          const oi_filter_spec *pFilter,
-                          const char *useWave, int nwave)
-{
-  int j;
-  float snrAmp, snrPhi;
-
-  for (j = 0; j < nwave; j++) {
-    if (useWave[j])
-    {
+      if (pWave != NULL) {
+        abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
+        bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
+        acRad = (pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
+                 pWave->eff_wave[j]);
+        if (abRad < pFilter->uvrad_range[0] ||
+            abRad > pFilter->uvrad_range[1] ||
+            bcRad < pFilter->uvrad_range[0] ||
+            bcRad > pFilter->uvrad_range[1] ||
+            acRad < pFilter->uvrad_range[0] ||
+            acRad > pFilter->uvrad_range[1])
+          continue;
+      }  /* else accept uv radius */
       if (pFilter->accept_t3amp) {
         snrAmp = pRec->t3amp[j] / pRec->t3amperr[j];
-        if (snrAmp >= pFilter->snr_range[0] && snrAmp <= pFilter->snr_range[1])
-          return TRUE;
+        if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1])
+          continue;
       }
       if (pFilter->accept_t3phi) {
         snrPhi = RAD2DEG / pRec->t3phierr[j];
-        if (snrPhi >= pFilter->snr_range[0] && snrPhi <= pFilter->snr_range[1])
-          return TRUE;
+        if (snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
+          continue;
       }
+      return TRUE;  /* this channel is OK */
     }
   }
   return FALSE;
@@ -1559,9 +1514,8 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
       continue;  /* skip record as projected baseline ac out of range */
     if (!pFilter->accept_flagged &&
-        !any_t3_uvrad_ok(&pInTab->record[i], pFilter, pWave, useWave,
-                         pInTab->nwave) &&
-        !any_t3_snr_ok(&pInTab->record[i], pFilter, useWave, pInTab->nwave))
+        !any_t3_chan_ok(&pInTab->record[i], pFilter, pWave, useWave,
+                        pInTab->nwave))
       continue;  /* filter out all-flagged record */
 
     /* Create output record */
