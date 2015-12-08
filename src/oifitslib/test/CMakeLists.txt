@@ -21,8 +21,8 @@ project(oifitslib-test C)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../../testdata)
 
+find_package(CFITSIO REQUIRED)
 find_package(PkgConfig)
-pkg_check_modules(CFITSIO REQUIRED cfitsio)
 pkg_check_modules(GLIB2 glib-2.0>=2.16.0)
 
 if(GLIB2_FOUND)
