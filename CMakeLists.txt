@@ -31,5 +31,5 @@ enable_testing()
 
 add_subdirectory(src/oifitslib)
 add_subdirectory(src/util)
-#add_subdirectory(src/python-oifits)
+add_subdirectory(src/python-oifits)
 add_subdirectory(doc)
