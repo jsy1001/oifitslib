@@ -48,9 +48,7 @@ if(GLIB2_FOUND)
     include_directories(${GLIB2_INCLUDE_DIRS})
     include_directories(${PYTHON_INCLUDE_PATH})
 
-    link_directories(${CFITSIO_LIBRARY_DIRS})
     link_directories(${GLIB2_LIBRARY_DIRS})
-    link_directories(${PYTHON_LIBRARY_DIRS})
 
     swig_add_module(oifits python oifits.i)
     swig_add_module(oifilter python oifilter.i)
