@@ -1,9 +1,11 @@
 # - Try to find CFITSIO
 # Once done this will define
 #
-#  CFITSIO_FOUND - system has CFITSIO
-#  CFITSIO_INCLUDE_DIR - the CFITSIO include directory
-#  CFITSIO_LIBRARIES - Link these to use CFITSIO
+#  CFITSIO_FOUND          - system has CFITSIO
+#  CFITSIO_INCLUDE_DIR    - the CFITSIO include directory
+#  CFITSIO_INCLUDE_DIRS   - the CFITSIO include directory
+#                           (identical to CFITSIO_INCLUDE_DIR)
+#  CFITSIO_LIBRARIES      - Link these to use CFITSIO
 #  CFITSIO_VERSION_STRING - Human readable version number of cfitsio
 #  CFITSIO_VERSION_MAJOR  - Major version number of cfitsio
 #  CFITSIO_VERSION_MINOR  - Minor version number of cfitsio
@@ -63,5 +65,7 @@ else (CFITSIO_INCLUDE_DIR AND CFITSIO_LIBRARIES)
   endif (CFITSIO_FOUND)
 
   mark_as_advanced(CFITSIO_INCLUDE_DIR CFITSIO_LIBRARIES)
+
+  set(CFITSIO_INCLUDE_DIRS ${CFITSIO_INCLUDE_DIR})
 
 endif (CFITSIO_INCLUDE_DIR AND CFITSIO_LIBRARIES)
