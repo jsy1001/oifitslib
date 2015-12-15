@@ -6,9 +6,18 @@ checking of optical/IR interferometry datasets in the OIFITS exchange
 format. A preprint of the draft specification for OIFITS version 2 is
 available at http://arxiv.org/abs/1510.04556 .
 
-Command-line utilities `oifits-merge`, `oifits-filter` and
-`oifits-check` are also provided - these provide simple user
-interfaces to OIFITSlib routines.
+Version 2.x of OIFITSlib supports the draft OIFITS version 2 standard:
+the library can read either v1 or v2 OIFITS files, and writes v2
+files. The OIFITS standard has been designed such that v2 files are
+backwards-compatible with reading software intended for v1; hence a
+capability to write v1 files should not be needed. However, version
+1.x of OIFITSlib is available on GitHub for writing v1 OIFITS files if
+required.
+
+The program `oifits-upgrade` will convert a version 1 OIFITS file to
+version 2 of the standard. Other command-line utilities
+`oifits-merge`, `oifits-filter` and `oifits-check` are also provided -
+these provide simple user interfaces to OIFITSlib routines.
 
 A python interface to OIFITSlib is also included (created using
 SWIG). To build this you will need SWIG 1.3 or later.
@@ -55,6 +64,14 @@ browser to the file
 The command-line utilities `oifits-merge`, `oifits-filter`,
 `oifits-check`, and `oifits-upgrade` will output brief usage
 information if invoked with the `--help` argument.
+
+The `oifits-upgrade` utility converts a valid OIFITS version 1 file to
+OIFITS version 2. The input file must include OI_ARRAY table(s)
+containing all of the array elements used to obtain the data. Version
+2 of OIFITS defines several mandatory keywords for the primary
+header. The values for ORIGIN and INSMODE must be specified on the
+`oifits-upgrade` command line. Values for the other mandatory keywords
+are obtained from the contents of the input file.
 
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
