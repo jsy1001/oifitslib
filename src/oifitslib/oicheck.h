@@ -47,7 +47,7 @@
  * - check_t3amp()
  * - check_waveorder()
  * - check_time()
- * - check_spectrum()
+ * - check_flux()
  *
  * Each checking function is passed a pointer to a oi_fits struct
  * containing the data to check (except check_unique_targets()), and a
@@ -122,7 +122,7 @@ oi_breach_level check_flagging(const oi_fits *, oi_check_result *);
 oi_breach_level check_t3amp(const oi_fits *, oi_check_result *);
 oi_breach_level check_waveorder(const oi_fits *, oi_check_result *);
 oi_breach_level check_time(const oi_fits *, oi_check_result *);
-oi_breach_level check_spectrum(const oi_fits *, oi_check_result *);
+oi_breach_level check_flux(const oi_fits *, oi_check_result *);
 
 #endif /* #ifndef OICHECK_H */
 

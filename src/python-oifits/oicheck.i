@@ -34,7 +34,7 @@ human-readable description of the result.
 >>> checks = [check_tables, check_header, check_keywords, check_visrefmap,
 ...           check_unique_targets, check_targets_present, check_corr_present,
 ...           check_arrname, check_elements_present, check_flagging,
-...           check_t3amp, check_waveorder, check_time, check_spectrum]
+...           check_t3amp, check_waveorder, check_time, check_flux]
 >>> o = oifits.OiFits('OIFITS2/bigtest2.fits')
 >>> for c in checks:
 ...     level, result = c(o)
@@ -87,7 +87,7 @@ oi_breach_level check_flagging(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_t3amp(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_waveorder(oi_fits *, oi_check_result *pResult);
 oi_breach_level check_time(oi_fits *, oi_check_result *pResult);
-oi_breach_level check_spectrum(oi_fits *, oi_check_result *pResult);
+oi_breach_level check_flux(oi_fits *, oi_check_result *pResult);
 
 // Object-oriented interface to result
 %extend oi_check_result

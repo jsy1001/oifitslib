@@ -199,26 +199,27 @@ void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave)
 }
 
 /**
- * Allocate storage within oi_spectrum struct
+ * Allocate storage within oi_flux struct
  *
- * Sets the oi_spectrum::numrec and oi_spectrum::nwave attributes of
- * @a pSpectrum.
+ * Sets the oi_flux::numrec and oi_flux::nwave attributes of
+ * @a pFlux.
  *
- * @param pSpectrum  pointer to data struct, see exchange.h
- * @param numrec     number of records (table rows) to allocate
- * @param nwave      number of wavelength channels to allocate
+ * @param pFlux   pointer to data struct, see exchange.h
+ * @param numrec  number of records (table rows) to allocate
+ * @param nwave   number of wavelength channels to allocate
  */
-void alloc_oi_spectrum(oi_spectrum *pSpectrum, long numrec, int nwave)
+void alloc_oi_flux(oi_flux *pFlux, long numrec, int nwave)
 {
   int i;
-  oi_spectrum_record *pRec;
+  oi_flux_record *pRec;
 
-  pSpectrum->record = chkmalloc(numrec * sizeof(oi_spectrum_record));
+  pFlux->record = chkmalloc(numrec * sizeof(oi_flux_record));
   for (i = 0; i < numrec; i++) {
-    pRec = &pSpectrum->record[i];
+    pRec = &pFlux->record[i];
     pRec->fluxdata = chkmalloc(nwave * sizeof(pRec->fluxdata[0]));
     pRec->fluxerr = chkmalloc(nwave * sizeof(pRec->fluxerr[0]));
+    pRec->flag = chkmalloc(nwave * sizeof(pRec->flag[0]));
   }
-  pSpectrum->numrec = numrec;
-  pSpectrum->nwave = nwave;
+  pFlux->numrec = numrec;
+  pFlux->nwave = nwave;
 }

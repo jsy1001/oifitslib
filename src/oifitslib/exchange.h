@@ -264,7 +264,7 @@ typedef struct {
   oi_t3_record *record;
 } oi_t3;
 
-/** Spectrum record. Corresponds to one row of an OI_SPECTRUM FITS table. */
+/** Flux record. Corresponds to one row of an OI_FLUX FITS table. */
 typedef struct {
   int target_id;
   /* no TIME in this table */
@@ -274,9 +274,10 @@ typedef struct {
   DATA *fluxerr;
   int corrindx_fluxdata;
   int sta_index;  /**< -1 means not specified */
-} oi_spectrum_record;
+  BOOL *flag;
+} oi_flux_record;
 
-/** Data for OI_SPECTRUM FITS table (new in OIFITS2) */
+/** Data for OI_FLUX FITS table (new in OIFITS2; formerly OI_SPECTRUM) */
 typedef struct {
   int revision;
   char date_obs[FLEN_VALUE];
@@ -284,13 +285,13 @@ typedef struct {
   char insname[FLEN_VALUE];
   char corrname[FLEN_VALUE]; /**< empty string "" means not specified */
   double fov;
-  char fovtype[FLEN_VALUE];
+  char fovtype[FLEN_VALUE]; /**< empty string "" means not specified */
   char calstat;  /**< first character of FITS keyword */
   char fluxunit[FLEN_VALUE];  /**< TUNITn for FLUXDATA/FLUXERR */
   long numrec;
   int nwave;
-  oi_spectrum_record *record;
-} oi_spectrum;
+  oi_flux_record *record;
+} oi_flux;
 
 
 /*
@@ -312,8 +313,8 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus);
 STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver,
                      STATUS *pStatus);
 STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus);
-STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
-                         STATUS *pStatus);
+STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver,
+                     STATUS *pStatus);
 /* Functions from read_fits.c */
 STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus);
 STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus);
@@ -331,8 +332,7 @@ STATUS read_next_oi_inspol(fitsfile *fptr, oi_inspol *pInspol, STATUS *pStatus);
 STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus);
 STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus);
 STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus);
-STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
-                             STATUS *pStatus);
+STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus);
 /* Functions from alloc_fits.c */
 void alloc_oi_array(oi_array *pArray, int nelement);
 void alloc_oi_target(oi_target *pTargets, int ntarget);
@@ -342,7 +342,7 @@ void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave);
 void alloc_oi_vis(oi_vis *pVis, long numrec, int nwave);
 void alloc_oi_vis2(oi_vis2 *pVis2, long numrec, int nwave);
 void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave);
-void alloc_oi_spectrum(oi_spectrum *pSpectrum, long numrec, int nwave);
+void alloc_oi_flux(oi_flux *pFlux, long numrec, int nwave);
 /* Functions from free_fits.c */
 void free_oi_array(oi_array *pArray);
 void free_oi_target(oi_target *pTargets);
@@ -352,7 +352,7 @@ void free_oi_inspol(oi_inspol *pInspol);
 void free_oi_vis(oi_vis *pVis);
 void free_oi_vis2(oi_vis2 *pVis2);
 void free_oi_t3(oi_t3 *pT3);
-void free_oi_spectrum(oi_spectrum *pSpectrum);
+void free_oi_flux(oi_flux *pFlux);
 
 #endif /* #ifndef EXCHANGE_H */
 

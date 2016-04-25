@@ -154,17 +154,18 @@ void free_oi_t3(oi_t3 *pT3)
 }
 
 /**
- * Free dynamically-allocated storage within oi_spectrum struct
+ * Free dynamically-allocated storage within oi_flux struct
  *
- * @param pSpectrum  pointer to data struct, see exchange.h
+ * @param pFlux  pointer to data struct, see exchange.h
  */
-void free_oi_spectrum(oi_spectrum *pSpectrum)
+void free_oi_flux(oi_flux *pFlux)
 {
   int i;
 
-  for (i = 0; i < pSpectrum->numrec; i++) {
-    free(pSpectrum->record[i].fluxdata);
-    free(pSpectrum->record[i].fluxerr);
+  for (i = 0; i < pFlux->numrec; i++) {
+    free(pFlux->record[i].fluxdata);
+    free(pFlux->record[i].fluxerr);
+    free(pFlux->record[i].flag);
   }
-  free(pSpectrum->record);
+  free(pFlux->record);
 }

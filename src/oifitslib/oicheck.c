@@ -167,9 +167,9 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
     }
     if (pOi->numVis == 0 && pOi->numVis2 == 0 && pOi->numT3 == 0 &&
-        pOi->numSpectrum == 0) {
+        pOi->numFlux == 0) {
       g_snprintf(location, FLEN_VALUE, "No data table - "
-                 "at least one OI_VIS/VIS2/T3/SPECTRUM required");
+                 "at least one OI_VIS/VIS2/T3/FLUX required");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
     }
   } else {
@@ -258,7 +258,7 @@ oi_breach_level check_keywords(const oi_fits *pOi, oi_check_result *pResult)
   GList *link;
   oi_array *pArray;
   oi_vis *pVis;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   const char desc[] = "Invalid keyword value";
   char location[FLEN_VALUE];
 
@@ -305,24 +305,24 @@ oi_breach_level check_keywords(const oi_fits *pOi, oi_check_result *pResult)
     link = link->next;
   }
 
-  /* Check OI_SPECTRUM keywords */
-  link = pOi->spectrumList;
+  /* Check OI_FLUX keywords */
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    if (pSpectrum->calstat != 'C' && pSpectrum->calstat != 'U') {
+    pFlux = link->data;
+    if (pFlux->calstat != 'C' && pFlux->calstat != 'U') {
       g_snprintf(location, FLEN_VALUE,
-                 "OI_SPECTRUM #%d CALSTAT='%c' ('C'/'U')",
-                 g_list_position(pOi->spectrumList, link) + 1,
-                 pSpectrum->calstat);
+                 "OI_FLUX #%d CALSTAT='%c' ('C'/'U')",
+                 g_list_position(pOi->fluxList, link) + 1,
+                 pFlux->calstat);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
-    if (strlen(pSpectrum->fovtype) > 0 &&
-        strcmp(pSpectrum->fovtype, "FWHM") != 0 &&
-        strcmp(pSpectrum->fovtype, "RADIUS") != 0) {
+    if (strlen(pFlux->fovtype) > 0 &&
+        strcmp(pFlux->fovtype, "FWHM") != 0 &&
+        strcmp(pFlux->fovtype, "RADIUS") != 0) {
       g_snprintf(location, FLEN_VALUE,
-                 "OI_SPECTRUM #%d FOVTYPE='%s' ('FWHM', 'RADIUS')",
-                 g_list_position(pOi->spectrumList, link) + 1,
-                 pSpectrum->fovtype);
+                 "OI_FLUX #%d FOVTYPE='%s' ('FWHM', 'RADIUS')",
+                 g_list_position(pOi->fluxList, link) + 1,
+                 pFlux->fovtype);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     link = link->next;
@@ -432,7 +432,7 @@ oi_breach_level check_targets_present(const oi_fits *pOi,
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   const char desc[] = "Reference to missing target record";
   char location[FLEN_VALUE];
 
@@ -480,14 +480,14 @@ oi_breach_level check_targets_present(const oi_fits *pOi,
     link = link->next;
   }
 
-  /* Check OI_SPECTRUM tables */
-  link = pOi->spectrumList;
+  /* Check OI_FLUX tables */
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    for (i = 0; i < pSpectrum->numrec; i++) {
-      if (oi_fits_lookup_target(pOi, pSpectrum->record[i].target_id) == NULL) {
-        g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d record %d",
-                   g_list_position(pOi->spectrumList, link) + 1, i + 1);
+    pFlux = link->data;
+    for (i = 0; i < pFlux->numrec; i++) {
+      if (oi_fits_lookup_target(pOi, pFlux->record[i].target_id) == NULL) {
+        g_snprintf(location, FLEN_VALUE, "OI_FLUX #%d record %d",
+                   g_list_position(pOi->fluxList, link) + 1, i + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
     }
@@ -516,7 +516,7 @@ oi_breach_level check_arrname(const oi_fits *pOi, oi_check_result *pResult)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   const char desc[] = "ARRNAME missing";
   char location[FLEN_VALUE];
 
@@ -571,14 +571,14 @@ oi_breach_level check_arrname(const oi_fits *pOi, oi_check_result *pResult)
       link = link->next;
     }
 
-    /* Check OI_SPECTRUM tables */
-    link = pOi->spectrumList;
+    /* Check OI_FLUX tables */
+    link = pOi->fluxList;
     while (link != NULL) {
-      pSpectrum = link->data;
-      if (pSpectrum->calstat == 'U' && strlen(pSpectrum->arrname) == 0) {
-        /* ARRNAME required in OI_SPECTRUM only if uncalibrated */
-        g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
-                   g_list_position(pOi->spectrumList, link) + 1);
+      pFlux = link->data;
+      if (pFlux->calstat == 'U' && strlen(pFlux->arrname) == 0) {
+        /* ARRNAME required in OI_FLUX only if uncalibrated */
+        g_snprintf(location, FLEN_VALUE, "OI_FLUX #%d",
+                   g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
       link = link->next;
@@ -607,7 +607,7 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   const char desc[] = "Reference to missing array element";
   const char desc2[] = "ARRNAME missing"; //:BUG:
   char location[FLEN_VALUE];
@@ -692,17 +692,17 @@ oi_breach_level check_elements_present(const oi_fits *pOi,
     link = link->next;
   }
 
-  /* Check OI_SPECTRUM tables */
-  link = pOi->spectrumList;
+  /* Check OI_FLUX tables */
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    if (strlen(pSpectrum->arrname) > 0) {
-      for (i = 0; i < pSpectrum->numrec; i++) {
-        if (pSpectrum->record[i].sta_index == -1) continue;
-        if (oi_fits_lookup_element(pOi, pSpectrum->arrname,
-                                   pSpectrum->record[i].sta_index) == NULL) {
-          g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d record %d",
-                     g_list_position(pOi->spectrumList, link) + 1, i + 1);
+    pFlux = link->data;
+    if (strlen(pFlux->arrname) > 0) {
+      for (i = 0; i < pFlux->numrec; i++) {
+        if (pFlux->record[i].sta_index == -1) continue;
+        if (oi_fits_lookup_element(pOi, pFlux->arrname,
+                                   pFlux->record[i].sta_index) == NULL) {
+          g_snprintf(location, FLEN_VALUE, "OI_FLUX #%d record %d",
+                     g_list_position(pOi->fluxList, link) + 1, i + 1);
           set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
         }
       }
@@ -731,7 +731,7 @@ oi_breach_level check_corr_present(const oi_fits *pOi,
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   const char desc[] = "Reference to missing OI_CORR table";
   char location[FLEN_VALUE];
 
@@ -776,14 +776,14 @@ oi_breach_level check_corr_present(const oi_fits *pOi,
     link = link->next;
   }
 
-  /* Check OI_SPECTRUM tables */
-  link = pOi->spectrumList;
+  /* Check OI_FLUX tables */
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    if (strlen(pSpectrum->corrname) > 0 &&
-        oi_fits_lookup_corr(pOi, pSpectrum->corrname) == NULL) {
-      g_snprintf(location, FLEN_VALUE, "OI_SPECTRUM #%d",
-                 g_list_position(pOi->spectrumList, link) + 1);
+    pFlux = link->data;
+    if (strlen(pFlux->corrname) > 0 &&
+        oi_fits_lookup_corr(pOi, pFlux->corrname) == NULL) {
+      g_snprintf(location, FLEN_VALUE, "OI_FLUX #%d",
+                 g_list_position(pOi->fluxList, link) + 1);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     link = link->next;
@@ -1016,54 +1016,54 @@ oi_breach_level check_time(const oi_fits *pOi, oi_check_result *pResult)
 }
 
 /**
- * Check presence of ARRNAME and STA_INDEX in OI_SPECTRUM tables.
+ * Check presence of ARRNAME and STA_INDEX in OI_FLUX tables.
  *
- * ARRNAME and STA_INDEX must be present if the spectrum is
- * uncalibrated, but absent if it is calibrated.
+ * ARRNAME and STA_INDEX must be present if the fluxes are
+ * uncalibrated, but absent if they are calibrated.
  *
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
  *
  * @return oi_breach_level indicating overall test result
  */
-oi_breach_level check_spectrum(const oi_fits *pOi, oi_check_result *pResult)
+oi_breach_level check_flux(const oi_fits *pOi, oi_check_result *pResult)
 {
   GList *link;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   const char desc[] =
-    "ARRNAME/STA_INDEX present (missing) in (un)calibrated spectrum";
+    "ARRNAME/STA_INDEX present (missing) in (un)calibrated fluxes";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
 
-  link = pOi->spectrumList;
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    if (pSpectrum->calstat == 'C') {
-      if (strlen(pSpectrum->arrname) > 0) {
+    pFlux = link->data;
+    if (pFlux->calstat == 'C') {
+      if (strlen(pFlux->arrname) > 0) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_SPECTRUM #%d ARRNAME='%s'",
-                   g_list_position(pOi->spectrumList, link) + 1,
-                   pSpectrum->arrname);
+                   "OI_FLUX #%d ARRNAME='%s'",
+                   g_list_position(pOi->fluxList, link) + 1,
+                   pFlux->arrname);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
-      if (pSpectrum->record[0].sta_index != -1) {
+      if (pFlux->record[0].sta_index != -1) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_SPECTRUM #%d STA_INDEX present",
-                   g_list_position(pOi->spectrumList, link) + 1);
+                   "OI_FLUX #%d STA_INDEX present",
+                   g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
-    } else if (pSpectrum->calstat == 'U') {
-      if (strlen(pSpectrum->arrname) == 0) {
+    } else if (pFlux->calstat == 'U') {
+      if (strlen(pFlux->arrname) == 0) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_SPECTRUM #%d ARRNAME missing",
-                   g_list_position(pOi->spectrumList, link) + 1);
+                   "OI_FLUX #%d ARRNAME missing",
+                   g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
-      if (pSpectrum->record[0].sta_index == -1) {
+      if (pFlux->record[0].sta_index == -1) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_SPECTRUM #%d STA_INDEX missing",
-                   g_list_position(pOi->spectrumList, link) + 1);
+                   "OI_FLUX #%d STA_INDEX missing",
+                   g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
     }

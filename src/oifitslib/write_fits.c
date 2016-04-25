@@ -924,28 +924,27 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 
 
 /**
- * Write OI_SPECTRUM fits binary table
+ * Write OI_FLUX fits binary table
  *
- * @param fptr      see cfitsio documentation
- * @param spectrum  data struct, see exchange.h
- * @param extver    value for EXTVER keyword
- * @param pStatus   pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param flux     data struct, see exchange.h
+ * @param extver   value for EXTVER keyword
+ * @param pStatus  pointer to status variable
  *
  * @return On error, returns non-zero cfitsio error code, and sets *pStatus
  */
-STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
-                         STATUS *pStatus)
+STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
 {
-  const char function[] = "write_oi_spectrum";
-  const int tfields = 5;
+  const char function[] = "write_oi_flux";
+  const int tfields = 6;
   char *ttype[] = {"TARGET_ID", "MJD", "INT_TIME",
-                   "FLUXDATA", "FLUXERR"};
+                   "FLUXDATA", "FLUXERR", "FLAG"};
   const char *tformTpl[] = {"I", "D", "D",
-                            "?D", "?D"};
+                            "?D", "?D", "?L"};
   char **tform;
   char *tunit[] = {"\0", "day", "s",
-                   "\0", "\0"};
-  char extname[] = "OI_SPECTRUM";
+                   "\0", "\0", "\0"};
+  char extname[] = "OI_FLUX";
   char keyval[FLEN_VALUE];
   int revision = 1, irow;
   bool correlated;
@@ -953,73 +952,79 @@ STATUS write_oi_spectrum(fitsfile *fptr, oi_spectrum spectrum, int extver,
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
   /* Create table structure */
-  tform = make_tform(tformTpl, tfields, spectrum.nwave);
+  tform = make_tform(tformTpl, tfields, flux.nwave);
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
                   extname, pStatus);
   free_tform(tform, tfields);
-  fits_write_key(fptr, TSTRING, "TUNIT4", &spectrum.fluxunit,
+  fits_write_key(fptr, TSTRING, "TUNIT4", &flux.fluxunit,
                  "Units of field  4", pStatus);
+  fits_write_key(fptr, TSTRING, "TUNIT5", &flux.fluxunit,
+                 "Units of field  5", pStatus);
 
   /* Write mandatory keywords */
-  if (spectrum.revision != revision) {
-    printf("WARNING! spectrum.revision != %d on entry to %s. "
+  if (flux.revision != revision) {
+    printf("WARNING! flux.revision != %d on entry to %s. "
            "Writing revision %d table\n", revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
-  fits_write_key(fptr, TSTRING, "DATE-OBS", &spectrum.date_obs,
+  fits_write_key(fptr, TSTRING, "DATE-OBS", &flux.date_obs,
                  "UTC start date of observations", pStatus);
-  if (strlen(spectrum.arrname) > 0)
-    fits_write_key(fptr, TSTRING, "ARRNAME", &spectrum.arrname,
+  if (strlen(flux.arrname) > 0)
+    fits_write_key(fptr, TSTRING, "ARRNAME", &flux.arrname,
                    "Array name", pStatus);
-  fits_write_key(fptr, TSTRING, "INSNAME", &spectrum.insname,
+  fits_write_key(fptr, TSTRING, "INSNAME", &flux.insname,
                  "Detector name", pStatus);
-  fits_write_key(fptr, TDOUBLE, "FOV", &spectrum.fov,
+  fits_write_key(fptr, TDOUBLE, "FOV", &flux.fov,
                  "Field Of View on sky for FLUXDATA", pStatus);
-  fits_write_key_unit(fptr, "FOV", "arcsec", pStatus);
-  fits_write_key(fptr, TSTRING, "FOVTYPE", &spectrum.fovtype,
-                 "Model for FOV", pStatus);
-  keyval[0] = spectrum.calstat;
+  keyval[0] = flux.calstat;
   keyval[1] = '\0';
   fits_write_key(fptr, TSTRING, "CALSTAT", &keyval,
                  "Calibration state (U or C)", pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_SPECTRUM", pStatus);
+                 "ID number of this OI_FLUX", pStatus);
 
   /* Write mandatory columns */
-  for (irow = 1; irow <= spectrum.numrec; irow++) {
+  for (irow = 1; irow <= flux.numrec; irow++) {
     fits_write_col(fptr, TINT, 1, irow, 1, 1,
-                   &spectrum.record[irow - 1].target_id, pStatus);
+                   &flux.record[irow - 1].target_id, pStatus);
     fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1,
-                   &spectrum.record[irow - 1].mjd, pStatus);
+                   &flux.record[irow - 1].mjd, pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1,
-                   &spectrum.record[irow - 1].int_time, pStatus);
-    fits_write_col(fptr, TDOUBLE, 4, irow, 1, spectrum.nwave,
-                   spectrum.record[irow - 1].fluxdata, pStatus);
-    fits_write_col(fptr, TDOUBLE, 5, irow, 1, spectrum.nwave,
-                   spectrum.record[irow - 1].fluxerr, pStatus);
+                   &flux.record[irow - 1].int_time, pStatus);
+    fits_write_col(fptr, TDOUBLE, 4, irow, 1, flux.nwave,
+                   flux.record[irow - 1].fluxdata, pStatus);
+    fits_write_col(fptr, TDOUBLE, 5, irow, 1, flux.nwave,
+                   flux.record[irow - 1].fluxerr, pStatus);
+    fits_write_col(fptr, TLOGICAL, 6, irow, 1, flux.nwave,
+                   flux.record[irow - 1].flag, pStatus);
   }
 
   //:TODO: maybe only write ARRNAME and STA_INDEX if CALSTAT == 'U'
   /* Write optional keywords */
-  correlated = (strlen(spectrum.corrname) > 0);
+  if (strlen(flux.fovtype) > 0) {
+    fits_write_key_unit(fptr, "FOV", "arcsec", pStatus);
+    fits_write_key(fptr, TSTRING, "FOVTYPE", &flux.fovtype,
+                   "Model for FOV", pStatus);
+  }
+  correlated = (strlen(flux.corrname) > 0);
   if (correlated)
-    fits_write_key(fptr, TSTRING, "CORRNAME", &spectrum.corrname,
+    fits_write_key(fptr, TSTRING, "CORRNAME", &flux.corrname,
                    "Correlated data set name", pStatus);
 
   /* Write optional columns */
   if (correlated) {
     fits_insert_col(fptr, 5, "CORRINDX_FLUXDATA", "J", pStatus);
-    for (irow = 1; irow <= spectrum.numrec; irow++) {
+    for (irow = 1; irow <= flux.numrec; irow++) {
       fits_write_col(fptr, TINT, 5, irow, 1, 1,
-                     &spectrum.record[irow - 1].corrindx_fluxdata, pStatus);
+                     &flux.record[irow - 1].corrindx_fluxdata, pStatus);
     }
   }
-  if (strlen(spectrum.arrname) > 0) {
+  if (strlen(flux.arrname) > 0) {
     fits_insert_col(fptr, 6, "STA_INDEX", "I", pStatus);
-    for (irow = 1; irow <= spectrum.numrec; irow++) {
+    for (irow = 1; irow <= flux.numrec; irow++) {
       fits_write_col(fptr, TINT, 6, irow, 1, 1,
-                     &spectrum.record[irow - 1].sta_index, pStatus);
+                     &flux.record[irow - 1].sta_index, pStatus);
     }
   }
 

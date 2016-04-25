@@ -696,7 +696,7 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
 }
 
 /**
- * Copy all input OI_SPECTRUM tables into output dataset.
+ * Copy all input OI_FLUX tables into output dataset.
  *
  * Modifies INSNAME and TARGET_ID to maintain correct cross-references.
  *
@@ -710,14 +710,14 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
  *                          by old
  * @param pOutput       pointer to oi_fits struct to write merged data to
  */
-void merge_all_oi_spectrum(const GList *inList, GHashTable *targetIdHash,
-                           const GList *arrnameHashList,
-                           const GList *insnameHashList,
-                           const GList *corrnameHashList, oi_fits *pOutput)
+void merge_all_oi_flux(const GList *inList, GHashTable *targetIdHash,
+                       const GList *arrnameHashList,
+                       const GList *insnameHashList,
+                       const GList *corrnameHashList, oi_fits *pOutput)
 {
   const GList *ilink, *jlink, *arrHashLink, *insHashLink, *corrHashLink;
   oi_fits *pInput;
-  oi_spectrum *pOutTab;
+  oi_flux *pOutTab;
   GHashTable *arrnameHash, *insnameHash, *corrnameHash;
 
   /* Loop over input datasets */
@@ -731,16 +731,16 @@ void merge_all_oi_spectrum(const GList *inList, GHashTable *targetIdHash,
     corrnameHash = (GHashTable *)corrHashLink->data;
     pInput = (oi_fits *)ilink->data;
     /* Loop over data tables in dataset */
-    jlink = pInput->spectrumList;
+    jlink = pInput->fluxList;
     while (jlink != NULL) {
-      pOutTab = dup_oi_spectrum((oi_spectrum *)jlink->data);
+      pOutTab = dup_oi_flux((oi_flux *)jlink->data);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
       REPLACE_TARGET_ID(pOutTab, pInput, targetIdHash);
       /* Append modified copy of table to output */
-      pOutput->spectrumList = g_list_append(pOutput->spectrumList, pOutTab);
-      ++pOutput->numSpectrum;
+      pOutput->fluxList = g_list_append(pOutput->fluxList, pOutTab);
+      ++pOutput->numFlux;
       jlink = jlink->next;
     }
     ilink = ilink->next;
@@ -775,8 +775,8 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
                     insnameHashList, corrnameHashList, pOutput);
   merge_all_oi_t3(inList, targetIdHash, arrnameHashList,
                   insnameHashList, corrnameHashList, pOutput);
-  merge_all_oi_spectrum(inList, targetIdHash, arrnameHashList,
-                        insnameHashList, corrnameHashList, pOutput);
+  merge_all_oi_flux(inList, targetIdHash, arrnameHashList,
+                    insnameHashList, corrnameHashList, pOutput);
 
   g_hash_table_destroy(targetIdHash);
   link = arrnameHashList;

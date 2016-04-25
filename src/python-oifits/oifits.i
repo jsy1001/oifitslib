@@ -138,8 +138,8 @@ if __name__ == '__main__':
 %map_out_glist(vis2List, oi_vis2);
 %map_in_glist(t3List, oi_t3);
 %map_out_glist(t3List, oi_t3);
-%map_in_glist(spectrumList, oi_spectrum);
-%map_out_glist(spectrumList, oi_spectrum);
+%map_in_glist(fluxList, oi_flux);
+%map_out_glist(fluxList, oi_flux);
 
 
 // Exclude few attributes that can't be wrapped sensibly
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 %add_array_access(oi_vis_record);
 %add_array_access(oi_vis2_record);
 %add_array_access(oi_t3_record);
-%add_array_access(oi_spectrum_record);
+%add_array_access(oi_flux_record);
 
 
 // Object-oriented interface to oi_fits struct

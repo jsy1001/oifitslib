@@ -63,7 +63,7 @@ static const TestCase passCases[] = {
   {DIR2 "Mystery--AMBER--LowH.fits", check_t3amp,            OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_waveorder,        OI_BREACH_NONE},
   {DIR2 "Mystery--AMBER--LowH.fits", check_time,             OI_BREACH_NONE},
-  {DIR2 "bigtest2.fits",             check_spectrum,         OI_BREACH_NONE}
+  {DIR2 "bigtest2.fits",             check_flux,             OI_BREACH_NONE}
 };
 
 static const TestCase failCases[] = {
@@ -100,7 +100,7 @@ static const TestCase failCases[] = {
    OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING},
   {DIR2 "bad_time.fits",            check_time,             OI_BREACH_WARNING},
-  {DIR2 "bad_spectrum.fits",        check_spectrum,
+  {DIR2 "bad_flux.fits",            check_flux,
    OI_BREACH_NOT_OIFITS}
 };
 

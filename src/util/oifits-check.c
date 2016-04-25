@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     check_t3amp,
     check_waveorder,
     check_time,
-    check_spectrum,
+    check_flux,
     NULL
   };
   oi_fits oi;

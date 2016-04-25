@@ -213,7 +213,7 @@ static void format_inspol_list_summary(GString *pGStr, GList *inspolList)
 }
 
 /**
- * Return earliest of OI_VIS/VIS2/T3/SPECTRUM MJD values.
+ * Return earliest of OI_VIS/VIS2/T3/FLUX MJD values.
  */
 static double get_min_mjd(const oi_fits *pOi)
 {
@@ -221,7 +221,7 @@ static double get_min_mjd(const oi_fits *pOi)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   int i;
   double minMjd;
 
@@ -253,12 +253,12 @@ static double get_min_mjd(const oi_fits *pOi)
     }
     link = link->next;
   }
-  link = pOi->spectrumList;
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    for (i = 0; i < pSpectrum->numrec; i++) {
-      if (pSpectrum->record[i].mjd < minMjd)
-        minMjd = pSpectrum->record[i].mjd;
+    pFlux = link->data;
+    for (i = 0; i < pFlux->numrec; i++) {
+      if (pFlux->record[i].mjd < minMjd)
+        minMjd = pFlux->record[i].mjd;
     }
     link = link->next;
   }
@@ -266,7 +266,7 @@ static double get_min_mjd(const oi_fits *pOi)
 }
 
 /**
- * Return latest of OI_VIS/VIS2/T3/SPECTRUM MJD values.
+ * Return latest of OI_VIS/VIS2/T3/FLUX MJD values.
  */
 static double get_max_mjd(const oi_fits *pOi)
 {
@@ -274,7 +274,7 @@ static double get_max_mjd(const oi_fits *pOi)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   int i;
   double maxMjd;
 
@@ -306,12 +306,12 @@ static double get_max_mjd(const oi_fits *pOi)
     }
     link = link->next;
   }
-  link = pOi->spectrumList;
+  link = pOi->fluxList;
   while (link != NULL) {
-    pSpectrum = link->data;
-    for (i = 0; i < pSpectrum->numrec; i++) {
-      if (pSpectrum->record[i].mjd > maxMjd)
-        maxMjd = pSpectrum->record[i].mjd;
+    pFlux = link->data;
+    for (i = 0; i < pFlux->numrec; i++) {
+      if (pFlux->record[i].mjd > maxMjd)
+        maxMjd = pFlux->record[i].mjd;
     }
     link = link->next;
   }
@@ -355,7 +355,7 @@ void init_oi_fits(oi_fits *pOi)
   pOi->numVis = 0;
   pOi->numVis2 = 0;
   pOi->numT3 = 0;
-  pOi->numSpectrum = 0;
+  pOi->numFlux = 0;
   pOi->arrayList = NULL;
   pOi->wavelengthList = NULL;
   pOi->corrList = NULL;
@@ -363,7 +363,7 @@ void init_oi_fits(oi_fits *pOi)
   pOi->visList = NULL;
   pOi->vis2List = NULL;
   pOi->t3List = NULL;
-  pOi->spectrumList = NULL;
+  pOi->fluxList = NULL;
   pOi->arrayHash =
     g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
   pOi->wavelengthHash =
@@ -424,7 +424,7 @@ int is_oi_fits_two(const oi_fits *pOi)
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->visList, oi_vis, 2, FALSE);
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->vis2List, oi_vis2, 2, FALSE);
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->t3List, oi_t3, 2, FALSE);
-  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->spectrumList, oi_spectrum, 1, FALSE);
+  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->fluxList, oi_flux, 1, FALSE);
   return TRUE;
 }
 
@@ -633,8 +633,7 @@ STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
   WRITE_OI_LIST(fptr, oi.visList, oi_vis, write_oi_vis, pStatus);
   WRITE_OI_LIST(fptr, oi.vis2List, oi_vis2, write_oi_vis2, pStatus);
   WRITE_OI_LIST(fptr, oi.t3List, oi_t3, write_oi_t3, pStatus);
-  WRITE_OI_LIST(fptr, oi.spectrumList, oi_spectrum, write_oi_spectrum,
-                pStatus);
+  WRITE_OI_LIST(fptr, oi.fluxList, oi_flux, write_oi_flux, pStatus);
 
   fits_close_file(fptr, pStatus);
 
@@ -668,7 +667,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
@@ -689,7 +688,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   pOi->visList = NULL;
   pOi->vis2List = NULL;
   pOi->t3List = NULL;
-  pOi->spectrumList = NULL;
+  pOi->fluxList = NULL;
 
   /* Read primary header keywords */
   read_oi_header(fptr, &pOi->header, pStatus);
@@ -849,27 +848,27 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   *pStatus = 0; /* reset EOF */
   fits_clear_errmark();
 
-  /* Read all OI_SPECTRUM, hash-tabling corresponding array &
+  /* Read all OI_FLUX, hash-tabling corresponding array &
    * wavelength tables */
-  pOi->numSpectrum = 0;
+  pOi->numFlux = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
-    pSpectrum = chkmalloc(sizeof(oi_spectrum));
+    pFlux = chkmalloc(sizeof(oi_flux));
     fits_write_errmark();
-    if (read_next_oi_spectrum(fptr, pSpectrum, pStatus))
-      break;  /* no more OI_SPECTRUM */
-    pOi->spectrumList = g_list_append(pOi->spectrumList, pSpectrum);
-    ++pOi->numSpectrum;
-    if (strlen(pSpectrum->arrname) > 0) {
-      if (!g_hash_table_lookup(pOi->arrayHash, pSpectrum->arrname))
-        g_hash_table_insert(pOi->arrayHash, pSpectrum->arrname,
-                            find_oi_array(pOi, pSpectrum->arrname));
+    if (read_next_oi_flux(fptr, pFlux, pStatus))
+      break;  /* no more OI_FLUX */
+    pOi->fluxList = g_list_append(pOi->fluxList, pFlux);
+    ++pOi->numFlux;
+    if (strlen(pFlux->arrname) > 0) {
+      if (!g_hash_table_lookup(pOi->arrayHash, pFlux->arrname))
+        g_hash_table_insert(pOi->arrayHash, pFlux->arrname,
+                            find_oi_array(pOi, pFlux->arrname));
     }
-    if (!g_hash_table_lookup(pOi->wavelengthHash, pSpectrum->insname))
-      g_hash_table_insert(pOi->wavelengthHash, pSpectrum->insname,
-                          find_oi_wavelength(pOi, pSpectrum->insname));
+    if (!g_hash_table_lookup(pOi->wavelengthHash, pFlux->insname))
+      g_hash_table_insert(pOi->wavelengthHash, pFlux->insname,
+                          find_oi_wavelength(pOi, pFlux->insname));
   }
-  free(pSpectrum);
+  free(pFlux);
   if (*pStatus != END_OF_FILE) goto except;
   *pStatus = 0; /* reset EOF */
   fits_clear_errmark();
@@ -927,8 +926,8 @@ void free_oi_fits(oi_fits *pOi)
             (free_func)free_oi_vis2);
   free_list(pOi->t3List,
             (free_func)free_oi_t3);
-  free_list(pOi->spectrumList,
-            (free_func)free_oi_spectrum);
+  free_list(pOi->fluxList,
+            (free_func)free_oi_flux);
 }
 
 /**
@@ -1096,8 +1095,8 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
   FORMAT_OI_LIST_SUMMARY(pGStr, pOi->vis2List, oi_vis2);
   g_string_append_printf(pGStr, "  %d OI_T3 tables:\n", pOi->numT3);
   FORMAT_OI_LIST_SUMMARY(pGStr, pOi->t3List, oi_t3);
-  g_string_append_printf(pGStr, "  %d OI_SPECTRUM tables:\n", pOi->numSpectrum);
-  FORMAT_OI_LIST_SUMMARY(pGStr, pOi->spectrumList, oi_spectrum);
+  g_string_append_printf(pGStr, "  %d OI_FLUX tables:\n", pOi->numFlux);
+  FORMAT_OI_LIST_SUMMARY(pGStr, pOi->fluxList, oi_flux);
 
   return pGStr->str;
 }
@@ -1328,16 +1327,16 @@ oi_t3 *dup_oi_t3(const oi_t3 *pInTab)
 }
 
 /**
- * Make deep copy of a OI_SPECTRUM table
+ * Make deep copy of a OI_FLUX table
  *
  * @param pInTab  pointer to input table
  *
  * @return Pointer to newly-allocated copy of input table
  */
-oi_spectrum *dup_oi_spectrum(const oi_spectrum *pInTab)
+oi_flux *dup_oi_flux(const oi_flux *pInTab)
 {
-  oi_spectrum *pOutTab;
-  oi_spectrum_record *pInRec, *pOutRec;
+  oi_flux *pOutTab;
+  oi_flux_record *pInRec, *pOutRec;
   int i;
 
   MEMDUP(pOutTab, pInTab, sizeof(*pInTab));
@@ -1350,6 +1349,8 @@ oi_spectrum *dup_oi_spectrum(const oi_spectrum *pInTab)
            pInTab->nwave * sizeof(pInRec->fluxdata[0]));
     MEMDUP(pOutRec->fluxerr, pInRec->fluxerr,
            pInTab->nwave * sizeof(pInRec->fluxerr[0]));
+    MEMDUP(pOutRec->flag, pInRec->flag,
+           pInTab->nwave * sizeof(pInRec->flag[0]));
   }
   return pOutTab;
 }

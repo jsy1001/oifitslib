@@ -63,7 +63,7 @@ void demo_write(void)
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
-  oi_spectrum spectrum;
+  oi_flux flux;
   char filename[FLEN_FILENAME];
   FILE *fp;
   int i, irec, iwave, itarg, status, nrows;
@@ -319,33 +319,36 @@ void demo_write(void)
   }
   t3.revision = 2;
 
-  /* Read info for OI_SPECTRUM table */
-  fscanf(fp, "OI_SPECTRUM date-obs %70s ", spectrum.date_obs);
-  fscanf(fp, "arrname %70s insname %70s ", spectrum.arrname, spectrum.insname);
-  fscanf(fp, "corrname %70s ", spectrum.corrname);
-  fscanf(fp, "fov %lf fovtype %6s ", &spectrum.fov, spectrum.fovtype);
-  fscanf(fp, "calstat %c ", &spectrum.calstat);
+  /* Read info for OI_FLUX table */
+  fscanf(fp, "OI_FLUX date-obs %70s ", flux.date_obs);
+  fscanf(fp, "arrname %70s insname %70s ", flux.arrname, flux.insname);
+  fscanf(fp, "corrname %70s ", flux.corrname);
+  fscanf(fp, "fov %lf fovtype %6s ", &flux.fov, flux.fovtype);
+  fscanf(fp, "calstat %c ", &flux.calstat);
   fscanf(fp, "numrec %ld ", &numrec);
-  alloc_oi_spectrum(&spectrum, numrec, wave.nwave);
-  printf("Reading %ld spectrum records...\n", spectrum.numrec);
+  alloc_oi_flux(&flux, numrec, wave.nwave);
+  printf("Reading %ld flux records...\n", flux.numrec);
   /* loop over records */
-  for (irec = 0; irec < spectrum.numrec; irec++) {
-    fscanf(fp, "target_id %d mjd %lf ", &spectrum.record[irec].target_id,
-           &spectrum.record[irec].mjd);
-    fscanf(fp, "int_time %lf fluxdata ", &spectrum.record[irec].int_time);
+  for (irec = 0; irec < flux.numrec; irec++) {
+    fscanf(fp, "target_id %d mjd %lf ", &flux.record[irec].target_id,
+           &flux.record[irec].mjd);
+    fscanf(fp, "int_time %lf fluxdata ", &flux.record[irec].int_time);
     for (iwave = 0; iwave < wave.nwave; iwave++) {
-      fscanf(fp, "%lf ", &spectrum.record[irec].fluxdata[iwave]);
+      fscanf(fp, "%lf ", &flux.record[irec].fluxdata[iwave]);
     }
     fscanf(fp, "fluxerr ");
     for (iwave = 0; iwave < wave.nwave; iwave++) {
-      fscanf(fp, "%lf ", &spectrum.record[irec].fluxerr[iwave]);
+      fscanf(fp, "%lf ", &flux.record[irec].fluxerr[iwave]);
     }
     fscanf(fp, "corrindx_fluxdata %d ",
-           &spectrum.record[irec].corrindx_fluxdata);
-    fscanf(fp, "sta_index %d ", &spectrum.record[irec].sta_index);
+           &flux.record[irec].corrindx_fluxdata);
+    fscanf(fp, "sta_index %d ", &flux.record[irec].sta_index);
+    for (iwave = 0; iwave < wave.nwave; iwave++) {
+      flux.record[irec].flag[iwave] = FALSE;
+    }
   }
-  spectrum.revision = 1;
-  strcpy(spectrum.fluxunit, "Jy");
+  flux.revision = 1;
+  strcpy(flux.fluxunit, "Jy");
 
   fclose(fp);
 
@@ -379,7 +382,7 @@ void demo_write(void)
   write_oi_vis(fptr, vis, 1, &status);
   write_oi_vis2(fptr, vis2, 1, &status);
   write_oi_t3(fptr, t3, 1, &status);
-  write_oi_spectrum(fptr, spectrum, 1, &status);
+  write_oi_flux(fptr, flux, 1, &status);
   write_oi_array(fptr, array, 1, &status);
   write_oi_wavelength(fptr, wave, 1, &status);
   write_oi_corr(fptr, corr, 1, &status);
@@ -398,7 +401,7 @@ void demo_write(void)
   free_oi_vis(&vis);
   free_oi_vis2(&vis2);
   free_oi_t3(&t3);
-  free_oi_spectrum(&spectrum);
+  free_oi_flux(&flux);
   free_oi_array(&array);
   free_oi_wavelength(&wave);
   free_oi_corr(&corr);
@@ -411,7 +414,7 @@ void demo_write(void)
  *
  * This code will read a general OIFITS file containing multiple
  * tables of each type (except OI_TARGET). However, its not that
- * useful since the same oi_vis/vis2/t3/spectrum object is used to
+ * useful since the same oi_vis/vis2/t3/flux object is used to
  * receive the data from all tables of the corresponding type!  See
  * read_oi_fits() in oifile.c for a more useful routine (which
  * requires GLib).
@@ -428,7 +431,7 @@ void demo_read(void)
   oi_vis vis;
   oi_vis2 vis2;
   oi_t3 t3;
-  oi_spectrum spectrum;
+  oi_flux flux;
   char filename[FLEN_FILENAME];
   int status, hdutype;
   fitsfile *fptr, *fptr2;
@@ -534,29 +537,29 @@ void demo_read(void)
   if (status != END_OF_FILE) goto except;
   status = 0;
 
-  /* Read all OI_SPECTRUM tables & corresponding
+  /* Read all OI_FLUX tables & corresponding
      OI_ARRAY/OI_CORR/OI_WAVELENGTH tables */
   fits_movabs_hdu(fptr, 1, &hdutype, &status); /* back to start */
   while (TRUE) {
-    if (read_next_oi_spectrum(fptr, &spectrum, &status)) break;
-    printf("Read OI_SPECTRUM with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
-           spectrum.arrname, spectrum.insname, spectrum.corrname);
-    if (strlen(spectrum.arrname) > 0) {
+    if (read_next_oi_flux(fptr, &flux, &status)) break;
+    printf("Read OI_FLUX     with  ARRNAME=%s INSNAME=%s CORRNAME=%s\n",
+           flux.arrname, flux.insname, flux.corrname);
+    if (strlen(flux.arrname) > 0) {
       /* if ARRNAME specified, read corresponding OI_ARRAY */
-      read_oi_array(fptr2, spectrum.arrname, &array, &status);
+      read_oi_array(fptr2, flux.arrname, &array, &status);
     }
-    if (strlen(spectrum.corrname) > 0) {
+    if (strlen(flux.corrname) > 0) {
       /* if CORRNAME specified, read corresponding OI_CORR
          Note we may have read it previously */
-      read_oi_corr(fptr2, spectrum.corrname, &corr, &status);
+      read_oi_corr(fptr2, flux.corrname, &corr, &status);
     }
-    read_oi_wavelength(fptr2, spectrum.insname, &wave, &status);
+    read_oi_wavelength(fptr2, flux.insname, &wave, &status);
     if (!status) {
       /* Free storage ready to reuse structs for next table */
       free_oi_wavelength(&wave);
-      if (strlen(spectrum.arrname) > 0) free_oi_array(&array);
-      if (strlen(spectrum.corrname) > 0) free_oi_corr(&corr);
-      free_oi_spectrum(&spectrum);
+      if (strlen(flux.arrname) > 0) free_oi_array(&array);
+      if (strlen(flux.corrname) > 0) free_oi_corr(&corr);
+      free_oi_flux(&flux);
     }
   }
   if (status != END_OF_FILE) goto except;

@@ -72,7 +72,7 @@ typedef struct {
   int numVis;                /**< Length of visList */
   int numVis2;               /**< Length of vis2List */
   int numT3;                 /**< Length of t3List */
-  int numSpectrum;           /**< Length of spectrumList */
+  int numFlux;               /**< Length of fluxList */
   oi_header header;          /**< oi_header struct */
   oi_target targets;         /**< oi_target struct */
   GList *arrayList;          /**< Linked list of oi_array structs */
@@ -82,7 +82,7 @@ typedef struct {
   GList *visList;            /**< Linked list of oi_vis structs */
   GList *vis2List;           /**< Linked list of oi_vis2 structs */
   GList *t3List;             /**< Linked list of oi_t3 structs */
-  GList *spectrumList;       /**< Linked list of oi_spectrum structs */
+  GList *fluxList;           /**< Linked list of oi_flux structs */
   GHashTable *arrayHash;     /**< Hash table of oi_array, indexed by ARRNAME */
   GHashTable *wavelengthHash; /**< Hash table of oi_wavelength,
                                    indexed by INSNAME */
@@ -119,7 +119,7 @@ oi_inspol *dup_oi_inspol(const oi_inspol *);
 oi_vis *dup_oi_vis(const oi_vis *);
 oi_vis2 *dup_oi_vis2(const oi_vis2 *);
 oi_t3 *dup_oi_t3(const oi_t3 *);
-oi_spectrum *dup_oi_spectrum(const oi_spectrum *);
+oi_flux *dup_oi_flux(const oi_flux *);
 
 #endif /* #ifndef OIFILE_H */
 

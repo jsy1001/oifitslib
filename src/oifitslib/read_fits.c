@@ -82,6 +82,28 @@ static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
 }
 
 /**
+ * Read optional double-valued header keyword.
+ *
+ * @return TRUE if keyword read successfully, FALSE otherwise
+ */
+static bool read_key_opt_double(fitsfile *fptr, const char *keyname,
+                                double *keyval, STATUS *pStatus)
+{
+  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+
+  fits_write_errmark();
+  if (fits_read_key(fptr, TDOUBLE, keyname, keyval, NULL, pStatus)) {
+    *keyval = -1;
+    if (*pStatus == KEY_NO_EXIST) {
+      *pStatus = 0;
+      fits_clear_errmark();
+    }
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Read string column.
  *
  * Sets the CFITSIO error status to BAD_BTABLE_FORMAT if the first
@@ -1334,19 +1356,18 @@ except:
 
 
 /**
- * Read next OI_SPECTRUM fits binary table
+ * Read next OI_FLUX fits binary table
  *
- * @param fptr       see cfitsio documentation
- * @param pSpectrum  pointer to data struct, see exchange.h
- * @param pStatus    pointer to status variable
+ * @param fptr     see cfitsio documentation
+ * @param pFlux    pointer to data struct, see exchange.h
+ * @param pStatus  pointer to status variable
  *
  * @return On error, returns non-zero cfitsio error code (also assigned to
  *         *pStatus). Contents of data struct are undefined
  */
-STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
-                             STATUS *pStatus)
+STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus)
 {
-  const char function[] = "read_next_oi_spectrum";
+  const char function[] = "read_next_oi_flux";
   bool correlated;
   char keyword[FLEN_KEYWORD], value[FLEN_VALUE];
   const int revision = 1;
@@ -1355,7 +1376,7 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
-  next_named_hdu(fptr, "OI_SPECTRUM", pStatus);
+  next_named_hdu(fptr, "OI_FLUX", pStatus);
   if (*pStatus == END_OF_FILE)
     return *pStatus;  /* don't report EOF to stderr */
   else if (*pStatus)
@@ -1363,68 +1384,71 @@ STATUS read_next_oi_spectrum(fitsfile *fptr, oi_spectrum *pSpectrum,
   verify_chksum(fptr, pStatus);
 
   /* Read table */
-  fits_read_key(fptr, TINT, "OI_REVN", &pSpectrum->revision, NULL, pStatus);
+  fits_read_key(fptr, TINT, "OI_REVN", &pFlux->revision, NULL, pStatus);
   if (*pStatus) goto except;
-  if (pSpectrum->revision > revision) {
-    printf("WARNING! Expecting OI_REVN <= %d in OI_SPECTRUM table. Got %d\n",
-           revision, pSpectrum->revision);
+  if (pFlux->revision > revision) {
+    printf("WARNING! Expecting OI_REVN <= %d in OI_FLUX table. Got %d\n",
+           revision, pFlux->revision);
   }
-  fits_read_key(fptr, TSTRING, "DATE-OBS", pSpectrum->date_obs, NULL, pStatus);
-  read_key_opt_string(fptr, "ARRNAME", pSpectrum->arrname, pStatus);
-  fits_read_key(fptr, TSTRING, "INSNAME", pSpectrum->insname, NULL, pStatus);
-  if (read_key_opt_string(fptr, "CORRNAME", pSpectrum->corrname, pStatus)) {
+  fits_read_key(fptr, TSTRING, "DATE-OBS", pFlux->date_obs, NULL, pStatus);
+  read_key_opt_string(fptr, "ARRNAME", pFlux->arrname, pStatus);
+  fits_read_key(fptr, TSTRING, "INSNAME", pFlux->insname, NULL, pStatus);
+  if (read_key_opt_string(fptr, "CORRNAME", pFlux->corrname, pStatus)) {
     correlated = TRUE;
   } else {
-    pSpectrum->corrname[0] = '\0';
+    pFlux->corrname[0] = '\0';
     correlated = FALSE;
   }
-  fits_read_key(fptr, TDOUBLE, "FOV", &pSpectrum->fov, NULL, pStatus);
-  fits_read_key(fptr, TSTRING, "FOVTYPE", pSpectrum->fovtype, NULL, pStatus);
+  read_key_opt_double(fptr, "FOV", &pFlux->fov, pStatus);
+  read_key_opt_string(fptr, "FOVTYPE", pFlux->fovtype, pStatus);
   fits_read_key(fptr, TSTRING, "CALSTAT", value, NULL, pStatus);
-  pSpectrum->calstat = value[0];
+  pFlux->calstat = value[0];
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
   /* note format specifies same repeat count for FLUX* columns = nwave */
   fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   if (*pStatus) goto except;
-  alloc_oi_spectrum(pSpectrum, nrows, repeat);
+  alloc_oi_flux(pFlux, nrows, repeat);
   /* read unit (mandatory) */
   snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
-  fits_read_key(fptr, TSTRING, keyword, pSpectrum->fluxunit, NULL, pStatus);
+  fits_read_key(fptr, TSTRING, keyword, pFlux->fluxunit, NULL, pStatus);
   /* read rows */
-  for (irow = 1; irow <= pSpectrum->numrec; irow++) {
+  for (irow = 1; irow <= pFlux->numrec; irow++) {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-                  &pSpectrum->record[irow - 1].target_id, &anynull, pStatus);
+                  &pFlux->record[irow - 1].target_id, &anynull, pStatus);
     /* no TIME column */
     fits_get_colnum(fptr, CASEINSEN, "MJD", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
-                  &pSpectrum->record[irow - 1].mjd, &anynull, pStatus);
+                  &pFlux->record[irow - 1].mjd, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "INT_TIME", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
-                  &pSpectrum->record[irow - 1].int_time, &anynull, pStatus);
+                  &pFlux->record[irow - 1].int_time, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLUXDATA", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave, NULL,
-                  pSpectrum->record[irow - 1].fluxdata, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pFlux->nwave, NULL,
+                  pFlux->record[irow - 1].fluxdata, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "FLUXERR", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pSpectrum->nwave, NULL,
-                  pSpectrum->record[irow - 1].fluxerr, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pFlux->nwave, NULL,
+                  pFlux->record[irow - 1].fluxerr, &anynull, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "FLAG", &colnum, pStatus);
+    fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pFlux->nwave, NULL,
+                  pFlux->record[irow - 1].flag, &anynull, pStatus);
     /* read optional columns */
     fits_write_errmark();
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
     if (*pStatus == COL_NOT_FOUND) {
-      pSpectrum->record[irow - 1].sta_index = -1;
+      pFlux->record[irow - 1].sta_index = -1;
       *pStatus = 0;
       fits_clear_errmark();
     } else {
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-                    &pSpectrum->record[irow - 1].sta_index, &anynull, pStatus);
+                    &pFlux->record[irow - 1].sta_index, &anynull, pStatus);
     }
     if (correlated) {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_FLUXDATA", &colnum, pStatus);
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-                    &pSpectrum->record[irow - 1].corrindx_fluxdata,
+                    &pFlux->record[irow - 1].corrindx_fluxdata,
                     &anynull, pStatus);
     }
   }

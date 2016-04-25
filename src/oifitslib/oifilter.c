@@ -86,8 +86,8 @@ static GOptionEntry filterEntries[] = {
    "If non-zero, accept triple amplitudes (default 1)", "0/1" },
   {"accept-t3phi", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3phi,
    "If non-zero, accept closure phases (default 1)", "0/1" },
-  {"accept-spectrum", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_spectrum,
-   "If non-zero, accept spectra (default 1)", "0/1" },
+  {"accept-flux", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flux,
+   "If non-zero, accept fluxes (default 1)", "0/1" },
   {"accept-flagged", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flagged,
    "If non-zero, accept records with all data flagged (default 1)", "0/1" },
   { NULL }
@@ -139,7 +139,7 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
 
 /**
  * Return new linked list of ARRNAMEs referenced by the
- * OI_VIS/VIS2/T3/SPECTRUM tables
+ * OI_VIS/VIS2/T3/FLUX tables
  */
 static GList *get_arrname_list(const oi_fits *pData)
 {
@@ -147,7 +147,7 @@ static GList *get_arrname_list(const oi_fits *pData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
 
   arrnameList = NULL;
 
@@ -181,13 +181,13 @@ static GList *get_arrname_list(const oi_fits *pData)
     link = link->next;
   }
 
-  link = pData->spectrumList;
+  link = pData->fluxList;
   while (link != NULL) {
-    pSpectrum = (oi_spectrum *)link->data;
-    if (pSpectrum->arrname[0] != '\0' &&
-        g_list_find_custom(arrnameList, pSpectrum->arrname,
+    pFlux = (oi_flux *)link->data;
+    if (pFlux->arrname[0] != '\0' &&
+        g_list_find_custom(arrnameList, pFlux->arrname,
                            (GCompareFunc)strcmp) == NULL)
-      arrnameList = g_list_prepend(arrnameList, pSpectrum->arrname);
+      arrnameList = g_list_prepend(arrnameList, pFlux->arrname);
     link = link->next;
   }
   return g_list_reverse(arrnameList);
@@ -195,7 +195,7 @@ static GList *get_arrname_list(const oi_fits *pData)
 
 /**
  * Return new linked list of INSNAMEs referenced by the
- * OI_VIS/VIS2/T3/SPECTRUM tables
+ * OI_VIS/VIS2/T3/FLUX tables
  */
 static GList *get_insname_list(const oi_fits *pData)
 {
@@ -203,7 +203,7 @@ static GList *get_insname_list(const oi_fits *pData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
 
   insnameList = NULL;
 
@@ -234,19 +234,20 @@ static GList *get_insname_list(const oi_fits *pData)
     link = link->next;
   }
 
-  link = pData->spectrumList;
+  link = pData->fluxList;
   while (link != NULL) {
-    pSpectrum = (oi_spectrum *)link->data;
-    if (g_list_find_custom(insnameList, pSpectrum->insname,
+    pFlux = (oi_flux *)link->data;
+    if (g_list_find_custom(insnameList, pFlux->insname,
                            (GCompareFunc)strcmp) == NULL)
-      insnameList = g_list_prepend(insnameList, pSpectrum->insname);
+      insnameList = g_list_prepend(insnameList, pFlux->insname);
     link = link->next;
   }
   return g_list_reverse(insnameList);
 }
 
 /**
- * Return new linked list of CORRNAMEs referenced by the OI_VIS/VIS2/T3 tables
+ * Return new linked list of CORRNAMEs referenced by the
+ * OI_VIS/VIS2/T3/FLUX tables
  */
 static GList *get_corrname_list(const oi_fits *pData)
 {
@@ -254,6 +255,7 @@ static GList *get_corrname_list(const oi_fits *pData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
+  oi_flux *pFlux;
 
   corrnameList = NULL;
 
@@ -286,7 +288,16 @@ static GList *get_corrname_list(const oi_fits *pData)
       corrnameList = g_list_prepend(corrnameList, pT3->corrname);
     link = link->next;
   }
-  /* OI_SPECTRUM does not use CORRNAME */
+
+  link = pData->fluxList;
+  while (link != NULL) {
+    pFlux = (oi_flux *)link->data;
+    if (pFlux->corrname[0] != '\0' &&
+        g_list_find_custom(corrnameList, pFlux->corrname,
+                           (GCompareFunc)strcmp) == NULL)
+      corrnameList = g_list_prepend(corrnameList, pFlux->corrname);
+    link = link->next;
+  }
   return g_list_reverse(corrnameList);
 }
 
@@ -486,7 +497,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
   pFilter->accept_vis2 = 1;
   pFilter->accept_t3amp = 1;
   pFilter->accept_t3phi = 1;
-  pFilter->accept_spectrum = 1;
+  pFilter->accept_flux = 1;
   pFilter->accept_flagged = 1;
 
   pFilter->arrname_pttn = NULL;
@@ -541,10 +552,10 @@ const char *format_oi_filter(const oi_filter_spec *pFilter)
     g_string_append_printf(pGStr, "  OI_T3 T3PHI (closure phases)\n");
   else
     g_string_append_printf(pGStr, "  [OI_T3 T3PHI not accepted]\n");
-  if (pFilter->accept_spectrum)
-    g_string_append_printf(pGStr, "  OI_SPECTRUM (incoherent spectra)\n");
+  if (pFilter->accept_flux)
+    g_string_append_printf(pGStr, "  OI_FLUX (incoherent spectra)\n");
   else
-    g_string_append_printf(pGStr, "  [OI_SPECTRUM not accepted]\n");
+    g_string_append_printf(pGStr, "  [OI_FLUX not accepted]\n");
   if (pFilter->accept_flagged)
     g_string_append_printf(pGStr, "  All-flagged records\n");
   else
@@ -1341,6 +1352,7 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
     }
   }
 }
+
 /**
  * Do any of selected channels in @a pRec have acceptable UV radii and SNR?
  */
@@ -1528,7 +1540,7 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
 }
 
 /**
- * Filter all OI_SPECTRUM tables
+ * Filter all OI_FLUX tables
  *
  * @param pInput       pointer to input dataset
  * @param pFilter      pointer to filter specification
@@ -1536,20 +1548,20 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
  *                     specifying wavelength channels to accept as values
  * @param pOutput      pointer to output oi_fits struct
  */
-void filter_all_oi_spectrum(const oi_fits *pInput,
-                            const oi_filter_spec *pFilter,
-                            GHashTable *useWaveHash, oi_fits *pOutput)
+void filter_all_oi_flux(const oi_fits *pInput,
+                        const oi_filter_spec *pFilter,
+                        GHashTable *useWaveHash, oi_fits *pOutput)
 {
   GList *link;
-  oi_spectrum *pInTab, *pOutTab;
+  oi_flux *pInTab, *pOutTab;
   char *useWave;
 
-  if (!pFilter->accept_spectrum) return;  /* don't copy any spectra */
+  if (!pFilter->accept_flux) return;  /* don't copy any spectra */
 
-  /* Filter OI_SPECTRUM tables in turn */
-  link = pInput->spectrumList;
+  /* Filter OI_FLUX tables in turn */
+  link = pInput->fluxList;
   while (link != NULL) {
-    pInTab = (oi_spectrum *)link->data;
+    pInTab = (oi_flux *)link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
     /* If applicable, check whether INSNAME, ARRNAME, CORRNAME match */
@@ -1559,14 +1571,14 @@ void filter_all_oi_spectrum(const oi_fits *pInput,
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
     if (useWave != NULL) {
-      pOutTab = chkmalloc(sizeof(oi_spectrum));
-      filter_oi_spectrum(pInTab, pFilter, useWave, pOutTab);
+      pOutTab = chkmalloc(sizeof(oi_flux));
+      filter_oi_flux(pInTab, pFilter, useWave, pOutTab);
       if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
-        pOutput->spectrumList = g_list_append(pOutput->spectrumList, pOutTab);
-        ++pOutput->numSpectrum;
+        pOutput->fluxList = g_list_append(pOutput->fluxList, pOutTab);
+        ++pOutput->numFlux;
       } else {
-        g_warning("Empty OI_SPECTRUM table removed from filter output");
-        g_debug("Removed empty OI_SPECTRUM with DATE-OBS=%s INSNAME=%s",
+        g_warning("Empty OI_FLUX table removed from filter output");
+        g_debug("Removed empty OI_FLUX with DATE-OBS=%s INSNAME=%s",
                 pOutTab->date_obs, pOutTab->insname);
         free(pOutTab);
       }
@@ -1575,13 +1587,13 @@ void filter_all_oi_spectrum(const oi_fits *pInput,
 }
 
 /**
- * Filter OI_SPECTRUM table row by wavelength and SNR
+ * Filter OI_FLUX table row by wavelength and SNR
  */
-static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
-                                      const oi_filter_spec *pFilter,
-                                      const char *useWave,
-                                      int nwaveIn, int nwaveOut,
-                                      oi_spectrum_record *pOutRec)
+static void filter_oi_flux_record(const oi_flux_record *pInRec,
+                                  const oi_filter_spec *pFilter,
+                                  const char *useWave,
+                                  int nwaveIn, int nwaveOut,
+                                  oi_flux_record *pOutRec)
 {
   int j, k;
   double nan;
@@ -1591,11 +1603,12 @@ static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
   nan = 0.0;
   nan /= nan;
 
-  memcpy(pOutRec, pInRec, sizeof(oi_spectrum_record));
+  memcpy(pOutRec, pInRec, sizeof(oi_flux_record));
   if (pFilter->target_id >= 0)
     pOutRec->target_id = 1;
   pOutRec->fluxdata = chkmalloc(nwaveOut * sizeof(pOutRec->fluxdata[0]));
   pOutRec->fluxerr = chkmalloc(nwaveOut * sizeof(pOutRec->fluxerr[0]));
+  pOutRec->flag = chkmalloc(nwaveOut * sizeof(pOutRec->flag[0]));
   k = 0;
   for (j = 0; j < nwaveIn; j++) {
     if (useWave[j]) {
@@ -1607,27 +1620,28 @@ static void filter_oi_spectrum_record(const oi_spectrum_record *pInRec,
         pOutRec->fluxdata[k] = pInRec->fluxdata[j];
       }
       pOutRec->fluxerr[k] = pInRec->fluxerr[j];
+      pOutRec->flag[k] = pInRec->flag[j];
       ++k;
     }
   }
 }
 
 /**
- * Filter an OI_SPECTRUM table by TARGET_ID, MJD, wavelength and SNR
+ * Filter an OI_FLUX table by TARGET_ID, MJD, wavelength and SNR
  *
- * @param pInTab       pointer to input oi_spectrum
+ * @param pInTab       pointer to input oi_flux
  * @param pFilter      pointer to filter specification
  * @param useWave      boolean array giving wavelength channels to accept
- * @param pOutTab      pointer to output oi_spectrum
+ * @param pOutTab      pointer to output oi_flux
  */
-void filter_oi_spectrum(const oi_spectrum *pInTab,
-                        const oi_filter_spec *pFilter,
-                        const char *useWave, oi_spectrum *pOutTab)
+void filter_oi_flux(const oi_flux *pInTab,
+                    const oi_filter_spec *pFilter,
+                    const char *useWave, oi_flux *pOutTab)
 {
   int i, j, nrec;
 
   /* Copy table header items */
-  memcpy(pOutTab, pInTab, sizeof(oi_spectrum));
+  memcpy(pOutTab, pInTab, sizeof(oi_flux));
   pOutTab->nwave = 0;
   for (j = 0; j < pInTab->nwave; j++)
     if (useWave[j]) ++pOutTab->nwave;
@@ -1635,7 +1649,7 @@ void filter_oi_spectrum(const oi_spectrum *pInTab,
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
-    chkmalloc(pInTab->numrec * sizeof(oi_spectrum_record)); /* will reallocate */
+    chkmalloc(pInTab->numrec * sizeof(oi_flux_record)); /* will reallocate */
   for (i = 0; i < pInTab->numrec; i++) {
     if (pFilter->target_id >= 0 &&
         pInTab->record[i].target_id != pFilter->target_id)
@@ -1645,12 +1659,12 @@ void filter_oi_spectrum(const oi_spectrum *pInTab,
       continue;  /* skip record as MJD out of range */
 
     /* Create output record */
-    filter_oi_spectrum_record(&pInTab->record[i], pFilter, useWave,
-                              pInTab->nwave, pOutTab->nwave,
-                              &pOutTab->record[nrec++]);
+    filter_oi_flux_record(&pInTab->record[i], pFilter, useWave,
+                          pInTab->nwave, pOutTab->nwave,
+                          &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
-  pOutTab->record = realloc(pOutTab->record, nrec * sizeof(oi_spectrum_record));
+  pOutTab->record = realloc(pOutTab->record, nrec * sizeof(oi_flux_record));
 }
 
 /**
@@ -1693,7 +1707,7 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   filter_all_oi_vis(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_vis2(pInput, pFilter, useWaveHash, pOutput);
   filter_all_oi_t3(pInput, pFilter, useWaveHash, pOutput);
-  filter_all_oi_spectrum(pInput, pFilter, useWaveHash, pOutput);
+  filter_all_oi_flux(pInput, pFilter, useWaveHash, pOutput);
 
   /* Remove orphaned OI_ARRAY, OI_INSPOL, OI_WAVELENGTH and OI_CORR tables */
   list = get_arrname_list(pOutput);

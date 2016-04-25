@@ -60,7 +60,7 @@ static void check(oi_fits *pData)
     check_t3amp,
     check_waveorder,
     check_time,
-    check_spectrum,
+    check_flux,
     NULL
   };
   oi_check_result result;
@@ -90,7 +90,7 @@ static void check(oi_fits *pData)
   g_assert_cmpint(pData->numVis, ==, g_list_length(pData->visList));
   g_assert_cmpint(pData->numVis2, ==, g_list_length(pData->vis2List));
   g_assert_cmpint(pData->numT3, ==, g_list_length(pData->t3List));
-  g_assert_cmpint(pData->numSpectrum, ==, g_list_length(pData->spectrumList));
+  g_assert_cmpint(pData->numFlux, ==, g_list_length(pData->fluxList));
 
   g_assert_cmpint(pData->numArray, ==, g_hash_table_size(pData->arrayHash));
   g_assert_cmpint(pData->numWavelength,
@@ -172,7 +172,7 @@ static void test_default(TestFixture *fix, gconstpointer userData)
   g_assert_cmpint(fix->outData.numVis, ==, fix->inData.numVis);
   g_assert_cmpint(fix->outData.numVis2, ==, fix->inData.numVis2);
   g_assert_cmpint(fix->outData.numT3, ==, fix->inData.numT3);
-  g_assert_cmpint(fix->outData.numSpectrum, ==, fix->inData.numSpectrum);
+  g_assert_cmpint(fix->outData.numFlux, ==, fix->inData.numFlux);
 
   status = 0;
   basename = g_path_get_basename(filename);
@@ -274,7 +274,7 @@ static void test_mjd(TestFixture *fix, gconstpointer userData)
   ASSERT_MJD_IN_RANGE(fix->outData.visList, oi_vis, range);
   ASSERT_MJD_IN_RANGE(fix->outData.vis2List, oi_vis2, range);
   ASSERT_MJD_IN_RANGE(fix->outData.t3List, oi_t3, range);
-  ASSERT_MJD_IN_RANGE(fix->outData.spectrumList, oi_spectrum, range);
+  ASSERT_MJD_IN_RANGE(fix->outData.fluxList, oi_flux, range);
 }
 
 static void test_prune(TestFixture *fix, gconstpointer userData)
@@ -291,7 +291,7 @@ static void test_prune(TestFixture *fix, gconstpointer userData)
   ASSERT_MJD_IN_RANGE(fix->outData.visList, oi_vis, range);
   ASSERT_MJD_IN_RANGE(fix->outData.vis2List, oi_vis2, range);
   ASSERT_MJD_IN_RANGE(fix->outData.t3List, oi_t3, range);
-  ASSERT_MJD_IN_RANGE(fix->outData.spectrumList, oi_spectrum, range);
+  ASSERT_MJD_IN_RANGE(fix->outData.fluxList, oi_flux, range);
 }
 
 
@@ -431,7 +431,7 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
   oi_vis *pVis;
   oi_vis2 *pVis2;
   oi_t3 *pT3;
-  oi_spectrum *pSpectrum;
+  oi_flux *pFlux;
   GList *link;
   int i, j;
   float snr, snrAmp, snrPhi;
@@ -495,14 +495,13 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
     }
     link = link->next;
   }
-  link = fix->outData.spectrumList;
+  link = fix->outData.fluxList;
   while (link != NULL)
   {
-    pSpectrum = (oi_spectrum *)link->data;
-    for (i = 0; i < pSpectrum->numrec; i++) {
-      for (j = 0; j < pSpectrum->nwave; j++) {
-        snr = pSpectrum->record[i].fluxdata[j] /
-          pSpectrum->record[i].fluxerr[j];
+    pFlux = (oi_flux *)link->data;
+    for (i = 0; i < pFlux->numrec; i++) {
+      for (j = 0; j < pFlux->nwave; j++) {
+        snr = pFlux->record[i].fluxdata[j] / pFlux->record[i].fluxerr[j];
         g_assert_cmpfloat(snr, >=, range[0]);
         g_assert_cmpfloat(snr, <=, range[1]);
       }
@@ -556,13 +555,13 @@ static void test_t3(TestFixture *fix, gconstpointer userData)
 }
 
 
-static void test_spectrum(TestFixture *fix, gconstpointer userData)
+static void test_flux(TestFixture *fix, gconstpointer userData)
 {
-  fix->filter.accept_spectrum = FALSE;
+  fix->filter.accept_flux = FALSE;
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
-  g_assert_cmpint(fix->inData.numSpectrum, >, 0);
-  g_assert_cmpint(fix->outData.numSpectrum, ==, 0);
+  g_assert_cmpint(fix->inData.numFlux, >, 0);
+  g_assert_cmpint(fix->outData.numFlux, ==, 0);
 }
 
 
@@ -602,8 +601,8 @@ int main(int argc, char *argv[])
              setup_fixture, test_vis2, teardown_fixture);
   g_test_add("/oifitslib/oifilter/t3", TestFixture, FILENAME,
              setup_fixture, test_t3, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/spectrum", TestFixture, FILENAME,
-             setup_fixture, test_spectrum, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/flux", TestFixture, FILENAME,
+             setup_fixture, test_flux, teardown_fixture);
 
   return g_test_run();
 }

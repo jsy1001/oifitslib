@@ -130,7 +130,7 @@ typedef struct {
   int accept_vis2;
   int accept_t3amp;
   int accept_t3phi;
-  int accept_spectrum;
+  int accept_flux;
   int accept_flagged;
 } oi_filter_spec;
 

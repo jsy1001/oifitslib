@@ -236,7 +236,7 @@ v2coord -12.18141
 sta_index 1 2 3
 
 
-OI_SPECTRUM
+OI_FLUX
 
 date-obs 2000-10-19
 arrname COAST
