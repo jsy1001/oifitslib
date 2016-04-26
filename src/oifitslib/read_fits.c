@@ -89,11 +89,17 @@ static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
 static bool read_key_opt_double(fitsfile *fptr, const char *keyname,
                                 double *keyval, STATUS *pStatus)
 {
+  double nan;
+
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+
+  /* Make a NaN */
+  nan = 0.0;
+  nan /= nan;
 
   fits_write_errmark();
   if (fits_read_key(fptr, TDOUBLE, keyname, keyval, NULL, pStatus)) {
-    *keyval = -1;
+    *keyval = nan;
     if (*pStatus == KEY_NO_EXIST) {
       *pStatus = 0;
       fits_clear_errmark();

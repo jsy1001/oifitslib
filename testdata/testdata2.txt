@@ -242,8 +242,6 @@ date-obs 2000-10-19
 arrname COAST
 insname COAST_NICMOS
 corrname TEST
-fov 0.5
-fovtype RADIUS
 calstat U
 numrec 2
 

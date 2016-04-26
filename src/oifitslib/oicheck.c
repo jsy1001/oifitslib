@@ -1016,10 +1016,11 @@ oi_breach_level check_time(const oi_fits *pOi, oi_check_result *pResult)
 }
 
 /**
- * Check presence of ARRNAME and STA_INDEX in OI_FLUX tables.
+ * Check presence of ARRNAME, STA_INDEX and FOVTYPE in OI_FLUX tables.
  *
  * ARRNAME and STA_INDEX must be present if the fluxes are
- * uncalibrated, but absent if they are calibrated.
+ * uncalibrated, but absent if they are calibrated. FOVTYPE must be
+ * absent if the fluxes are uncalibrated.
  *
  * @param pOi      pointer to oi_fits struct to check
  * @param pResult  pointer to oi_check_result struct to store result in
@@ -1031,7 +1032,7 @@ oi_breach_level check_flux(const oi_fits *pOi, oi_check_result *pResult)
   GList *link;
   oi_flux *pFlux;
   const char desc[] =
-    "ARRNAME/STA_INDEX present (missing) in (un)calibrated fluxes";
+    "ARRNAME/STA_INDEX/FOVTYPE present (missing) in (un)calibrated fluxes";
   char location[FLEN_VALUE];
 
   init_check_result(pResult);
@@ -1063,6 +1064,12 @@ oi_breach_level check_flux(const oi_fits *pOi, oi_check_result *pResult)
       if (pFlux->record[0].sta_index == -1) {
         g_snprintf(location, FLEN_VALUE,
                    "OI_FLUX #%d STA_INDEX missing",
+                   g_list_position(pOi->fluxList, link) + 1);
+        set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+      }
+      if (strlen(pFlux->fovtype) > 0) {
+        g_snprintf(location, FLEN_VALUE,
+                   "OI_FLUX #%d FOVTYPE present",
                    g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }

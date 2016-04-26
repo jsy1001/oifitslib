@@ -49,6 +49,17 @@ static bool scan_opt_int(FILE *fp, const char *format, int *dest, int nullval)
   return TRUE;
 }
 
+static bool scan_opt_double(FILE *fp, const char *format, double *dest,
+                            double nullval)
+{
+  if (fscanf(fp, format, dest) < 1) {
+    *dest = nullval;
+    printf("Optional %s not specified - set to %lf\n", format, nullval);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 /**
  * Read data from a user-specified text file and write out in OIFITS format.
  */
@@ -321,9 +332,10 @@ void demo_write(void)
 
   /* Read info for OI_FLUX table */
   fscanf(fp, "OI_FLUX date-obs %70s ", flux.date_obs);
-  fscanf(fp, "arrname %70s insname %70s ", flux.arrname, flux.insname);
-  fscanf(fp, "corrname %70s ", flux.corrname);
-  fscanf(fp, "fov %lf fovtype %6s ", &flux.fov, flux.fovtype);
+  scan_opt_string(fp, "arrname %70s ", flux.arrname);
+  fscanf(fp, "insname %70s corrname %70s ", flux.insname, flux.corrname);
+  scan_opt_double(fp, "fov %lf ", &flux.fov, 0.0);
+  scan_opt_string(fp, "fovtype %6s ", flux.fovtype);
   fscanf(fp, "calstat %c ", &flux.calstat);
   fscanf(fp, "numrec %ld ", &numrec);
   alloc_oi_flux(&flux, numrec, wave.nwave);
@@ -342,7 +354,7 @@ void demo_write(void)
     }
     fscanf(fp, "corrindx_fluxdata %d ",
            &flux.record[irec].corrindx_fluxdata);
-    fscanf(fp, "sta_index %d ", &flux.record[irec].sta_index);
+    scan_opt_int(fp, "sta_index %d ", &flux.record[irec].sta_index, -1);
     for (iwave = 0; iwave < wave.nwave; iwave++) {
       flux.record[irec].flag[iwave] = FALSE;
     }
