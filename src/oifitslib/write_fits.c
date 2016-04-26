@@ -975,8 +975,6 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
                    "Array name", pStatus);
   fits_write_key(fptr, TSTRING, "INSNAME", &flux.insname,
                  "Detector name", pStatus);
-  fits_write_key(fptr, TDOUBLE, "FOV", &flux.fov,
-                 "Field Of View on sky for FLUXDATA", pStatus);
   keyval[0] = flux.calstat;
   keyval[1] = '\0';
   fits_write_key(fptr, TSTRING, "CALSTAT", &keyval,
@@ -1003,6 +1001,8 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
   //:TODO: maybe only write ARRNAME and STA_INDEX if CALSTAT == 'U'
   /* Write optional keywords */
   if (strlen(flux.fovtype) > 0) {
+    fits_write_key(fptr, TDOUBLE, "FOV", &flux.fov,
+                   "Field Of View on sky for FLUXDATA", pStatus);
     fits_write_key_unit(fptr, "FOV", "arcsec", pStatus);
     fits_write_key(fptr, TSTRING, "FOVTYPE", &flux.fovtype,
                    "Model for FOV", pStatus);
