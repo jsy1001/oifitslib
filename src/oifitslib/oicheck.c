@@ -359,19 +359,21 @@ oi_breach_level check_visrefmap(const oi_fits *pOi, oi_check_result *pResult)
     if (strcmp(pVis->amptyp, "differential") == 0 ||
         strcmp(pVis->phityp, "differential") == 0)
     {
+      /* differential data => VISREFMAP mandatory */
       if (!pVis->usevisrefmap) {
         g_snprintf(location, FLEN_VALUE,
                    "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has no VISREFMAP",
                    g_list_position(pOi->visList, link) + 1,
                    pVis->amptyp, pVis->phityp);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
-      } else {
-        g_snprintf(location, FLEN_VALUE,
-                   "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has VISREFMAP",
-                   g_list_position(pOi->visList, link) + 1,
-                   pVis->amptyp, pVis->phityp);
-        set_result(pResult, OI_BREACH_WARNING, desc, location);
       }
+    } else if (pVis->usevisrefmap) {
+      /* VISREFMAP not applicable */
+      g_snprintf(location, FLEN_VALUE,
+                 "OI_VIS #%d AMPTYP='%s' PHITYP='%s' has VISREFMAP",
+                 g_list_position(pOi->visList, link) + 1,
+                 pVis->amptyp, pVis->phityp);
+      set_result(pResult, OI_BREACH_WARNING, desc, location);
     }
     link = link->next;
   }
