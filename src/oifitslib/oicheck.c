@@ -1045,33 +1045,33 @@ oi_breach_level check_flux(const oi_fits *pOi, oi_check_result *pResult)
     if (pFlux->calstat == 'C') {
       if (strlen(pFlux->arrname) > 0) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_FLUX #%d ARRNAME='%s'",
+                   "OI_FLUX #%d Calibrated but ARRNAME='%s'",
                    g_list_position(pOi->fluxList, link) + 1,
                    pFlux->arrname);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
       if (pFlux->record[0].sta_index != -1) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_FLUX #%d STA_INDEX present",
+                   "OI_FLUX #%d Calibrated but STA_INDEX present",
                    g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
     } else if (pFlux->calstat == 'U') {
       if (strlen(pFlux->arrname) == 0) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_FLUX #%d ARRNAME missing",
+                   "OI_FLUX #%d Uncalibrated but ARRNAME missing",
                    g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
       if (pFlux->record[0].sta_index == -1) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_FLUX #%d STA_INDEX missing",
+                   "OI_FLUX #%d Uncalibrated but STA_INDEX missing",
                    g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
       if (strlen(pFlux->fovtype) > 0) {
         g_snprintf(location, FLEN_VALUE,
-                   "OI_FLUX #%d FOVTYPE present",
+                   "OI_FLUX #%d Uncalibrated but FOVTYPE present",
                    g_list_position(pOi->fluxList, link) + 1);
         set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
       }
