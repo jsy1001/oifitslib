@@ -305,7 +305,10 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, NULL, pStatus);
-  if (*pStatus) return *pStatus;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_ARRAY table");
+    return *pStatus;
+  }
   if (pArray->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_ARRAY table. Got %d\n",
            revision, pArray->revision);
@@ -382,7 +385,10 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, NULL, pStatus);
-  if (*pStatus) return *pStatus;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_WAVELENGTH table");
+    return *pStatus;
+  }
   if (pWave->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_WAVELENGTH table. Got %d\n",
            revision, pWave->revision);
@@ -432,7 +438,10 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, NULL, pStatus);
-  if (*pStatus) return *pStatus;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_CORR table");
+    return *pStatus;
+  }
   if (pCorr->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_CORR table. Got %d\n",
            revision, pCorr->revision);
@@ -484,7 +493,10 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pInspol->revision, NULL, pStatus);
-  if (*pStatus) return *pStatus;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_INSPOL table");
+    return *pStatus;
+  }
   if (pInspol->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_INSPOL table. Got %d\n",
            revision, pInspol->revision);
@@ -607,7 +619,10 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
   verify_chksum(fptr, pStatus);
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, NULL, pStatus);
-  if (*pStatus) goto except;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_TARGET table");
+    goto except;
+  }
   if (pTargets->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_TARGET table. Got %d\n",
            revision, pTargets->revision);
@@ -1069,7 +1084,10 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, NULL, pStatus);
-  if (*pStatus) goto except;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_VIS table");
+    goto except;
+  }
   if (pVis->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS table. Got %d\n",
            revision, pVis->revision);
@@ -1166,7 +1184,10 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, NULL, pStatus);
-  if (*pStatus) goto except;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_VIS2 table");
+    goto except;
+  }
   if (pVis2->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS2 table. Got %d\n",
            revision, pVis2->revision);
@@ -1270,7 +1291,10 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, NULL, pStatus);
-  if (*pStatus) goto except;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_T3 table");
+    goto except;
+  }
   if (pT3->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_T3 table. Got %d\n",
            revision, pT3->revision);
@@ -1391,7 +1415,10 @@ STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus)
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pFlux->revision, NULL, pStatus);
-  if (*pStatus) goto except;
+  if (*pStatus) {
+    fits_write_errmsg("Failed to read OI_REVN kw in OI_FLUX table");
+    goto except;
+  }
   if (pFlux->revision > revision) {
     printf("WARNING! Expecting OI_REVN <= %d in OI_FLUX table. Got %d\n",
            revision, pFlux->revision);
