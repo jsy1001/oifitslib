@@ -658,6 +658,7 @@ except:
 STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
 {
   const char function[] = "read_oi_fits";
+  char desc[FLEN_STATUS];
   fitsfile *fptr;
   int hdutype;
   oi_array *pArray;
@@ -729,46 +730,69 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   *pStatus = 0; /* reset EOF */
   fits_clear_errmark();
 
-  /* Read all OI_CORR tables */
+  /* Read all OI_CORR tables, skipping over failed tables */
   pOi->numCorr = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
     pCorr = chkmalloc(sizeof(oi_corr));
     fits_write_errmark();
-    if (read_next_oi_corr(fptr, pCorr, pStatus))
-      break;  /* no more OI_CORR */
+    if (read_next_oi_corr(fptr, pCorr, pStatus)) {
+      free(pCorr);
+      fits_clear_errmark();
+      if (*pStatus == END_OF_FILE) {
+        *pStatus = 0;
+        break;  /* no more OI_CORR */
+      }
+      fits_get_errstatus(*pStatus, desc);
+      fprintf(stderr, "\nSkipping bad OI_CORR (%s)\n", desc);
+      *pStatus = 0;
+      continue;
+    }
     pOi->corrList = g_list_append(pOi->corrList, pCorr);
     ++pOi->numCorr;
   }
-  free(pCorr);
-  if (*pStatus != END_OF_FILE) goto except;
-  *pStatus = 0; /* reset EOF */
-  fits_clear_errmark();
 
-  /* Read all OI_INSPOL tables */
+  /* Read all OI_INSPOL tables, skipping over failed tables */
   pOi->numInspol = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
     pInspol = chkmalloc(sizeof(oi_inspol));
     fits_write_errmark();
-    if (read_next_oi_inspol(fptr, pInspol, pStatus))
-      break;  /* no more OI_INSPOL */
+    if (read_next_oi_inspol(fptr, pInspol, pStatus)) {
+      free(pInspol);
+      fits_clear_errmark();
+      if (*pStatus == END_OF_FILE) {
+        *pStatus = 0;
+        break;  /* no more OI_INSPOL */
+      }
+      fits_get_errstatus(*pStatus, desc);
+      fprintf(stderr, "\nSkipping bad OI_INSPOL (%s)\n", desc);
+      *pStatus = 0;
+      continue;
+    }
     pOi->inspolList = g_list_append(pOi->inspolList, pInspol);
     ++pOi->numInspol;
   }
-  free(pInspol);
-  if (*pStatus != END_OF_FILE) goto except;
-  *pStatus = 0; /* reset EOF */
-  fits_clear_errmark();
 
   /* Read all OI_VIS, hash-tabling corresponding array, wavelength and
-   * corr tables */
+   * corr tables, skipping over failed tables */
   pOi->numVis = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
     pVis = chkmalloc(sizeof(oi_vis));
     fits_write_errmark();
-    if (read_next_oi_vis(fptr, pVis, pStatus)) break;  /* no more OI_VIS */
+    if (read_next_oi_vis(fptr, pVis, pStatus)) {
+      free(pVis);
+      fits_clear_errmark();
+      if (*pStatus == END_OF_FILE) {
+        *pStatus = 0;
+        break;  /* no more OI_VIS */
+      }
+      fits_get_errstatus(*pStatus, desc);
+      fprintf(stderr, "\nSkipping bad OI_VIS (%s)\n", desc);
+      *pStatus = 0;
+      continue;
+    }
     pOi->visList = g_list_append(pOi->visList, pVis);
     ++pOi->numVis;
     if (strlen(pVis->arrname) > 0) {
@@ -785,19 +809,26 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
                             find_oi_corr(pOi, pVis->corrname));
     }
   }
-  free(pVis);
-  if (*pStatus != END_OF_FILE) goto except;
-  *pStatus = 0; /* reset EOF */
-  fits_clear_errmark();
 
   /* Read all OI_VIS2, hash-tabling corresponding array, wavelength
-   * and corr tables */
+   * and corr tables, skipping over failed tables */
   pOi->numVis2 = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
     pVis2 = chkmalloc(sizeof(oi_vis2));
     fits_write_errmark();
-    if (read_next_oi_vis2(fptr, pVis2, pStatus)) break;  /* no more OI_VIS2 */
+    if (read_next_oi_vis2(fptr, pVis2, pStatus)) {
+      free(pVis2);
+      fits_clear_errmark();
+      if (*pStatus == END_OF_FILE) {
+        *pStatus = 0;
+        break;  /* no more OI_VIS2 */
+      }
+      fits_get_errstatus(*pStatus, desc);
+      fprintf(stderr, "\nSkipping bad OI_VIS2 (%s)\n", desc);
+      *pStatus = 0;
+      continue;
+    }
     pOi->vis2List = g_list_append(pOi->vis2List, pVis2);
     ++pOi->numVis2;
     if (strlen(pVis2->arrname) > 0) {
@@ -814,19 +845,26 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
                             find_oi_corr(pOi, pVis2->corrname));
     }
   }
-  free(pVis2);
-  if (*pStatus != END_OF_FILE) goto except;
-  *pStatus = 0; /* reset EOF */
-  fits_clear_errmark();
 
   /* Read all OI_T3, hash-tabling corresponding array, wavelength and
-   * corr tables */
+   * corr tables, skipping over failed tables */
   pOi->numT3 = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
     pT3 = chkmalloc(sizeof(oi_t3));
     fits_write_errmark();
-    if (read_next_oi_t3(fptr, pT3, pStatus)) break;  /* no more OI_T3 */
+    if (read_next_oi_t3(fptr, pT3, pStatus)) {
+      free(pT3);
+      fits_clear_errmark();
+      if (*pStatus == END_OF_FILE) {
+        *pStatus = 0;
+        break;  /* no more OI_T3 */
+      }
+      fits_get_errstatus(*pStatus, desc);
+      fprintf(stderr, "\nSkipping bad OI_T3 (%s)\n", desc);
+      *pStatus = 0;
+      continue;
+    }
     pOi->t3List = g_list_append(pOi->t3List, pT3);
     ++pOi->numT3;
     if (strlen(pT3->arrname) > 0) {
@@ -843,20 +881,26 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
                             find_oi_corr(pOi, pT3->corrname));
     }
   }
-  free(pT3);
-  if (*pStatus != END_OF_FILE) goto except;
-  *pStatus = 0; /* reset EOF */
-  fits_clear_errmark();
 
-  /* Read all OI_FLUX, hash-tabling corresponding array &
-   * wavelength tables */
+  /* Read all OI_FLUX, hash-tabling corresponding array & wavelength
+   * tables, skipping over failed tables */
   pOi->numFlux = 0;
   fits_movabs_hdu(fptr, 1, &hdutype, pStatus); /* back to start */
   while (TRUE) {
     pFlux = chkmalloc(sizeof(oi_flux));
     fits_write_errmark();
-    if (read_next_oi_flux(fptr, pFlux, pStatus))
-      break;  /* no more OI_FLUX */
+    if (read_next_oi_flux(fptr, pFlux, pStatus)) {
+      free(pFlux);
+      fits_clear_errmark();
+      if (*pStatus == END_OF_FILE) {
+        *pStatus = 0;
+        break;  /* no more OI_FLUX */
+      }
+      fits_get_errstatus(*pStatus, desc);
+      fprintf(stderr, "\nSkipping bad OI_FLUX (%s)\n", desc);
+      *pStatus = 0;
+      continue;
+    }
     pOi->fluxList = g_list_append(pOi->fluxList, pFlux);
     ++pOi->numFlux;
     if (strlen(pFlux->arrname) > 0) {
@@ -868,10 +912,6 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
       g_hash_table_insert(pOi->wavelengthHash, pFlux->insname,
                           find_oi_wavelength(pOi, pFlux->insname));
   }
-  free(pFlux);
-  if (*pStatus != END_OF_FILE) goto except;
-  *pStatus = 0; /* reset EOF */
-  fits_clear_errmark();
 
   if (is_oi_fits_one(pOi))
     set_oi_header(pOi);
