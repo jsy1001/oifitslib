@@ -958,7 +958,7 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Do any of selected channels in @a pRec have acceptable UV radius and SNR?
+ * Do any selected unflagged chans in @a pRec have acceptable UV rad and SNR?
  */
 static bool any_vis_chan_ok(const oi_vis_record *pRec,
                             const oi_filter_spec *pFilter,
@@ -971,7 +971,7 @@ static bool any_vis_chan_ok(const oi_vis_record *pRec,
 
   bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
   for (j = 0; j < nwave; j++) {
-    if (useWave[j]) {
+    if (useWave[j] && !pRec->flag[j]) {
       if (pWave != NULL) {
         uvrad = bas / pWave->eff_wave[j];
         if (uvrad < pFilter->uvrad_range[0] ||
@@ -1143,6 +1143,7 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
   oi_wavelength *pWave;
   oi_vis2 *pInTab, *pOutTab;
   char *useWave;
+  int j = 0;
 
   if (!pFilter->accept_vis2) return;  /* don't copy any vis2 data */
 
@@ -1178,7 +1179,7 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Do any of selected channels in @a pRec have acceptable UV radius and SNR?
+ * Do any selected unflagged chans in @a pRec have acceptable UV rad and SNR?
  */
 static bool any_vis2_chan_ok(const oi_vis2_record *pRec,
                              const oi_filter_spec *pFilter,
@@ -1191,7 +1192,7 @@ static bool any_vis2_chan_ok(const oi_vis2_record *pRec,
 
   bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
   for (j = 0; j < nwave; j++) {
-    if (useWave[j]) {
+    if (useWave[j] && !pRec->flag[j]) {
       if (pWave != NULL) {
         uvrad = bas / pWave->eff_wave[j];
         if (uvrad < pFilter->uvrad_range[0] ||
@@ -1354,7 +1355,7 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
 }
 
 /**
- * Do any of selected channels in @a pRec have acceptable UV radii and SNR?
+ * Do any selected unflagged chans in @a pRec have acceptable UV rad and SNR?
  */
 static bool any_t3_chan_ok(const oi_t3_record *pRec,
                            const oi_filter_spec *pFilter,
@@ -1372,7 +1373,7 @@ static bool any_t3_chan_ok(const oi_t3_record *pRec,
   u2 = pRec->u2coord;
   v2 = pRec->v2coord;
   for (j = 0; j < nwave; j++) {
-    if (useWave[j]) {
+    if (useWave[j] && !pRec->flag[j]) {
       if (pWave != NULL) {
         abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
         bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
