@@ -1040,17 +1040,21 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
       pOutRec->visphi[k] = pInRec->visphi[j];
       pOutRec->visphierr[k] = pInRec->visphierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (pWave != NULL) {
-        uvrad = pow(pInRec->ucoord * pInRec->ucoord +
-                    pInRec->vcoord * pInRec->vcoord, 0.5) / pWave->eff_wave[j];
-        if (uvrad < pFilter->uvrad_range[0] || uvrad > pFilter->uvrad_range[1])
-          pOutRec->flag[k] = 1; /* UV radius out of range, flag datum */
+      if (!pOutRec->flag[j]) {
+        if (pWave != NULL) {
+          uvrad = (pow(pInRec->ucoord * pInRec->ucoord +
+                       pInRec->vcoord * pInRec->vcoord, 0.5) /
+                   pWave->eff_wave[j]);
+          if (uvrad < pFilter->uvrad_range[0] ||
+              uvrad > pFilter->uvrad_range[1])
+            pOutRec->flag[k] = 1; /* UV radius out of range, flag datum */
+        }
+        snrAmp = pInRec->visamp[j] / pInRec->visamperr[j];
+        snrPhi = RAD2DEG / pInRec->visphierr[j];
+        if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
+            snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
+          pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       }
-      snrAmp = pInRec->visamp[j] / pInRec->visamperr[j];
-      snrPhi = RAD2DEG / pInRec->visphierr[j];
-      if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
-          snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
-        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
       if (usevisrefmap) {
         m = 0;
@@ -1236,15 +1240,19 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
       pOutRec->vis2data[k] = pInRec->vis2data[j];
       pOutRec->vis2err[k] = pInRec->vis2err[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (pWave != NULL) {
-        uvrad = pow(pInRec->ucoord * pInRec->ucoord +
-                    pInRec->vcoord * pInRec->vcoord, 0.5) / pWave->eff_wave[j];
-        if (uvrad < pFilter->uvrad_range[0] || uvrad > pFilter->uvrad_range[1])
-          pOutRec->flag[k] = 1; /* UV radius out of range, flag datum */
+      if (!pOutRec->flag[j]) {
+        if (pWave != NULL) {
+          uvrad = (pow(pInRec->ucoord * pInRec->ucoord +
+                       pInRec->vcoord * pInRec->vcoord, 0.5) /
+                   pWave->eff_wave[j]);
+          if (uvrad < pFilter->uvrad_range[0] ||
+              uvrad > pFilter->uvrad_range[1])
+            pOutRec->flag[k] = 1; /* UV radius out of range, flag datum */
+        }
+        snr = pInRec->vis2data[j] / pInRec->vis2err[j];
+        if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
+          pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       }
-      snr = pInRec->vis2data[j] / pInRec->vis2err[j];
-      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
-        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
       ++k;
     }
@@ -1453,26 +1461,31 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
       }
       pOutRec->t3phierr[k] = pInRec->t3phierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      snrAmp = pInRec->t3amp[j] / pInRec->t3amperr[j];
-      snrPhi = RAD2DEG / pInRec->t3phierr[j];
-      if (pWave != NULL) {
-        abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
-        if (abRad < pFilter->uvrad_range[0] || abRad > pFilter->uvrad_range[1])
-          pOutRec->flag[k] = 1; /* UV radius ab out of range, flag datum */
-        bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
-        if (bcRad < pFilter->uvrad_range[0] || bcRad > pFilter->uvrad_range[1])
-          pOutRec->flag[k] = 1; /* UV radius bc out of range, flag datum */
-        acRad = pow((u1 + u2) * (u1 + u2) +
-                    (v1 + v2) * (v1 + v2), 0.5) / pWave->eff_wave[j];
-        if (acRad < pFilter->uvrad_range[0] || acRad > pFilter->uvrad_range[1])
-          pOutRec->flag[k] = 1; /* UV radius ac out of range, flag datum */
+      if (!pOutRec->flag[j]) {
+        if (pWave != NULL) {
+          abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
+          if (abRad < pFilter->uvrad_range[0] ||
+              abRad > pFilter->uvrad_range[1])
+            pOutRec->flag[k] = 1; /* UV radius ab out of range, flag datum */
+          bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
+          if (bcRad < pFilter->uvrad_range[0] ||
+              bcRad > pFilter->uvrad_range[1])
+            pOutRec->flag[k] = 1; /* UV radius bc out of range, flag datum */
+          acRad = pow((u1 + u2) * (u1 + u2) +
+                      (v1 + v2) * (v1 + v2), 0.5) / pWave->eff_wave[j];
+          if (acRad < pFilter->uvrad_range[0] ||
+              acRad > pFilter->uvrad_range[1])
+            pOutRec->flag[k] = 1; /* UV radius ac out of range, flag datum */
+        }
+        snrAmp = pInRec->t3amp[j] / pInRec->t3amperr[j];
+        snrPhi = RAD2DEG / pInRec->t3phierr[j];
+        if (pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
+                                      snrAmp > pFilter->snr_range[1]))
+          pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
+        else if (pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
+                                           snrPhi > pFilter->snr_range[1]))
+          pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       }
-      if (pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
-                                    snrAmp > pFilter->snr_range[1]))
-        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
-      else if (pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
-                                         snrPhi > pFilter->snr_range[1]))
-        pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
       ++k;
     }
