@@ -24,6 +24,14 @@
 
 #include "oifilter.h"
 
+static gboolean clobber = FALSE;
+
+static GOptionEntry entries[] =
+{
+  { "clobber", 'o', 0, G_OPTION_ARG_NONE, &clobber, "Overwrite output file",
+    NULL },
+  { NULL }
+};
 
 /**
  * Main function for command-line filter utility
@@ -40,7 +48,8 @@ int main(int argc, char *argv[])
   error = NULL;
   context =
     g_option_context_new("INFILE OUTFILE - write filtered dataset to new file");
-  g_option_context_set_main_group(context, get_oi_filter_option_group());
+  g_option_context_add_main_entries(context, entries, NULL);
+  g_option_context_add_group(context, get_oi_filter_option_group());
   g_option_context_parse(context, &argc, &argv, &error);
   if (error != NULL) {
     printf("Error parsing command-line options: %s\n", error->message);
@@ -70,6 +79,19 @@ int main(int argc, char *argv[])
   apply_user_oi_filter(&inData, &outData);
   printf("--> OUTPUT DATA: ===\n");
   print_oi_fits_summary(&outData);
+
+  /* Check for existing output file */
+  if (g_file_test(outFilename, G_FILE_TEST_EXISTS))
+  {
+    if (!clobber) {
+      printf("Output file '%s' exists and '--clobber' not specified "
+             "-> Exiting...\n", outFilename);
+      exit(1);
+    } else if (g_remove(outFilename)) {
+      printf("Failed to remove existing output file '%s'\n", outFilename);
+      exit(1);
+    }
+  }
 
   /* Write out filtered data */
   write_oi_fits(outFilename, outData, &status);
