@@ -35,6 +35,7 @@ link_directories(${GLIB2_LIBRARY_DIRS})
 
 add_library(oitable SHARED ${oitable_SOURCES})
 target_link_libraries(oitable ${CFITSIO_LIBRARIES}) # PUBLIC
+target_link_libraries(oitable m) # PRIVATE
 
 add_executable(oitable-demo oitable-demo.c)
 target_link_libraries(oitable-demo oitable)
