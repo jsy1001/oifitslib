@@ -3,7 +3,7 @@
  * @ingroup oifilter
  * Implementation of OIFITS filter.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -861,30 +861,30 @@ void filter_oi_inspol(const oi_inspol *pInTab, const oi_filter_spec *pFilter,
            sizeof(oi_inspol_record));
     if (pFilter->target_id >= 0)
       pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].lxx = chkmalloc
+    pOutTab->record[nrec].jxx = chkmalloc
       (
-        pOutTab->nwave * sizeof(pOutTab->record[0].lxx[0])
+        pOutTab->nwave * sizeof(pOutTab->record[0].jxx[0])
       );
-    pOutTab->record[nrec].lyy = chkmalloc
+    pOutTab->record[nrec].jyy = chkmalloc
       (
-        pOutTab->nwave * sizeof(pOutTab->record[0].lyy[0])
+        pOutTab->nwave * sizeof(pOutTab->record[0].jyy[0])
       );
-    pOutTab->record[nrec].lxy = chkmalloc
+    pOutTab->record[nrec].jxy = chkmalloc
       (
-        pOutTab->nwave * sizeof(pOutTab->record[0].lxy[0])
+        pOutTab->nwave * sizeof(pOutTab->record[0].jxy[0])
       );
-    pOutTab->record[nrec].lyx = chkmalloc
+    pOutTab->record[nrec].jyx = chkmalloc
       (
-        pOutTab->nwave * sizeof(pOutTab->record[0].lyx[0])
+        pOutTab->nwave * sizeof(pOutTab->record[0].jyx[0])
       );
     k = 0;
     g_assert(useWave != NULL);
     for (j = 0; j < pInTab->nwave; j++) {
       if (useWave[j]) {
-        pOutTab->record[nrec].lxx[k] = pInTab->record[i].lxx[j];
-        pOutTab->record[nrec].lyy[k] = pInTab->record[i].lyy[j];
-        pOutTab->record[nrec].lxy[k] = pInTab->record[i].lxy[j];
-        pOutTab->record[nrec].lyx[k] = pInTab->record[i].lyx[j];
+        pOutTab->record[nrec].jxx[k] = pInTab->record[i].jxx[j];
+        pOutTab->record[nrec].jyy[k] = pInTab->record[i].jyy[j];
+        pOutTab->record[nrec].jxy[k] = pInTab->record[i].jxy[j];
+        pOutTab->record[nrec].jyx[k] = pInTab->record[i].jyx[j];
         ++k;
       }
     }
@@ -892,14 +892,14 @@ void filter_oi_inspol(const oi_inspol *pInTab, const oi_filter_spec *pFilter,
       /* For 1st output record, length of vectors wasn't known when
          originally allocated, so reallocate */
       pOutTab->nwave = k;
-      pOutTab->record[nrec].lxx = realloc(pOutTab->record[nrec].lxx,
-                                          k * sizeof(pOutTab->record[0].lxx[0]));
-      pOutTab->record[nrec].lyy = realloc(pOutTab->record[nrec].lyy,
-                                          k * sizeof(pOutTab->record[0].lyy[0]));
-      pOutTab->record[nrec].lxy = realloc(pOutTab->record[nrec].lxy,
-                                          k * sizeof(pOutTab->record[0].lxy[0]));
-      pOutTab->record[nrec].lyx = realloc(pOutTab->record[nrec].lyx,
-                                          k * sizeof(pOutTab->record[0].lyx[0]));
+      pOutTab->record[nrec].jxx = realloc(pOutTab->record[nrec].jxx,
+                                          k * sizeof(pOutTab->record[0].jxx[0]));
+      pOutTab->record[nrec].jyy = realloc(pOutTab->record[nrec].jyy,
+                                          k * sizeof(pOutTab->record[0].jyy[0]));
+      pOutTab->record[nrec].jxy = realloc(pOutTab->record[nrec].jxy,
+                                          k * sizeof(pOutTab->record[0].jxy[0]));
+      pOutTab->record[nrec].jyx = realloc(pOutTab->record[nrec].jyx,
+                                          k * sizeof(pOutTab->record[0].jyx[0]));
     }
     ++nrec;
   }

@@ -4,7 +4,7 @@
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -509,8 +509,8 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
   fits_read_key(fptr, TSTRING, "MODEL", pInspol->model, NULL, pStatus);
   /* get dimensions and allocate storage */
   fits_get_num_rows(fptr, &nrows, pStatus);
-  /* note format specifies same repeat count for L* columns = nwave */
-  fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
+  /* note format specifies same repeat count for J* columns = nwave */
+  fits_get_colnum(fptr, CASEINSEN, "JXX", &colnum, pStatus);
   fits_get_coltype(fptr, colnum, NULL, &repeat, NULL, pStatus);
   if (*pStatus) return *pStatus;
   alloc_oi_inspol(pInspol, nrows, repeat);
@@ -528,18 +528,18 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
     fits_get_colnum(fptr, CASEINSEN, "MJD_END", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                   &pInspol->record[irow - 1].mjd_end, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "LXX", &colnum, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "JXX", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
-                  pInspol->record[irow - 1].lxx, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "LYY", &colnum, pStatus);
+                  pInspol->record[irow - 1].jxx, &anynull, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "JYY", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
-                  pInspol->record[irow - 1].lyy, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "LXY", &colnum, pStatus);
+                  pInspol->record[irow - 1].jyy, &anynull, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "JXY", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave,
-                  NULL, pInspol->record[irow - 1].lxy, &anynull, pStatus);
-    fits_get_colnum(fptr, CASEINSEN, "LYX", &colnum, pStatus);
+                  NULL, pInspol->record[irow - 1].jxy, &anynull, pStatus);
+    fits_get_colnum(fptr, CASEINSEN, "JYX", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
-                  pInspol->record[irow - 1].lyx, &anynull, pStatus);
+                  pInspol->record[irow - 1].jyx, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pInspol->record[irow - 1].sta_index, &anynull, pStatus);

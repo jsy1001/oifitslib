@@ -4,7 +4,7 @@
  * Implementation of functions to write FITS tables from data structures
  * in memory.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -437,7 +437,7 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
   const char function[] = "write_oi_inspol";
   const int tfields = 9;
   char *ttype[] = {"TARGET_ID", "INSNAME", "MJD_OBS", "MJD_END",
-                   "LXX", "LYY", "LXY", "LYX", "STA_INDEX"};
+                   "JXX", "JYY", "JXY", "JYX", "STA_INDEX"};
   //:TODO: follow standard in choosing repeat count for INSNAME
   const char *tformTpl[] = {"I", "70A", "D", "D",
                             "?C", "?C", "?C", "?C", "I"};
@@ -488,13 +488,13 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
     fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1,
                    &inspol.record[irow - 1].mjd_end, pStatus);
     fits_write_col(fptr, TCOMPLEX, 5, irow, 1, inspol.nwave,
-                   inspol.record[irow - 1].lxx, pStatus);
+                   inspol.record[irow - 1].jxx, pStatus);
     fits_write_col(fptr, TCOMPLEX, 6, irow, 1, inspol.nwave,
-                   inspol.record[irow - 1].lyy, pStatus);
+                   inspol.record[irow - 1].jyy, pStatus);
     fits_write_col(fptr, TCOMPLEX, 7, irow, 1, inspol.nwave,
-                   inspol.record[irow - 1].lxy, pStatus);
+                   inspol.record[irow - 1].jxy, pStatus);
     fits_write_col(fptr, TCOMPLEX, 8, irow, 1, inspol.nwave,
-                   inspol.record[irow - 1].lyx, pStatus);
+                   inspol.record[irow - 1].jyx, pStatus);
     fits_write_col(fptr, TINT, 9, irow, 1, 1,
                    &inspol.record[irow - 1].sta_index, pStatus);
   }

@@ -90,70 +90,70 @@ target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.958102
 mjd_end 51836.958796
-lxx  0.0  0.31i
-lyy  1.0  0.5i
-lxy  1.0 -1.0i
-lyx  0.0 -0.23i
+jxx  0.0  0.31i
+jyy  1.0  0.5i
+jxy  1.0 -1.0i
+jyx  0.0 -0.23i
 sta_index 1
 
 target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.958102
 mjd_end 51836.958796
-lxx  0.0  0.31i
-lyy  1.0  0.5i
-lxy  1.0 -1.0i
-lyx  0.0 -0.23i
+jxx  0.0  0.31i
+jyy  1.0  0.5i
+jxy  1.0 -1.0i
+jyx  0.0 -0.23i
 sta_index 2
 
 target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.960046
 mjd_end 51836.960741
-lxx  1.0  0.0i
-lyy  0.0  0.5i
-lxy  0.0 -1.0i
-lyx  1.0  0.23i
+jxx  1.0  0.0i
+jyy  0.0  0.5i
+jxy  0.0 -1.0i
+jyx  1.0  0.23i
 sta_index 1
 
 target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.960046
 mjd_end 51836.960741
-lxx  1.0  0.0i
-lyy  0.0  0.5i
-lxy  0.0 -1.0i
-lyx  1.0  0.23i
+jxx  1.0  0.0i
+jyy  0.0  0.5i
+jxy  0.0 -1.0i
+jyx  1.0  0.23i
 sta_index 3
 
 target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.971643
 mjd_end 51836.972801
-lxx  0.0  0.31i
-lyy  1.0  0.5i
-lxy  1.0 -1.0i
-lyx  0.0 -0.23i
+jxx  0.0  0.31i
+jyy  1.0  0.5i
+jxy  1.0 -1.0i
+jyx  0.0 -0.23i
 sta_index 1
 
 target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.971643
 mjd_end 51836.972801
-lxx  0.0  0.31i
-lyy  1.0  0.5i
-lxy  1.0 -1.0i
-lyx  0.0 -0.23i
+jxx  0.0  0.31i
+jyy  1.0  0.5i
+jxy  1.0 -1.0i
+jyx  0.0 -0.23i
 sta_index 2
 
 target_id 1
 insname COAST_NICMOS
 mjd_obs 51836.971643
 mjd_end 51836.972801
-lxx  0.0  0.31i
-lyy  1.0  0.5i
-lxy  1.0 -1.0i
-lyx  0.0 -0.23i
+jxx  0.0  0.31i
+jyy  1.0  0.5i
+jxy  1.0 -1.0i
+jyx  0.0 -0.23i
 sta_index 3
 
 

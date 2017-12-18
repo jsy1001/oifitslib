@@ -3,7 +3,7 @@
  * @ingroup oitable
  * Implementation of functions to allocate storage within table structs
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -103,10 +103,10 @@ void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave)
   pInspol->record = chkmalloc(numrec * sizeof(oi_inspol_record));
   for (i = 0; i < numrec; i++) {
     pRec = &pInspol->record[i];
-    pRec->lxx = chkmalloc(nwave * sizeof(pRec->lxx[0]));
-    pRec->lyy = chkmalloc(nwave * sizeof(pRec->lyy[0]));
-    pRec->lxy = chkmalloc(nwave * sizeof(pRec->lxy[0]));
-    pRec->lyx = chkmalloc(nwave * sizeof(pRec->lyx[0]));
+    pRec->jxx = chkmalloc(nwave * sizeof(pRec->jxx[0]));
+    pRec->jyy = chkmalloc(nwave * sizeof(pRec->jyy[0]));
+    pRec->jxy = chkmalloc(nwave * sizeof(pRec->jxy[0]));
+    pRec->jyx = chkmalloc(nwave * sizeof(pRec->jyx[0]));
   }
   pInspol->numrec = numrec;
   pInspol->nwave = nwave;

@@ -4,7 +4,7 @@
  * Implementation of functions to free storage allocated by routines
  * in read_fits.c
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -80,10 +80,10 @@ void free_oi_inspol(oi_inspol *pInspol)
   int i;
 
   for (i = 0; i < pInspol->numrec; i++) {
-    free(pInspol->record[i].lxx);
-    free(pInspol->record[i].lyy);
-    free(pInspol->record[i].lxy);
-    free(pInspol->record[i].lyx);
+    free(pInspol->record[i].jxx);
+    free(pInspol->record[i].jyy);
+    free(pInspol->record[i].jxy);
+    free(pInspol->record[i].jyx);
   }
   free(pInspol->record);
 }

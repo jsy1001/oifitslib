@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for table-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -150,10 +150,10 @@ typedef struct {
   char insname[FLEN_VALUE];
   double mjd_obs;
   double mjd_end;
-  float complex *lxx;
-  float complex *lyy;
-  float complex *lxy;
-  float complex *lyx;
+  float complex *jxx;
+  float complex *jyy;
+  float complex *jxy;
+  float complex *jyx;
   int sta_index;
 } oi_inspol_record;
 

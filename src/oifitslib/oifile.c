@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Implementation of file-level API for OIFITS data.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -1243,14 +1243,14 @@ oi_inspol *dup_oi_inspol(const oi_inspol *pInTab)
   for (i = 0; i < pInTab->numrec; i++) {
     pOutRec = &pOutTab->record[i];
     pInRec = &pInTab->record[i];
-    MEMDUP(pOutRec->lxx, pInRec->lxx,
-           pInTab->nwave * sizeof(pInRec->lxx[0]));
-    MEMDUP(pOutRec->lyy, pInRec->lyy,
-           pInTab->nwave * sizeof(pInRec->lyy[0]));
-    MEMDUP(pOutRec->lxy, pInRec->lxy,
-           pInTab->nwave * sizeof(pInRec->lxy[0]));
-    MEMDUP(pOutRec->lyx, pInRec->lyx,
-           pInTab->nwave * sizeof(pInRec->lyx[0]));
+    MEMDUP(pOutRec->jxx, pInRec->jxx,
+           pInTab->nwave * sizeof(pInRec->jxx[0]));
+    MEMDUP(pOutRec->jyy, pInRec->jyy,
+           pInTab->nwave * sizeof(pInRec->jyy[0]));
+    MEMDUP(pOutRec->jxy, pInRec->jxy,
+           pInTab->nwave * sizeof(pInRec->jxy[0]));
+    MEMDUP(pOutRec->jyx, pInRec->jyx,
+           pInTab->nwave * sizeof(pInRec->jyx[0]));
   }
   return pOutTab;
 }

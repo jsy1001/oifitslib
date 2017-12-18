@@ -2,7 +2,7 @@
  * @file
  * Example program - uses oitable API to write and read a OIFITS file.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2017 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -183,25 +183,25 @@ void demo_write(void)
     fscanf(fp, "target_id %d insname %70s mjd_obs %lf ",
            &inspol.record[irec].target_id, inspol.record[irec].insname,
            &inspol.record[irec].mjd_obs);
-    fscanf(fp, "mjd_end %lf lxx ", &inspol.record[irec].mjd_end);
+    fscanf(fp, "mjd_end %lf jxx ", &inspol.record[irec].mjd_end);
     for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lxx[iwave] = real + imag * I;
+      inspol.record[irec].jxx[iwave] = real + imag * I;
     }
-    fscanf(fp, "lyy ");
+    fscanf(fp, "jyy ");
     for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lyy[iwave] = real + imag * I;
+      inspol.record[irec].jyy[iwave] = real + imag * I;
     }
-    fscanf(fp, "lxy ");
+    fscanf(fp, "jxy ");
     for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lxy[iwave] = real + imag * I;
+      inspol.record[irec].jxy[iwave] = real + imag * I;
     }
-    fscanf(fp, "lyx ");
+    fscanf(fp, "jyx ");
     for (iwave = 0; iwave < wave.nwave; iwave++) {
       fscanf(fp, "%f %fi ", &real, &imag);
-      inspol.record[irec].lyx[iwave] = real + imag * I;
+      inspol.record[irec].jyx[iwave] = real + imag * I;
     }
     fscanf(fp, "sta_index %d ", &inspol.record[irec].sta_index);
   }
