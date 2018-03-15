@@ -85,7 +85,7 @@ static oi_array *match_oi_array(const oi_array *pArray,
 
     for (i = 0; i < pArray->nelement; i++) {
       pCmpEl = lookup_element(pCmp, pArray->elem[i].sta_index);
-      if (pCmpEl == NULL) continue;
+      if (pCmpEl == NULL) break;
       if (fabs(pArray->elem[i].staxyz[0] - pCmpEl->staxyz[0]) > tol) break;
       if (fabs(pArray->elem[i].staxyz[1] - pCmpEl->staxyz[1]) > tol) break;
       if (fabs(pArray->elem[i].staxyz[2] - pCmpEl->staxyz[2]) > tol) break;
