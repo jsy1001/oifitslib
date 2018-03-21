@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Implementation of merge component of OIFITSlib.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -198,7 +198,9 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
   mjd2date(files_min_mjd(inList), &year, &month, &day);
   g_snprintf(pOutput->header.date_obs, FLEN_VALUE,
              "%4ld-%02ld-%02ld", year, month, day);
-  /* ensure merged header passes check: */
+
+  /* Ensure merged header passes check */
+  g_snprintf(pOutput->header.date, FLEN_VALUE, "2000-01-01");
   g_snprintf(pOutput->header.content, FLEN_VALUE, "OIFITS2");
 
   /* Copy unique keywords or replace with "MULTIPLE" */

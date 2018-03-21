@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for table-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007, 2015-2017 John Young
+ * Copyright (C) 2007, 2015-2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -61,6 +61,7 @@ extern int oi_hush_errors; /**< If TRUE, don't report I/O errors to stderr */
 typedef struct {
   /* mandatory keywords */
   char origin[FLEN_VALUE];
+  char date[FLEN_VALUE];
   char date_obs[FLEN_VALUE];
   char content[FLEN_VALUE];
   char telescop[FLEN_VALUE];

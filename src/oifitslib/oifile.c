@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Implementation of file-level API for OIFITS data.
  *
- * Copyright (C) 2007, 2015-2017 John Young
+ * Copyright (C) 2007, 2015-2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -330,6 +330,7 @@ static double get_max_mjd(const oi_fits *pOi)
 void init_oi_fits(oi_fits *pOi)
 {
   pOi->header.origin[0] = '\0';
+  pOi->header.date[0] = '\0';
   pOi->header.date_obs[0] = '\0';
   pOi->header.content[0] = '\0';
   pOi->header.telescop[0] = '\0';

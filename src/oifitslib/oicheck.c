@@ -3,7 +3,7 @@
  * @ingroup oicheck
  * Implementation of OIFITS conformity checker.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015-2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -198,6 +198,11 @@ oi_breach_level check_header(const oi_fits *pOi, oi_check_result *pResult)
     if (strlen(pOi->header.origin) == 0) {
       g_snprintf(location, FLEN_VALUE,
                  "ORIGIN value missing from primary header");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
+    }
+    if (strlen(pOi->header.date) == 0) {
+      g_snprintf(location, FLEN_VALUE,
+                 "DATE value missing from primary header");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
     if (strlen(pOi->header.date_obs) == 0) {

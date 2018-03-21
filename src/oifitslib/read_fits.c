@@ -4,7 +4,7 @@
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *
- * Copyright (C) 2007, 2015-2017 John Young
+ * Copyright (C) 2007, 2015-2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -576,6 +576,7 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 
   /* Note all header keywords (except SIMPLE etc.) are optional in OIFITS v1 */
   read_key_opt_string(fptr, "ORIGIN", pHeader->origin, pStatus);
+  read_key_opt_string(fptr, "DATE", pHeader->date, pStatus);
   read_key_opt_string(fptr, "DATE-OBS", pHeader->date_obs, pStatus);
   read_key_opt_string(fptr, "CONTENT", pHeader->content, pStatus);
   read_key_opt_string(fptr, "TELESCOP", pHeader->telescop, pStatus);

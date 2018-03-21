@@ -4,7 +4,7 @@
  * Implementation of functions to write FITS tables from data structures
  * in memory.
  *
- * Copyright (C) 2007, 2015-2017 John Young
+ * Copyright (C) 2007, 2015-2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -86,7 +86,9 @@ void free_tform(char **tform, int n)
 /**
  * Write primary header keywords
  *
- * Moves to primary HDU. A zero-size primary array is created if necessary.
+ * Moves to primary HDU. A zero-size primary array is created if
+ * necessary.  Writes the current date/time to the DATE keyword, rather
+ * than the value of header.date.
  *
  * @param fptr    see cfitsio documentation
  * @param header  header data struct, see exchange.h
