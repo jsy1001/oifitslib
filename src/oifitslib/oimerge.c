@@ -295,7 +295,7 @@ GList *merge_all_oi_array(const GList *inList, oi_fits *pOutput)
       if (pOutTab == NULL) {
         /* Add copy of pInTab to output, changing ARRNAME if it clashes */
         pOutTab = dup_oi_array(pInTab);
-        pOutTab->revision = OI_REVN_V2_ARRAY;
+        upgrade_oi_array(pOutTab);
         if (g_hash_table_lookup(pOutput->arrayHash,
                                 pOutTab->arrname) != NULL) {
           /* Avoid truncation at FLEN_VALUE - 1 */
@@ -354,7 +354,7 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
       if (pOutTab == NULL) {
         /* Add copy of pInTab to output, changing INSNAME if it clashes */
         pOutTab = dup_oi_wavelength(pInTab);
-        pOutTab->revision = OI_REVN_V2_WAVELENGTH;
+        upgrade_oi_wavelength(pOutTab);
         if (g_hash_table_lookup(pOutput->wavelengthHash,
                                 pOutTab->insname) != NULL) {
           /* Avoid truncation at FLEN_VALUE - 1 */

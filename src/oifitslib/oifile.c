@@ -1400,6 +1400,39 @@ oi_flux *dup_oi_flux(const oi_flux *pInTab)
 }
 
 /**
+ * Convert OI_TARGET table to OIFITS v2.
+ *
+ * @param pTab  pointer to table to modify
+ */
+void upgrade_oi_target(oi_target *pTab)
+{
+  if (pTab->revision = OI_REVN_V1_TARGET)
+    pTab->revision = OI_REVN_V2_TARGET;
+}
+
+/**
+ * Convert OI_WAVELENGTH table to OIFITS v2.
+ *
+ * @param pTab  pointer to table to modify
+ */
+void upgrade_oi_wavelength(oi_wavelength *pTab)
+{
+  if (pTab->revision = OI_REVN_V1_WAVELENGTH)
+    pTab->revision = OI_REVN_V2_WAVELENGTH;
+}
+
+/**
+ * Convert OI_ARRAY table to OIFITS v2.
+ *
+ * @param pTab  pointer to table to modify
+ */
+void upgrade_oi_array(oi_array *pTab)
+{
+  if (pTab->revision = OI_REVN_V1_ARRAY)
+    pTab->revision = OI_REVN_V2_ARRAY;
+}
+
+/**
  * Convert OI_VIS table to OIFITS v2.
  *
  * Zeros TIME values and changes OI_REVN.
