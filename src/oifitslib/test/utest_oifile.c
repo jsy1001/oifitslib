@@ -55,7 +55,7 @@ static void test_init(void)
 
 static void test_version(void)
 {
-  oi_fits data;
+  oi_fits data, data2;
   int status;
   char msg[FLEN_ERRMSG];
 
@@ -64,7 +64,24 @@ static void test_version(void)
   g_assert(!status);
   g_assert(is_oi_fits_one(&data));
   g_assert(!is_oi_fits_two(&data));
+
+  /* Test writing v1 yields v2 with mandatory primary header keywords */
+  write_oi_fits(FILENAME_OUT, data, &status);
+  g_assert(!status);
   free_oi_fits(&data);
+  read_oi_fits(FILENAME_OUT, &data2, &status);
+  g_assert(!status);
+  g_assert(!is_oi_fits_one(&data2));
+  g_assert(is_oi_fits_two(&data2));
+  g_assert(strlen(data2.header.date_obs) > 0);
+  g_assert(strlen(data2.header.telescop) > 0);
+  g_assert(strlen(data2.header.instrume) > 0);
+  g_assert(strlen(data2.header.object) > 0);
+  g_assert(strlen(data2.header.origin) > 0);
+  g_assert(strlen(data2.header.observer) > 0);
+  g_assert(strlen(data2.header.insmode) > 0);
+  free_oi_fits(&data2);
+  unlink(FILENAME_OUT);
 
   read_oi_fits(FILENAME_V2, &data, &status);
   g_assert(!status);

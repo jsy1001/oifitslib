@@ -630,7 +630,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
                    "\0", "\0", "deg", "deg",
                    "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
-  int revision = OI_REVN_V2_INSPOL, irow;
+  int revision = OI_REVN_V2_VIS, irow;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
