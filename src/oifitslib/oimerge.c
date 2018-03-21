@@ -200,7 +200,7 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
              "%4ld-%02ld-%02ld", year, month, day);
 
   /* Ensure merged header passes check */
-  g_snprintf(pOutput->header.date, FLEN_VALUE, "2000-01-01");
+  g_snprintf(pOutput->header.date, FLEN_VALUE, "[unset]");
   g_snprintf(pOutput->header.content, FLEN_VALUE, "OIFITS2");
 
   /* Copy unique keywords or replace with "MULTIPLE" */

@@ -1113,6 +1113,7 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
     g_string_printf(pGStr, "'%s' data:\n", pOi->header.content);
   else
     g_string_printf(pGStr, "OIFITS data:\n");
+  g_string_append_printf(pGStr, "  DATE=%s\n", pOi->header.date);
   g_string_append_printf(pGStr, "  DATE-OBS=%s  OBJECT='%s'\n",
                          pOi->header.date_obs, pOi->header.object);
   g_string_append_printf(pGStr, "  TELESCOP='%s'  INSTRUME='%s'\n",
