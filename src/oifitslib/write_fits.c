@@ -607,6 +607,8 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
 /**
  * Write OI_VIS fits binary table
  *
+ * Writes zero values in TIME column, ignoring the time attribute of @a vis.
+ *
  * @param fptr     see cfitsio documentation
  * @param vis      data struct, see exchange.h
  * @param extver   value for EXTVER keyword
@@ -705,6 +707,8 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 
 /**
  * Write OI_VIS2 fits binary table
+ *
+ * Writes zero values in TIME column, ignoring the time attribute of @a vis2.
  *
  * @param fptr     see cfitsio documentation
  * @param vis2     data struct, see exchange.h
@@ -809,6 +813,8 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 
 /**
  * Write OI_T3 fits binary table
+ *
+ * Writes zero values in TIME column, ignoring the time attribute of @a t3.
  *
  * @param fptr     see cfitsio documentation
  * @param t3       data struct, see exchange.h

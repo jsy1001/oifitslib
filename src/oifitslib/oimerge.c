@@ -760,6 +760,8 @@ void merge_all_oi_flux(const GList *inList, GHashTable *targetIdHash,
 /**
  * Merge list of oi_fits structs into single dataset.
  *
+ * The output dataset is always OIFITS v2.
+ *
  * @param inList   linked list of oi_fits structs to merge
  * @param pOutput  pointer to oi_fits struct to write merged data to
  */
@@ -808,6 +810,8 @@ void merge_oi_fits_list(const GList *inList, oi_fits *pOutput)
 
 /**
  * Merge supplied oi_fits structs into single dataset.
+ *
+ * The output dataset is always OIFITS v2.
  *
  * @param pOutput  pointer to oi_fits struct to write merged data to
  * @param pInput1  pointer to first oi_fits struct to merge
