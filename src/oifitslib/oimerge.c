@@ -234,7 +234,7 @@ GHashTable *merge_oi_target(const GList *inList, oi_fits *pOutput)
   int i, *pValue;
 
   pOutTab = &pOutput->targets;
-  pOutTab->revision = 1;
+  pOutTab->revision = OI_REVN_V2_TARGET;
   pOutTab->ntarget = 0;
   pOutTab->targ = chkmalloc(MAX_TARGET * sizeof(target));
   targetIdHash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, free);
@@ -295,6 +295,7 @@ GList *merge_all_oi_array(const GList *inList, oi_fits *pOutput)
       if (pOutTab == NULL) {
         /* Add copy of pInTab to output, changing ARRNAME if it clashes */
         pOutTab = dup_oi_array(pInTab);
+        pOutTab->revision = OI_REVN_V2_ARRAY;
         if (g_hash_table_lookup(pOutput->arrayHash,
                                 pOutTab->arrname) != NULL) {
           /* Avoid truncation at FLEN_VALUE - 1 */
@@ -353,6 +354,7 @@ GList *merge_all_oi_wavelength(const GList *inList, oi_fits *pOutput)
       if (pOutTab == NULL) {
         /* Add copy of pInTab to output, changing INSNAME if it clashes */
         pOutTab = dup_oi_wavelength(pInTab);
+        pOutTab->revision = OI_REVN_V2_WAVELENGTH;
         if (g_hash_table_lookup(pOutput->wavelengthHash,
                                 pOutTab->insname) != NULL) {
           /* Avoid truncation at FLEN_VALUE - 1 */
@@ -569,6 +571,7 @@ void merge_all_oi_vis(const GList *inList, GHashTable *targetIdHash,
     jlink = pInput->visList;
     while (jlink != NULL) {
       pOutTab = dup_oi_vis((oi_vis *)jlink->data);
+      upgrade_oi_vis(pOutTab);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
@@ -625,6 +628,7 @@ void merge_all_oi_vis2(const GList *inList, GHashTable *targetIdHash,
     jlink = pInput->vis2List;
     while (jlink != NULL) {
       pOutTab = dup_oi_vis2((oi_vis2 *)jlink->data);
+      upgrade_oi_vis2(pOutTab);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);
@@ -681,6 +685,7 @@ void merge_all_oi_t3(const GList *inList, GHashTable *targetIdHash,
     jlink = pInput->t3List;
     while (jlink != NULL) {
       pOutTab = dup_oi_t3((oi_t3 *)jlink->data);
+      upgrade_oi_t3(pOutTab);
       REPLACE_ARRNAME(pOutTab, pOutTab->arrname, arrnameHash);
       REPLACE_INSNAME(pOutTab, pOutTab->insname, insnameHash);
       REPLACE_CORRNAME(pOutTab, pOutTab->corrname, corrnameHash);

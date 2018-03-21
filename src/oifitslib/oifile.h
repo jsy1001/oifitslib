@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for file-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007, 2015 John Young
+ * Copyright (C) 2007, 2015, 2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -120,6 +120,9 @@ oi_vis *dup_oi_vis(const oi_vis *);
 oi_vis2 *dup_oi_vis2(const oi_vis2 *);
 oi_t3 *dup_oi_t3(const oi_t3 *);
 oi_flux *dup_oi_flux(const oi_flux *);
+void upgrade_oi_vis(oi_vis *);
+void upgrade_oi_vis2(oi_vis2 *);
+void upgrade_oi_t3(oi_t3 *);
 
 #endif /* #ifndef OIFILE_H */
 

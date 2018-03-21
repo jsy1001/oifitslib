@@ -547,8 +547,7 @@ void count_oi_fits_data(const oi_fits *pOi, long *const pNumVis,
  * Set primary header keywords from table contents
  *
  * Sets values for DATE-OBS, TELESCOP, INSTRUME and OBJECT from
- * existing data.  Note that the mandatory keywords ORIGIN, OBSERVER
- * and INSMODE are not set.
+ * existing data.  ORIGIN, OBSERVER and INSMODE are set to "UNKNOWN".
  *
  * @param pOi  pointer to file data struct, see oifile.h
  */
@@ -588,6 +587,11 @@ void set_oi_header(oi_fits *pOi)
   mjd2date(floor(get_min_mjd(pOi)), &year, &month, &day);
   g_snprintf(pOi->header.date_obs, FLEN_VALUE,
              "%4ld-%02ld-%02ld", year, month, day);
+
+  /* Set other mandatory keywords */
+  g_strlcpy(pOi->header.origin, "UNKNOWN", FLEN_VALUE);
+  g_strlcpy(pOi->header.observer, "UNKNOWN", FLEN_VALUE);
+  g_strlcpy(pOi->header.insmode, "UNKNOWN", FLEN_VALUE);
 }
 
 /**
@@ -1394,3 +1398,58 @@ oi_flux *dup_oi_flux(const oi_flux *pInTab)
   }
   return pOutTab;
 }
+
+/**
+ * Convert OI_VIS table to OIFITS v2.
+ *
+ * Zeros TIME values and changes OI_REVN.
+ *
+ * @param pTab  pointer to table to modify
+ */
+void upgrade_oi_vis(oi_vis *pTab)
+{
+  int i;
+  
+  if (pTab->revision = OI_REVN_V1_VIS) {
+    pTab->revision = OI_REVN_V2_VIS;
+    for (i = 0; i < pTab->numrec; i++)
+      pTab->record[i].time = 0.0;
+  }
+}
+
+/**
+ * Convert OI_VIS table to OIFITS v2.
+ *
+ * Zeros TIME values and changes OI_REVN.
+ *
+ * @param pTab  pointer to table to modify
+ */
+void upgrade_oi_vis2(oi_vis2 *pTab)
+{
+  int i;
+  
+  if (pTab->revision = OI_REVN_V1_VIS2) {
+    pTab->revision = OI_REVN_V2_VIS2;
+    for (i = 0; i < pTab->numrec; i++)
+      pTab->record[i].time = 0.0;
+  }
+}
+
+/**
+ * Convert OI_T3 table to OIFITS v2.
+ *
+ * Zeros TIME values and changes OI_REVN.
+ *
+ * @param pTab  pointer to table to modify
+ */
+void upgrade_oi_t3(oi_t3 *pTab)
+{
+  int i;
+  
+  if (pTab->revision = OI_REVN_V1_T3) {
+    pTab->revision = OI_REVN_V2_T3;
+    for (i = 0; i < pTab->numrec; i++)
+      pTab->record[i].time = 0.0;
+  }
+}
+

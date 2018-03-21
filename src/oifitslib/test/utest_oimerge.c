@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Unit tests of OIFITSlib merge component.
  *
- * Copyright (C) 2015 John Young
+ * Copyright (C) 2015, 2018 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -73,6 +73,17 @@ static const TestCase v2Cases[] = {
   {"testdata.fits", DIR2 "bigtest2.fits", NULL, 3, 3}
 };
 
+static const TestCase v12Cases[] = {
+  {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
+   NULL, 2, 2},
+  {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
+   DIR2 "Bin_Ary--MIRC_H.fits", 3, 3},
+  {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits",
+   NULL, 1, 2},
+  {DIR1 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+  {DIR1 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
+};
+
 static const TestSet v1Set = {
   sizeof(v1Cases) / sizeof(v1Cases[0]),
   v1Cases
@@ -81,6 +92,11 @@ static const TestSet v1Set = {
 static const TestSet v2Set = {
   sizeof(v2Cases) / sizeof(v2Cases[0]),
   v2Cases
+};
+
+static const TestSet v12Set = {
+  sizeof(v12Cases) / sizeof(v12Cases[0]),
+  v12Cases
 };
 
 
@@ -253,8 +269,9 @@ int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_data_func("/oifitslib/oimerge/ver1", &v1Set, test_merge);
-  g_test_add_data_func("/oifitslib/oimerge/ver2", &v2Set, test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver1",  &v1Set,  test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver2",  &v2Set,  test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver12", &v12Set, test_merge);
 
   return g_test_run();
 }
