@@ -179,7 +179,7 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
   char *tunit[] = {"\0", "\0", "\0", "m", "m", "arcsec", ""};
   char extname[] = "OI_ARRAY";
   char *str;
-  int revision = 2, irow;
+  int revision = OI_REVN_V2_ARRAY, irow;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -260,7 +260,7 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
                    "deg", "deg", "\0"};
   char extname[] = "OI_TARGET";
   char *str;
-  int revision = 2, irow;
+  int revision = OI_REVN_V2_TARGET, irow;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -347,7 +347,7 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
   char *tform[] = {"E", "E"};
   char *tunit[] = {"m", "m"};
   char extname[] = "OI_WAVELENGTH";
-  int revision = 2;
+  int revision = OI_REVN_V2_WAVELENGTH;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -393,7 +393,7 @@ STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
   char *tform[] = {"J", "J", "D"};
   char *tunit[] = {"\0", "\0", "\0"};
   char extname[] = "OI_CORR";
-  int revision = 1;
+  int revision = OI_REVN_V2_CORR;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
   fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
@@ -448,7 +448,7 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
                    "\0", "\0", "\0", "\0", "\0"};
   char extname[] = "OI_INSPOL";
   char *str;
-  int revision = 1, irow;
+  int revision = OI_REVN_V2_INSPOL, irow;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
@@ -630,7 +630,7 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
                    "\0", "\0", "deg", "deg",
                    "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS";
-  int revision = 2, irow;
+  int revision = OI_REVN_V2_INSPOL, irow;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
@@ -729,7 +729,7 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
                    "\0", "\0", "m", "m",
                    "\0", "\0"};
   char extname[] = "OI_VIS2";
-  int revision = 2, irow;
+  int revision = OI_REVN_V2_VIS2, irow;
   bool correlated;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
@@ -836,7 +836,7 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
                    "m", "m", "m", "m",
                    "\0", "\0"};
   char extname[] = "OI_T3";
-  int revision = 2, irow;
+  int revision = OI_REVN_V2_T3, irow;
   bool correlated;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
@@ -948,7 +948,7 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
                    "\0", "\0", "\0"};
   char extname[] = "OI_FLUX";
   char keyval[FLEN_VALUE];
-  int revision = 1, irow;
+  int revision = OI_REVN_V2_FLUX, irow;
   bool correlated;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */

@@ -106,7 +106,7 @@ void demo_write(void)
            &array.elem[i].fov, array.elem[i].fovtype);
     array.elem[i].sta_index = i + 1;
   }
-  array.revision = 2;
+  array.revision = OI_REVN_V2_ARRAY;
 
   /* Read info for OI_TARGET table */
   fscanf(fp, "OI_TARGET ntarget %d ", &nrows);
@@ -134,7 +134,7 @@ void demo_write(void)
       targets.usecategory = TRUE;
     fscanf(fp, " ");
   }
-  targets.revision = 2;
+  targets.revision = OI_REVN_V2_TARGET;
 
   /* Read info for OI_WAVELENGTH table */
   fscanf(fp, "OI_WAVELENGTH insname %70s ", wave.insname);
@@ -148,7 +148,7 @@ void demo_write(void)
   for (i = 0; i < wave.nwave; i++) {
     fscanf(fp, "%f ", &wave.eff_band[i]);
   }
-  wave.revision = 2;
+  wave.revision = OI_REVN_V2_WAVELENGTH;
 
   /* Read info for OI_CORR table */
   fscanf(fp, "OI_CORR corrname %70s ", corr.corrname);
@@ -167,7 +167,7 @@ void demo_write(void)
   for (i = 0; i < corr.ncorr; i++) {
     fscanf(fp, "%lf ", &corr.corr[i]);
   }
-  corr.revision = 1;
+  corr.revision = OI_REVN_V2_CORR;
 
   /* Read info for OI_INSPOL table */
   fscanf(fp, "OI_INSPOL date-obs %70s ", inspol.date_obs);
@@ -205,7 +205,7 @@ void demo_write(void)
     }
     fscanf(fp, "sta_index %d ", &inspol.record[irec].sta_index);
   }
-  inspol.revision = 1;
+  inspol.revision = OI_REVN_V2_INSPOL;
 
   /* Read info for OI_VIS table */
   fscanf(fp, "OI_VIS date-obs %70s ", vis.date_obs);
@@ -249,7 +249,7 @@ void demo_write(void)
       vis.record[irec].flag[iwave] = FALSE;
     }
   }
-  vis.revision = 2;
+  vis.revision = OI_REVN_V2_VIS;
   vis.usevisrefmap = FALSE;
   vis.usecomplex = FALSE;  /* hence complexunit not used */
   vis.complexunit[0] = '\0';
@@ -286,7 +286,7 @@ void demo_write(void)
       vis2.record[irec].flag[iwave] = FALSE;
     }
   }
-  vis2.revision = 2;
+  vis2.revision = OI_REVN_V2_VIS2;
 
   /* Read info for OI_T3 table */
   fscanf(fp, "OI_T3 date-obs %70s ", t3.date_obs);
@@ -328,7 +328,7 @@ void demo_write(void)
       t3.record[irec].flag[iwave] = FALSE;
     }
   }
-  t3.revision = 2;
+  t3.revision = OI_REVN_V2_T3;
 
   /* Read info for OI_FLUX table */
   fscanf(fp, "OI_FLUX date-obs %70s ", flux.date_obs);
@@ -359,7 +359,7 @@ void demo_write(void)
       flux.record[irec].flag[iwave] = FALSE;
     }
   }
-  flux.revision = 1;
+  flux.revision = OI_REVN_V2_FLUX;
   strcpy(flux.fluxunit, "Jy");
 
   fclose(fp);

@@ -44,6 +44,24 @@
 #include <fitsio.h>
 #include <complex.h>
 
+#define OI_REVN_V1_TARGET 1
+#define OI_REVN_V1_ARRAY 1
+#define OI_REVN_V1_WAVELENGTH 1
+#define OI_REVN_V1_VIS 1
+#define OI_REVN_V1_VIS2 1
+#define OI_REVN_V1_T3 1
+
+#define OI_REVN_V2_TARGET 2
+#define OI_REVN_V2_ARRAY 2
+#define OI_REVN_V2_WAVELENGTH 2
+#define OI_REVN_V2_VIS 2
+#define OI_REVN_V2_VIS2 2
+#define OI_REVN_V2_T3 2
+#define OI_REVN_V2_FLUX 1
+#define OI_REVN_V2_CORR 1
+#define OI_REVN_V2_INSPOL 1
+
+
 typedef char BOOL;
 typedef double DATA;
 typedef int STATUS;

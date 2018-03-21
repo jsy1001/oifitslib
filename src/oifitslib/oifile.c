@@ -344,7 +344,7 @@ void init_oi_fits(oi_fits *pOi)
   pOi->header.procsoft[0] = '\0';
   pOi->header.obstech[0] = '\0';
 
-  pOi->targets.revision = 2;
+  pOi->targets.revision = OI_REVN_V2_TARGET;
   pOi->targets.ntarget = 0;
   pOi->targets.targ = NULL;
   pOi->targets.usecategory = FALSE;

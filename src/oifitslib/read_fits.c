@@ -347,7 +347,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 {
   char name[FLEN_VALUE];
   double nan;
-  const int revision = 2;
+  const int revision = OI_REVN_V2_ARRAY;
   int irow, colnum, anynull;
   long nrows;
 
@@ -431,7 +431,7 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
                                       const char *insname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
-  const int revision = 2;
+  const int revision = OI_REVN_V2_WAVELENGTH;
   int colnum, anynull;
   long nrows;
 
@@ -484,7 +484,7 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
                                 const char *corrname, STATUS *pStatus)
 {
   char name[FLEN_VALUE];
-  const int revision = 1;
+  const int revision = OI_REVN_V2_CORR;
   int colnum, anynull;
   long nrows;
 
@@ -539,7 +539,7 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
 static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
                                   STATUS *pStatus)
 {
-  const int revision = 1;
+  const int revision = OI_REVN_V2_INSPOL;
   int irow, colnum, anynull;
   long nrows, repeat;
 
@@ -665,7 +665,7 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
 {
   const char function[] = "read_oi_target";
-  const int revision = 2;
+  const int revision = OI_REVN_V2_TARGET;
   int irow, colnum, anynull;
   long nrows;
 
@@ -1058,7 +1058,7 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
-  if (pVis->revision == 1) {
+  if (pVis->revision == OI_REVN_V1_VIS) {
     pVis->corrname[0] = '\0';
     pVis->amptyp[0] = '\0';
     pVis->phityp[0] = '\0';
@@ -1126,7 +1126,7 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis";
   char keyword[FLEN_KEYWORD];
-  const int revision = 2;
+  const int revision = OI_REVN_V2_VIS;
   int irow, colnum, anynull;
   long nrows, repeat;
 
@@ -1226,7 +1226,7 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_vis2";
   bool correlated;
-  const int revision = 2;
+  const int revision = OI_REVN_V2_VIS2;
   int irow, colnum, anynull;
   long nrows, repeat;
 
@@ -1333,7 +1333,7 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_t3";
   bool correlated;
-  const int revision = 2;
+  const int revision = OI_REVN_V2_T3;
   int irow, colnum, anynull;
   long nrows, repeat;
 
@@ -1457,7 +1457,7 @@ STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus)
   const char function[] = "read_next_oi_flux";
   bool correlated;
   char keyword[FLEN_KEYWORD], value[FLEN_VALUE];
-  const int revision = 1;
+  const int revision = OI_REVN_V2_FLUX;
   int irow, colnum, anynull;
   long nrows, repeat;
 
