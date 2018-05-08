@@ -23,6 +23,7 @@
  */
 
 #include "oifilter.h"
+#include "glib/gstdio.h"  /* g_remove() */
 
 static gboolean clobber = FALSE;
 
