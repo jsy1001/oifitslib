@@ -603,7 +603,7 @@ void set_oi_header(oi_fits *pOi)
 STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
 {
   const char function[] = "write_oi_fits";
-  fitsfile *fptr;
+  fitsfile *fptr = NULL;
 
   if (*pStatus) return *pStatus;  /* error flag set - do nothing */
 
@@ -636,9 +636,8 @@ STATUS write_oi_fits(const char *filename, oi_fits oi, STATUS *pStatus)
   WRITE_OI_LIST(fptr, oi.t3List, oi_t3, write_oi_t3, pStatus);
   WRITE_OI_LIST(fptr, oi.fluxList, oi_flux, write_oi_flux, pStatus);
 
-  fits_close_file(fptr, pStatus);
-
 except:
+  if (fptr) fits_close_file(fptr, pStatus);
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
@@ -660,7 +659,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
 {
   const char function[] = "read_oi_fits";
   char desc[FLEN_STATUS];
-  fitsfile *fptr;
+  fitsfile *fptr = NULL;
   int hdutype;
   oi_array *pArray;
   oi_wavelength *pWave;
@@ -917,9 +916,8 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
   if (is_oi_fits_one(pOi))
     set_oi_header(pOi);
 
-  fits_close_file(fptr, pStatus);
-
 except:
+  if (fptr) fits_close_file(fptr, pStatus);
   if (*pStatus && !oi_hush_errors) {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
