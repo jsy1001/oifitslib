@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Unit tests of OIFITS file-level API.
  *
- * Copyright (C) 2015 John Young
+ * Copyright (C) 2015, 2019 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -33,6 +33,7 @@
 #define FILENAME_V2 "OIFITS2/alp_aur--COAST_NICMOS.fits"
 #define FILENAME_ATOMIC "OIFITS2/alp_aur--COAST_NICMOS.fits"
 #define FILENAME_MULTI "OIFITS2/bigtest2.fits"
+#define FILENAME_LONG_TARGET "OIFITS1/long_target.fits"
 
 #define MULTI_NUM_VIS 40
 #define MULTI_NUM_VIS2 40
@@ -167,6 +168,21 @@ static void test_lookup(void)
   free_oi_fits(&data);
 }
 
+static void test_long_target(void)
+{
+  oi_fits data;
+  int status;
+  char msg[FLEN_ERRMSG];
+
+  status = 0;
+  read_oi_fits(FILENAME_LONG_TARGET, &data, &status);
+  g_assert(!status);
+  free_oi_fits(&data);
+
+  if (fits_read_errmsg(msg))
+    g_error("Uncleared CFITSIO error message: %s", msg);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -177,6 +193,7 @@ int main(int argc, char *argv[])
   g_test_add_func("/oifitslib/oifile/atomic", test_atomic);
   g_test_add_func("/oifitslib/oifile/count", test_count);
   g_test_add_func("/oifitslib/oifile/lookup", test_lookup);
+  g_test_add_func("/oifitslib/oifile/long_target", test_long_target);
 
   return g_test_run();
 }

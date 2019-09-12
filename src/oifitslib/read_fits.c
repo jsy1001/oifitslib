@@ -4,7 +4,7 @@
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *
- * Copyright (C) 2007, 2015-2018 John Young
+ * Copyright (C) 2007, 2015-2019 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -148,6 +148,53 @@ static bool read_col_string(fitsfile *fptr, bool optional, char *colname,
     if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
                       &value, &anynull, pStatus))
       return FALSE;
+    return TRUE;
+  }
+}
+
+/**
+ * Read string column.
+ *
+ * The string value is truncated at @a maxRepeat characters.
+ *
+ * Sets the CFITSIO error status to BAD_BTABLE_FORMAT if the first
+ * column matching @a colname does not have a string type.
+ *
+ * @return TRUE if column read successfully, FALSE otherwise
+ */
+static bool read_col_string_truncate(fitsfile *fptr, bool optional,
+                                     char *colname, long maxRepeat, long irow,
+                                     char *value, STATUS *pStatus)
+{
+  int colnum, typecode, anynull;
+  long actualRepeat;
+
+  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+
+  fits_write_errmark();
+  fits_get_colnum(fptr, CASEINSEN, colname, &colnum, pStatus);
+  if (*pStatus == COL_NOT_FOUND) {
+    if (optional) {
+      *pStatus = 0;
+      fits_clear_errmark();
+    }
+    return FALSE;
+  } else {
+    fits_get_coltype(fptr, colnum, &typecode, &actualRepeat, NULL, pStatus);
+    if (typecode != TSTRING) {
+      *pStatus = BAD_BTABLE_FORMAT;
+      return FALSE;
+    }
+    char *longvalue = chkmalloc(actualRepeat + 1);
+    if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
+                      &longvalue, &anynull, pStatus))
+      return FALSE;
+    int i;
+    for (i = 0; longvalue[i] != '\0' && i < maxRepeat; i++) {
+      value[i] = longvalue[i];
+    }
+    value[i] = '\0';
+    free(longvalue);
     return TRUE;
   }
 }
@@ -637,8 +684,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].target_id, &anynull, pStatus);
-    read_col_string(fptr, FALSE, "TARGET", 16, irow,
-                    pTargets->targ[irow - 1].target, pStatus);
+    read_col_string_truncate(fptr, FALSE, "TARGET", 16, irow,
+                             pTargets->targ[irow - 1].target, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "RAEP0", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].raep0, &anynull, pStatus);
