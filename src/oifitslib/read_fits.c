@@ -726,8 +726,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "PARA_ERR", &colnum, pStatus);
     fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].para_err, &anynull, pStatus);
-    read_col_string(fptr, FALSE, "SPECTYP", 16, irow,
-                    pTargets->targ[irow - 1].spectyp, pStatus);
+    read_col_string_truncate(fptr, FALSE, "SPECTYP", 16, irow,
+                             pTargets->targ[irow - 1].spectyp, pStatus);
     /*printf("%16s  %10f %10f  %8s\n",
            pTargets->targ[irow-1].target,
            pTargets->targ[irow-1].raep0, pTargets->targ[irow-1].decep0,
