@@ -16,7 +16,7 @@
 # License along with OIFITSlib.  If not, see
 # http://www.gnu.org/licenses/
 
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.8.2)
 project(python-oifits)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../testdata)
@@ -50,10 +50,10 @@ if(GLIB2_FOUND)
 
     link_directories(${GLIB2_LIBRARY_DIRS})
 
-    swig_add_module(oifits python oifits.i)
-    swig_add_module(oifilter python oifilter.i)
-    swig_add_module(oicheck python oicheck.i)
-    swig_add_module(oimerge python oimerge.i)
+    swig_add_library(oifits LANGUAGE python SOURCES oifits.i)
+    swig_add_library(oifilter LANGUAGE python SOURCES oifilter.i)
+    swig_add_library(oicheck LANGUAGE python SOURCES oicheck.i)
+    swig_add_library(oimerge LANGUAGE python SOURCES oimerge.i)
     swig_link_libraries(oifits oifits ${PYTHON_LIBRARIES})
     swig_link_libraries(oifilter oifits ${PYTHON_LIBRARIES})
     swig_link_libraries(oicheck oifits ${PYTHON_LIBRARIES})
