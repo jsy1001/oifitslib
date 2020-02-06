@@ -69,9 +69,9 @@ The `oifits-upgrade` utility converts a valid OIFITS version 1 file to
 OIFITS version 2. The input file must include OI_ARRAY table(s)
 containing all of the array elements used to obtain the data. Version
 2 of OIFITS defines several mandatory keywords for the primary
-header. The values for ORIGIN and INSMODE must be specified on the
-`oifits-upgrade` command line. Values for the other mandatory keywords
-are obtained from the contents of the input file.
+header. The values for ORIGIN, OBSERVER and INSMODE must be specified
+on the `oifits-upgrade` command line. Values for the other mandatory
+keywords are obtained from the contents of the input file.
 
 The python interface is documented using python docstrings generated
 from SWIG interface files. Use pydoc to view the documentation for the
