@@ -684,7 +684,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].target_id, &anynull, pStatus);
-    read_col_string_truncate(fptr, FALSE, "TARGET", 16, irow,
+    read_col_string_truncate(fptr, FALSE, "TARGET", 32, irow,
                              pTargets->targ[irow - 1].target, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "RAEP0", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
@@ -726,7 +726,7 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "PARA_ERR", &colnum, pStatus);
     fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].para_err, &anynull, pStatus);
-    read_col_string_truncate(fptr, FALSE, "SPECTYP", 16, irow,
+    read_col_string_truncate(fptr, FALSE, "SPECTYP", 32, irow,
                              pTargets->targ[irow - 1].spectyp, pStatus);
     /*printf("%16s  %10f %10f  %8s\n",
            pTargets->targ[irow-1].target,

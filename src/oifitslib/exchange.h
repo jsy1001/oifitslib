@@ -104,7 +104,7 @@ typedef struct {
  */
 typedef struct {
   int target_id;
-  char target[17];
+  char target[33];
   double raep0, decep0;
   float equinox;
   double ra_err, dec_err;
@@ -113,7 +113,7 @@ typedef struct {
   double pmra, pmdec;
   double pmra_err, pmdec_err;
   float parallax, para_err;
-  char spectyp[17];
+  char spectyp[33];
   char category[4];
 } target;
 
