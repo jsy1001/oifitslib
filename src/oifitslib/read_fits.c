@@ -160,10 +160,14 @@ static bool read_col_string(fitsfile *fptr, bool optional, char *colname,
  * Sets the CFITSIO error status to BAD_BTABLE_FORMAT if the first
  * column matching @a colname does not have a string type.
  *
+ * If @a warnRepeat is set, prints a warning to stdout if the actual repeat count
+ * of the column doesn't match @a maxRepeat.
+ *
  * @return TRUE if column read successfully, FALSE otherwise
  */
 static bool read_col_string_truncate(fitsfile *fptr, bool optional,
-                                     char *colname, long maxRepeat, long irow,
+                                     char *colname, long maxRepeat,
+                                     bool warnRepeat, long irow,
                                      char *value, STATUS *pStatus)
 {
   int colnum, typecode, anynull;
@@ -185,6 +189,9 @@ static bool read_col_string_truncate(fitsfile *fptr, bool optional,
       *pStatus = BAD_BTABLE_FORMAT;
       return FALSE;
     }
+    if (warnRepeat && actualRepeat != maxRepeat)
+      printf("WARNING! Expecting format %ldA but found %ldA for column '%s'\n",
+        maxRepeat, actualRepeat, colname);
     char *longvalue = chkmalloc(actualRepeat + 1);
     if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
                       &longvalue, &anynull, pStatus))
@@ -684,7 +691,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].target_id, &anynull, pStatus);
-    read_col_string_truncate(fptr, FALSE, "TARGET", 32, irow,
+    read_col_string_truncate(fptr, FALSE, "TARGET", 32,
+                             (pTargets->revision >= 2), irow,
                              pTargets->targ[irow - 1].target, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "RAEP0", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
@@ -726,7 +734,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
     fits_get_colnum(fptr, CASEINSEN, "PARA_ERR", &colnum, pStatus);
     fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].para_err, &anynull, pStatus);
-    read_col_string_truncate(fptr, FALSE, "SPECTYP", 32, irow,
+    read_col_string_truncate(fptr, FALSE, "SPECTYP", 32,
+                             (pTargets->revision >= 2), irow,
                              pTargets->targ[irow - 1].spectyp, pStatus);
     /*printf("%16s  %10f %10f  %8s\n",
            pTargets->targ[irow-1].target,
