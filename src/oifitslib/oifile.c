@@ -1111,15 +1111,15 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
     g_string_printf(pGStr, "'%s' data:\n", pOi->header.content);
   else
     g_string_printf(pGStr, "OIFITS data:\n");
-  g_string_append_printf(pGStr, "  DATE=%s\n", pOi->header.date);
-  g_string_append_printf(pGStr, "  DATE-OBS=%s  OBJECT='%s'\n",
-                         pOi->header.date_obs, pOi->header.object);
-  g_string_append_printf(pGStr, "  TELESCOP='%s'  INSTRUME='%s'\n",
-                         pOi->header.telescop, pOi->header.instrume);
-  g_string_append_printf(pGStr, "  OBSERVER='%s'  OBJECT='%s'\n",
-                         pOi->header.observer, pOi->header.object);
-  g_string_append_printf(pGStr, "  INSMODE='%s'  OBSTECH='%s'\n\n",
-                         pOi->header.insmode, pOi->header.obstech);
+  g_string_append_printf(pGStr, "  ORIGIN  = '%s'\n", pOi->header.origin);
+  g_string_append_printf(pGStr, "  DATE    = '%s'\n", pOi->header.date);
+  g_string_append_printf(pGStr, "  DATE-OBS= '%s'\n", pOi->header.date_obs);
+  g_string_append_printf(pGStr, "  TELESCOP= '%s'\n", pOi->header.telescop);
+  g_string_append_printf(pGStr, "  INSTRUME= '%s'\n", pOi->header.instrume);
+  g_string_append_printf(pGStr, "  OBSERVER= '%s'\n", pOi->header.observer);
+  g_string_append_printf(pGStr, "  OBJECT  = '%s'\n", pOi->header.object);
+  g_string_append_printf(pGStr, "  INSMODE = '%s'\n", pOi->header.insmode);
+  g_string_append_printf(pGStr, "  OBSTECH = '%s'\n\n", pOi->header.obstech);
   g_string_append_printf(pGStr, "  %d OI_ARRAY tables:\n", pOi->numArray);
   format_array_list_summary(pGStr, pOi->arrayList);
   g_string_append_printf(pGStr, "  %d OI_WAVELENGTH tables:\n",
