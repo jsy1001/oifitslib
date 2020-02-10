@@ -4,7 +4,7 @@
  * Implementation of functions to read individual FITS tables and
  * write to data structures in memory.
  *
- * Copyright (C) 2007, 2015-2019 John Young
+ * Copyright (C) 2007, 2015-2020 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -228,8 +228,8 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
     fits_get_hdu_num(fptr, &hdunum);
     if (!read_key_opt_string(fptr, "EXTNAME", extname, pStatus)) {
       extver = 0;
-    } else {
-      fits_read_key(fptr, TINT, "EXTVER", &extver, NULL, pStatus);
+    } else if (!read_key_opt_int(fptr, "EXTVER", &extver, pStatus)) {
+      extver = 0;
     }
     if (dataok == -1)
       printf("WARNING! Data checksum verification failed "
