@@ -94,7 +94,7 @@ typedef struct {
  * Function prototypes, for functions from oifile.c
  */
 void init_oi_fits(oi_fits *);
-//:TODO: return a boolean type? stdbool.h already used internally
+// TODO: return a boolean type? stdbool.h already used internally
 int is_oi_fits_one(const oi_fits *);
 int is_oi_fits_two(const oi_fits *);
 int is_atomic(const oi_fits *, double);

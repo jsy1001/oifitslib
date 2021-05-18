@@ -23,8 +23,6 @@
  * http://www.gnu.org/licenses/
  */
 
-/* :TODO: integrate fitsverify? */
-
 #include "oicheck.h"
 
 #include <stdio.h>
@@ -161,6 +159,7 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
                  "at least one OI_VIS/VIS2/T3/FLUX required");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
     }
+    // TODO: check table revisions
   } else if (is_oi_fits_one(pOi)) {
     if (pOi->numWavelength == 0) {
       g_snprintf(location, FLEN_VALUE, "No OI_WAVELENGTH table - "
@@ -282,7 +281,7 @@ oi_breach_level check_keywords(const oi_fits *pOi, oi_check_result *pResult)
                  g_list_position(pOi->arrayList, link) + 1, pArray->frame);
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc, location);
     }
-    //:TODO: warn if SKY used in revision 1
+    // TODO: warn if SKY used in revision 1
     link = link->next;
   }
 

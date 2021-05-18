@@ -598,7 +598,7 @@ void filter_oi_header(const oi_header *pInHeader,
                       const oi_filter_spec *pFilter, oi_header *pOutHeader)
 {
   memcpy(pOutHeader, pInHeader, sizeof(*pInHeader));
-  //:TODO: overwrite header values if dataset becomes atomic?
+  // TODO: overwrite header values if dataset becomes atomic?
   // TELESCOP, INSTRUME, OBJECT (OBSERVER, REFERENC)
 }
 
@@ -1735,7 +1735,7 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
   while (prune_oi_corr(pOutput, list)) ;
   g_list_free(list);
 
-  //:TODO: remove orphaned OI_INSPOL records?
+  // TODO: remove orphaned OI_INSPOL records?
   // Note these do not invalidate the OIFITS file
 
   /* Free compiled patterns */

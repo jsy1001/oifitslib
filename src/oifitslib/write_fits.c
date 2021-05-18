@@ -440,7 +440,7 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
   const int tfields = 9;
   char *ttype[] = {"TARGET_ID", "INSNAME", "MJD_OBS", "MJD_END",
                    "JXX", "JYY", "JXY", "JYX", "STA_INDEX"};
-  //:TODO: follow standard in choosing repeat count for INSNAME
+  // TODO: follow standard in choosing repeat count for INSNAME
   const char *tformTpl[] = {"I", "70A", "D", "D",
                             "?C", "?C", "?C", "?C", "I"};
   char **tform;
@@ -1006,7 +1006,7 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
                    flux.record[irow - 1].flag, pStatus);
   }
 
-  //:TODO: maybe only write ARRNAME and STA_INDEX if CALSTAT == 'U'
+  // TODO: maybe only write ARRNAME and STA_INDEX if CALSTAT == 'U'
   /* Write optional keywords */
   if (strlen(flux.fovtype) > 0) {
     fits_write_key(fptr, TDOUBLE, "FOV", &flux.fov,

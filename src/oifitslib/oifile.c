@@ -205,7 +205,7 @@ static void format_inspol_list_summary(GString *pGStr, GList *inspolList)
   link = inspolList;
   while (link != NULL) {
     pInspol = (oi_inspol *)link->data;
-    //:TODO: add list of unique INSNAME values in this OI_INSPOL table
+    // TODO: add list of unique INSNAME values in this OI_INSPOL table
     g_string_append_printf(pGStr,
                            "    #%-2d ARRNAME='%s'\n", nn++, pInspol->arrname);
     link = link->next;
@@ -402,6 +402,7 @@ int is_oi_fits_one(const oi_fits *pOi)
 {
   g_assert(pOi != NULL);
   if (strcmp(pOi->header.content, "OIFITS2") == 0) return FALSE;
+  // TODO: return TRUE to match JMMC validator?
   if (pOi->targets.revision != OI_REVN_V1_TARGET) return FALSE;
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->arrayList, oi_array, OI_REVN_V1_ARRAY, FALSE);
   RETURN_VAL_IF_BAD_TAB_REVISION(pOi->wavelengthList, oi_wavelength, OI_REVN_V1_ARRAY,

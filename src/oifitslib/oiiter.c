@@ -420,7 +420,7 @@ bool oi_vis_iter_next(oi_vis_iter *pIter,
              oi_vis_iter_accept_channel(pIter)));
 
   /* Return new current data point */
-  //:TODO: provide access to wavelength or u/lambda, v/lambda
+  // TODO: provide access to wavelength or u/lambda, v/lambda
   ret = true;
   oi_vis *pTable = (oi_vis *)pIter->link->data;
   if (pExtver != NULL)
@@ -488,7 +488,7 @@ bool oi_vis2_iter_next(oi_vis2_iter *pIter,
              oi_vis2_iter_accept_channel(pIter)));
 
   /* Return new current data point */
-  //:TODO: provide access to wavelength or u/lambda, v/lambda
+  // TODO: provide access to wavelength or u/lambda, v/lambda
   ret = true;
   oi_vis2 *pTable = (oi_vis2 *)pIter->link->data;
   if (pExtver != NULL)
@@ -556,7 +556,7 @@ bool oi_t3_iter_next(oi_t3_iter *pIter,
              oi_t3_iter_accept_channel(pIter)));
 
   /* Return new current data point */
-  //:TODO: provide access to wavelength or u/lambda, v/lambda
+  // TODO: provide access to wavelength or u/lambda, v/lambda
   ret = true;
   oi_t3 *pTable = (oi_t3 *)pIter->link->data;
   if (pExtver != NULL)

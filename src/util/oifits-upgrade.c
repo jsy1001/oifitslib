@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   print_oi_fits_summary(&oi);
 
   /* Write out data (automatically uses latest format) */
-  //:TODO: suppress version warnings?
+  // TODO: suppress version warnings?
   write_oi_fits(outFilename, oi, &status);
   if (status) goto except;
 

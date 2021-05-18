@@ -211,7 +211,7 @@ void demo_write(void)
   fscanf(fp, "OI_VIS date-obs %70s ", vis.date_obs);
   fscanf(fp, "arrname %70s insname %70s ", vis.arrname, vis.insname);
   fscanf(fp, "corrname %70s ", vis.corrname);
-  //:TODO: can't scan "correlated flux" due to space
+  // TODO: can't scan "correlated flux" due to space
   scan_opt_string(fp, "amptyp %70s", vis.amptyp);
   scan_opt_string(fp, " phityp %70s", vis.phityp);
   scan_opt_int(fp, " amporder %d", &vis.amporder, -1);
