@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for file-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007, 2015, 2018 John Young
+ * Copyright (C) 2007, 2015, 2016, 2018 John Young
  *
  *
  * This file is part of OIFITSlib.

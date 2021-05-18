@@ -4,7 +4,7 @@
  * Implementation of functions to write FITS tables from data structures
  * in memory.
  *
- * Copyright (C) 2007, 2015-2018 John Young
+ * Copyright (C) 2007, 2015-2018, 2020 John Young
  *
  *
  * This file is part of OIFITSlib.

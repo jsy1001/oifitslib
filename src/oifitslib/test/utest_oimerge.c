@@ -3,7 +3,7 @@
  * @ingroup oimerge
  * Unit tests of OIFITSlib merge component.
  *
- * Copyright (C) 2015, 2018 John Young
+ * Copyright (C) 2015, 2016, 2018 John Young
  *
  *
  * This file is part of OIFITSlib.

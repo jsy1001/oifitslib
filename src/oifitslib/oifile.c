@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Implementation of file-level API for OIFITS data.
  *
- * Copyright (C) 2007, 2015-2018 John Young
+ * Copyright (C) 2007, 2015-2021 John Young
  *
  *
  * This file is part of OIFITSlib.

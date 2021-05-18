@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Unit tests of OIFITS file-level API.
  *
- * Copyright (C) 2015, 2019-2020 John Young
+ * Copyright (C) 2015, 2018-2020 John Young
  *
  *
  * This file is part of OIFITSlib.
