@@ -160,7 +160,7 @@ static long files_min_mjd(const GList *list)
  */
 
 /** Merge specified primary header keyword */
-#define MERGE_HEADER_KEY(inList, keyattr, pOutput)                  \
+#define MERGE_HEADER_KEY(inList, keyattr, required, pOutput)        \
   {                                                                 \
     int nuniq;                                                      \
     const GList *link;                                              \
@@ -179,7 +179,9 @@ static long files_min_mjd(const GList *list)
       }                                                             \
       link = link->next;                                            \
     }                                                               \
-    if (nuniq > 1)                                                  \
+    if (nuniq == 0 && required)                                     \
+      g_strlcpy(pOutput->header.keyattr, "UNKNOWN", FLEN_VALUE);    \
+    else if (nuniq > 1)                                             \
       g_strlcpy(pOutput->header.keyattr, "MULTIPLE", FLEN_VALUE);   \
   }
 
@@ -204,17 +206,17 @@ void merge_oi_header(const GList *inList, oi_fits *pOutput)
   g_snprintf(pOutput->header.content, FLEN_VALUE, "OIFITS2");
 
   /* Copy unique keywords or replace with "MULTIPLE" */
-  MERGE_HEADER_KEY(inList, origin, pOutput);  //:TODO: MULTIPLE ok for ORIGIN?
-  MERGE_HEADER_KEY(inList, telescop, pOutput);
-  MERGE_HEADER_KEY(inList, instrume, pOutput);
-  MERGE_HEADER_KEY(inList, observer, pOutput);
-  MERGE_HEADER_KEY(inList, insmode, pOutput);
-  MERGE_HEADER_KEY(inList, object, pOutput);
-  MERGE_HEADER_KEY(inList, referenc, pOutput);
-  MERGE_HEADER_KEY(inList, author, pOutput);
-  MERGE_HEADER_KEY(inList, prog_id, pOutput);
-  MERGE_HEADER_KEY(inList, procsoft, pOutput);
-  MERGE_HEADER_KEY(inList, obstech, pOutput);
+  MERGE_HEADER_KEY(inList, origin,   TRUE, pOutput);
+  MERGE_HEADER_KEY(inList, telescop, TRUE, pOutput);
+  MERGE_HEADER_KEY(inList, instrume, TRUE, pOutput);
+  MERGE_HEADER_KEY(inList, observer, TRUE, pOutput);
+  MERGE_HEADER_KEY(inList, insmode,  TRUE, pOutput);
+  MERGE_HEADER_KEY(inList, object,   TRUE, pOutput);
+  MERGE_HEADER_KEY(inList, referenc, FALSE, pOutput);
+  MERGE_HEADER_KEY(inList, author,   FALSE, pOutput);
+  MERGE_HEADER_KEY(inList, prog_id,  FALSE, pOutput);
+  MERGE_HEADER_KEY(inList, procsoft, FALSE, pOutput);
+  MERGE_HEADER_KEY(inList, obstech,  FALSE, pOutput);
 }
 
 /**
