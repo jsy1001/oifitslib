@@ -144,18 +144,7 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
 
   /* note desc1 and desc2 must not be mixed in pResult */
   init_check_result(pResult);
-  if (is_oi_fits_one(pOi)) {
-    if (pOi->numWavelength == 0) {
-      g_snprintf(location, FLEN_VALUE, "No OI_WAVELENGTH table - "
-                 "at least one required");
-      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
-    }
-    if (pOi->numVis == 0 && pOi->numVis2 == 0 && pOi->numT3 == 0) {
-      g_snprintf(location, FLEN_VALUE, "No data table - "
-                 "at least one OI_VIS/VIS2/T3 required");
-      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
-    }
-  } else if (is_oi_fits_two(pOi)) {
+  if (is_oi_fits_two(pOi)) {
     if (pOi->numArray == 0) {
       g_snprintf(location, FLEN_VALUE, "No OI_ARRAY table - "
                  "at least one required");
@@ -172,9 +161,20 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
                  "at least one OI_VIS/VIS2/T3/FLUX required");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
     }
+  } else if (is_oi_fits_one(pOi)) {
+    if (pOi->numWavelength == 0) {
+      g_snprintf(location, FLEN_VALUE, "No OI_WAVELENGTH table - "
+                 "at least one required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
+    if (pOi->numVis == 0 && pOi->numVis2 == 0 && pOi->numT3 == 0) {
+      g_snprintf(location, FLEN_VALUE, "No data table - "
+                 "at least one OI_VIS/VIS2/T3 required");
+      set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
+    }
   } else {
     g_snprintf(location, FLEN_VALUE, "Table revision numbers do not match "
-               "either v1 or v2 of the OIFITS std");
+               "v1 of the OIFITS std");
     set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
   }
   return pResult->level;

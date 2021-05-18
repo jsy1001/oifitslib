@@ -101,7 +101,11 @@ static const TestCase failCases[] = {
   {DIR2 "bad_wave_reversed.fits",   check_waveorder,        OI_BREACH_WARNING},
   {DIR2 "bad_time.fits",            check_time,             OI_BREACH_WARNING},
   {DIR2 "bad_flux.fits",            check_flux,
-   OI_BREACH_NOT_OIFITS}
+   OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_content_kw.fits",      check_header,
+   OI_BREACH_NOT_OIFITS},
+  {DIR2 "bad_missing_content_kw.fits", check_tables,
+   OI_BREACH_NOT_OIFITS},
 };
 
 static const TestSet passSet = {
