@@ -62,6 +62,7 @@ static void test_version(void)
   status = 0;
   read_oi_fits(FILENAME_V1, &data, &status);
   g_assert(!status);
+  g_assert(is_oi_fits_one(&data));
   g_assert(!is_oi_fits_two(&data));
 
   /* Test writing v1 yields v2 with mandatory primary header keywords */
@@ -70,6 +71,7 @@ static void test_version(void)
   free_oi_fits(&data);
   read_oi_fits(FILENAME_OUT, &data2, &status);
   g_assert(!status);
+  g_assert(!is_oi_fits_one(&data2));
   g_assert(is_oi_fits_two(&data2));
   g_assert(strlen(data2.header.date_obs) > 0);
   g_assert(strlen(data2.header.telescop) > 0);
@@ -83,6 +85,7 @@ static void test_version(void)
 
   read_oi_fits(FILENAME_V2, &data, &status);
   g_assert(!status);
+  g_assert(!is_oi_fits_one(&data));
   g_assert(is_oi_fits_two(&data));
   free_oi_fits(&data);
 
