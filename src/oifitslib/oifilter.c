@@ -941,6 +941,7 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
     if (useWave != NULL) {
       pOutTab = chkmalloc(sizeof(oi_vis));
       pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
+      // TODO: test with missing OI_WAVELENGTH
       if (pWave == NULL)
         g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
       filter_oi_vis(pInTab, pFilter, pWave, useWave, pOutTab);
@@ -1040,7 +1041,7 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
       pOutRec->visphi[k] = pInRec->visphi[j];
       pOutRec->visphierr[k] = pInRec->visphierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (!pOutRec->flag[j]) {
+      if (!pInRec->flag[j]) {
         if (pWave != NULL) {
           uvrad = (pow(pInRec->ucoord * pInRec->ucoord +
                        pInRec->vcoord * pInRec->vcoord, 0.5) /
@@ -1207,7 +1208,7 @@ static bool any_vis2_chan_ok(const oi_vis2_record *pRec,
       if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
         continue;
       return TRUE;  /* this channel is OK */
-    }  
+    }
   }
   return FALSE;
 }
@@ -1240,7 +1241,7 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
       pOutRec->vis2data[k] = pInRec->vis2data[j];
       pOutRec->vis2err[k] = pInRec->vis2err[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (!pOutRec->flag[j]) {
+      if (!pInRec->flag[j]) {
         if (pWave != NULL) {
           uvrad = (pow(pInRec->ucoord * pInRec->ucoord +
                        pInRec->vcoord * pInRec->vcoord, 0.5) /
@@ -1461,7 +1462,7 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
       }
       pOutRec->t3phierr[k] = pInRec->t3phierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (!pOutRec->flag[j]) {
+      if (!pInRec->flag[j]) {
         if (pWave != NULL) {
           abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
           if (abRad < pFilter->uvrad_range[0] ||
