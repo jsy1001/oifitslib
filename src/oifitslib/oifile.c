@@ -1408,7 +1408,7 @@ oi_flux *dup_oi_flux(const oi_flux *pInTab)
  */
 void upgrade_oi_target(oi_target *pTab)
 {
-  if (pTab->revision = OI_REVN_V1_TARGET)
+  if (pTab->revision == OI_REVN_V1_TARGET)
     pTab->revision = OI_REVN_V2_TARGET;
 }
 
@@ -1419,7 +1419,7 @@ void upgrade_oi_target(oi_target *pTab)
  */
 void upgrade_oi_wavelength(oi_wavelength *pTab)
 {
-  if (pTab->revision = OI_REVN_V1_WAVELENGTH)
+  if (pTab->revision == OI_REVN_V1_WAVELENGTH)
     pTab->revision = OI_REVN_V2_WAVELENGTH;
 }
 
@@ -1430,7 +1430,7 @@ void upgrade_oi_wavelength(oi_wavelength *pTab)
  */
 void upgrade_oi_array(oi_array *pTab)
 {
-  if (pTab->revision = OI_REVN_V1_ARRAY)
+  if (pTab->revision == OI_REVN_V1_ARRAY)
     pTab->revision = OI_REVN_V2_ARRAY;
 }
 
@@ -1444,8 +1444,8 @@ void upgrade_oi_array(oi_array *pTab)
 void upgrade_oi_vis(oi_vis *pTab)
 {
   int i;
-  
-  if (pTab->revision = OI_REVN_V1_VIS) {
+
+  if (pTab->revision == OI_REVN_V1_VIS) {
     pTab->revision = OI_REVN_V2_VIS;
     for (i = 0; i < pTab->numrec; i++)
       pTab->record[i].time = 0.0;
@@ -1462,8 +1462,8 @@ void upgrade_oi_vis(oi_vis *pTab)
 void upgrade_oi_vis2(oi_vis2 *pTab)
 {
   int i;
-  
-  if (pTab->revision = OI_REVN_V1_VIS2) {
+
+  if (pTab->revision == OI_REVN_V1_VIS2) {
     pTab->revision = OI_REVN_V2_VIS2;
     for (i = 0; i < pTab->numrec; i++)
       pTab->record[i].time = 0.0;
@@ -1480,8 +1480,8 @@ void upgrade_oi_vis2(oi_vis2 *pTab)
 void upgrade_oi_t3(oi_t3 *pTab)
 {
   int i;
-  
-  if (pTab->revision = OI_REVN_V1_T3) {
+
+  if (pTab->revision == OI_REVN_V1_T3) {
     pTab->revision = OI_REVN_V2_T3;
     for (i = 0; i < pTab->numrec; i++)
       pTab->record[i].time = 0.0;
