@@ -373,46 +373,6 @@ void init_oi_fits(oi_fits *pOi)
     g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 }
 
-
-#define RETURN_VAL_IF_BAD_TAB_REVISION(tabList, tabType, rev, val) \
-  do {                                                             \
-    tabType *tab;                                                  \
-    GList *link;                                                   \
-    link = (tabList);                                              \
-    while (link != NULL) {                                         \
-      tab = (tabType *)link->data;                                 \
-      if (tab->revision != (rev)) return val;                      \
-      link = link->next;                                           \
-    }                                                              \
-  } while (0)
-
-/**
- * Do all table revision numbers match version 1 of the OIFITS standard?
- *
- * Returns FALSE if CONTENT is "OIFITS2" in the primary header, or if any of the
- * revisions in the following tables are incorrect for OIFITS version 1:
- * OI_TARGET, OI_ARRAY, OI_WAVELENGTH, OI_VIS, OI_VIS2, OI_T3. Ignores
- * tables newly defined in OIFITS version 2.
- *
- * @param pOi  pointer to file data struct, see oifile.h
- *
- * @return TRUE if OIFITS v1, FALSE otherwise
- */
-int is_oi_fits_one(const oi_fits *pOi)
-{
-  g_assert(pOi != NULL);
-  if (strcmp(pOi->header.content, "OIFITS2") == 0) return FALSE;
-  // TODO: return TRUE to match JMMC validator?
-  if (pOi->targets.revision != OI_REVN_V1_TARGET) return FALSE;
-  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->arrayList, oi_array, OI_REVN_V1_ARRAY, FALSE);
-  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->wavelengthList, oi_wavelength, OI_REVN_V1_ARRAY,
-                                 FALSE);
-  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->visList, oi_vis, OI_REVN_V1_VIS, FALSE);
-  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->vis2List, oi_vis2, OI_REVN_V1_VIS2, FALSE);
-  RETURN_VAL_IF_BAD_TAB_REVISION(pOi->t3List, oi_t3, OI_REVN_V1_T3, FALSE);
-  return TRUE;
-}
-
 /**
  * Does the file identify itself as OIFITS version 2?
  *
@@ -917,7 +877,7 @@ STATUS read_oi_fits(const char *filename, oi_fits *pOi, STATUS *pStatus)
                           find_oi_wavelength(pOi, pFlux->insname));
   }
 
-  if (is_oi_fits_one(pOi))
+  if (!is_oi_fits_two(pOi))
     set_oi_header(pOi);
 
 except:
@@ -1113,10 +1073,8 @@ const char *format_oi_fits_summary(const oi_fits *pOi)
 
   if (is_oi_fits_two(pOi))
     g_string_printf(pGStr, "OIFITS version 2 data:\n");
-  else if (is_oi_fits_one(pOi))
-    g_string_printf(pGStr, "OIFITS version 1 data:\n");
   else
-    g_string_printf(pGStr, "OIFITS version ? data:\n");
+    g_string_printf(pGStr, "OIFITS version 1 data:\n");  /* assume v1 */
   g_string_append_printf(pGStr, "  ORIGIN  = '%s'\n", pOi->header.origin);
   g_string_append_printf(pGStr, "  DATE    = '%s'\n", pOi->header.date);
   g_string_append_printf(pGStr, "  DATE-OBS= '%s'\n", pOi->header.date_obs);

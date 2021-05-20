@@ -126,6 +126,24 @@ void print_check_result(oi_check_result *pResult)
   printf("%s", format_check_result(pResult));
 }
 
+#define CHECK_BAD_TAB_REVISION(tabList, tabType, tabName, rev)          \
+  do {                                                                  \
+    char location[FLEN_VALUE];                                          \
+    tabType *tab;                                                       \
+    GList *link;                                                        \
+    link = (tabList);                                                   \
+    while (link != NULL) {                                              \
+      tab = (tabType *)link->data;                                      \
+      if (tab->revision != (rev)) {                                     \
+        g_snprintf(location, FLEN_VALUE, "%s #%d", tabName,             \
+                   g_list_position((tabList), link) + 1);               \
+        set_result(pResult, OI_BREACH_NOT_OIFITS,                       \
+                   "Invalid OI_REVN", location);                        \
+      }                                                                 \
+      link = link->next;                                                \
+    }                                                                   \
+  } while (0)
+
 /**
  * Check tables present and their revision numbers.
  *
@@ -137,12 +155,11 @@ void print_check_result(oi_check_result *pResult)
 oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
 {
   const char desc1[] = "Mandatory table missing";
-  const char desc2[] = "Mixed table revisions";
   char location[FLEN_VALUE];
 
-  /* note desc1 and desc2 must not be mixed in pResult */
   init_check_result(pResult);
   if (is_oi_fits_two(pOi)) {
+
     if (pOi->numArray == 0) {
       g_snprintf(location, FLEN_VALUE, "No OI_ARRAY table - "
                  "at least one required");
@@ -159,8 +176,22 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
                  "at least one OI_VIS/VIS2/T3/FLUX required");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
     }
-    // TODO: check table revisions
-  } else if (is_oi_fits_one(pOi)) {
+
+    if (pOi->targets.revision != OI_REVN_V2_TARGET) {
+      set_result(pResult, OI_BREACH_NOT_OIFITS, "Invalid OI_REVN", "OI_TARGET");
+    }
+    CHECK_BAD_TAB_REVISION(pOi->arrayList, oi_array, "OI_ARRAY", OI_REVN_V2_ARRAY);
+    CHECK_BAD_TAB_REVISION(pOi->wavelengthList, oi_wavelength, "OI_WAVELENGTH",
+                           OI_REVN_V2_WAVELENGTH);
+    CHECK_BAD_TAB_REVISION(pOi->visList, oi_vis, "OI_VIS", OI_REVN_V2_VIS);
+    CHECK_BAD_TAB_REVISION(pOi->vis2List, oi_vis2, "OI_VIS2", OI_REVN_V2_VIS2);
+    CHECK_BAD_TAB_REVISION(pOi->t3List, oi_t3, "OI_T3", OI_REVN_V2_T3);
+    CHECK_BAD_TAB_REVISION(pOi->fluxList, oi_flux, "OI_FLUX", OI_REVN_V2_FLUX);
+    CHECK_BAD_TAB_REVISION(pOi->corrList, oi_corr, "OI_CORR", OI_REVN_V2_CORR);
+    CHECK_BAD_TAB_REVISION(pOi->inspolList, oi_inspol, "OI_INSPOL", OI_REVN_V2_INSPOL);
+
+  } else { /* is_oi_fits_one(pOi)) */
+
     if (pOi->numWavelength == 0) {
       g_snprintf(location, FLEN_VALUE, "No OI_WAVELENGTH table - "
                  "at least one required");
@@ -171,10 +202,17 @@ oi_breach_level check_tables(const oi_fits *pOi, oi_check_result *pResult)
                  "at least one OI_VIS/VIS2/T3 required");
       set_result(pResult, OI_BREACH_NOT_OIFITS, desc1, location);
     }
-  } else {
-    g_snprintf(location, FLEN_VALUE, "Table revision numbers do not match "
-               "v1 of the OIFITS std");
-    set_result(pResult, OI_BREACH_NOT_OIFITS, desc2, location);
+
+    if (pOi->targets.revision != OI_REVN_V1_TARGET) {
+      set_result(pResult, OI_BREACH_NOT_OIFITS, "Invalid OI_REVN", "OI_TARGET");
+    }
+    CHECK_BAD_TAB_REVISION(pOi->arrayList, oi_array, "OI_ARRAY", OI_REVN_V1_ARRAY);
+    CHECK_BAD_TAB_REVISION(pOi->wavelengthList, oi_wavelength, "OI_WAVELENGTH",
+                           OI_REVN_V1_WAVELENGTH);
+    CHECK_BAD_TAB_REVISION(pOi->visList, oi_vis, "OI_VIS", OI_REVN_V1_VIS);
+    CHECK_BAD_TAB_REVISION(pOi->vis2List, oi_vis2, "OI_VIS2", OI_REVN_V1_VIS2);
+    CHECK_BAD_TAB_REVISION(pOi->t3List, oi_t3, "OI_T3", OI_REVN_V1_T3);
+
   }
   return pResult->level;
 }

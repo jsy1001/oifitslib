@@ -104,6 +104,8 @@ static const TestCase failCases[] = {
    OI_BREACH_NOT_OIFITS},
   {DIR1 "bad_content_kw.fits",      check_header,
    OI_BREACH_NOT_OIFITS},
+  {DIR1 "bad_content_kw.fits",      check_tables,
+   OI_BREACH_NOT_OIFITS},
   {DIR2 "bad_missing_content_kw.fits", check_tables,
    OI_BREACH_NOT_OIFITS},
 };
