@@ -32,21 +32,21 @@ if(GLIB2_FOUND)
 
     include(${SWIG_USE_FILE})
 
-    find_package(PythonLibrary)
+    find_package(Python2 COMPONENTS Interpreter Development)
 
     function(add_swig_test module)
-      add_test(NAME python-${module} WORKING_DIRECTORY ${TESTDATA_DIR} COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/${module}.py)
+      add_test(NAME python-${module} WORKING_DIRECTORY ${TESTDATA_DIR} COMMAND ${Python2_EXECUTABLE} ${PROJECT_BINARY_DIR}/${module}.py)
     endfunction()
 
     function(install_swig module)
-      install(TARGETS _${module} DESTINATION ${PYTHON_SITE_PACKAGES_INSTALL_DIR})
-      install(FILES ${PROJECT_BINARY_DIR}/${module}.py DESTINATION ${PYTHON_SITE_PACKAGES_INSTALL_DIR})
+      install(TARGETS _${module} DESTINATION ${Python2_SITELIB})
+      install(FILES ${PROJECT_BINARY_DIR}/${module}.py DESTINATION ${Python2_SITELIB})
     endfunction()
 
     include_directories(../oifitslib)
     include_directories(${CFITSIO_INCLUDE_DIRS})
     include_directories(${GLIB2_INCLUDE_DIRS})
-    include_directories(${PYTHON_INCLUDE_PATH})
+    include_directories(${Python2_INCLUDE_DIRS})
 
     link_directories(${GLIB2_LIBRARY_DIRS})
 
@@ -54,15 +54,15 @@ if(GLIB2_FOUND)
     swig_add_library(oifilter LANGUAGE python SOURCES oifilter.i)
     swig_add_library(oicheck LANGUAGE python SOURCES oicheck.i)
     swig_add_library(oimerge LANGUAGE python SOURCES oimerge.i)
-    swig_link_libraries(oifits oifits ${PYTHON_LIBRARIES})
-    swig_link_libraries(oifilter oifits ${PYTHON_LIBRARIES})
-    swig_link_libraries(oicheck oifits ${PYTHON_LIBRARIES})
-    swig_link_libraries(oimerge oifits ${PYTHON_LIBRARIES})
+    swig_link_libraries(oifits oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oifilter oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oicheck oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oimerge oifits ${Python2_LIBRARIES})
     install_swig(oifits)
     install_swig(oifilter)
     install_swig(oicheck)
     install_swig(oimerge)
-    
+
     add_swig_test(oifits)
     add_swig_test(oifilter)
     add_swig_test(oicheck)
