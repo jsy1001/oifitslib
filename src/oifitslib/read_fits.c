@@ -1037,7 +1037,7 @@ STATUS read_next_oi_inspol(fitsfile *fptr, oi_inspol *pInspol, STATUS *pStatus)
 static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis, bool correlated,
                                   STATUS *pStatus)
 {
-  char keyword[FLEN_VALUE];
+  char keyword[FLEN_KEYWORD];
   int irow, colnum, anynull;
 
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
