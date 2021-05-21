@@ -206,19 +206,19 @@ static void test_merge(gconstpointer userData)
     numCorr = 0;
     numInspol = 0;
     read_oi_fits(pSet->cases[i].filename1, &inData1, &status);
-    g_assert(!status);
+    g_assert_false(status);
     check(&inData1);
     numCorr += inData1.numCorr;
     numInspol += inData1.numInspol;
     read_oi_fits(pSet->cases[i].filename2, &inData2, &status);
-    g_assert(!status);
+    g_assert_false(status);
     check(&inData2);
     numCorr += inData2.numCorr;
     numInspol += inData2.numInspol;
     if (pSet->cases[i].filename3 != NULL)
     {
       read_oi_fits(pSet->cases[i].filename3, &inData3, &status);
-      g_assert(!status);
+      g_assert_false(status);
       check(&inData3);
       numCorr += inData3.numCorr;
       numInspol += inData3.numInspol;

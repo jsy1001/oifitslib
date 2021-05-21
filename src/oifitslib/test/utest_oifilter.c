@@ -106,7 +106,7 @@ static void setup_fixture(TestFixture *fix, gconstpointer userData)
 
   status = 0;
   read_oi_fits(filename, &fix->inData, &status);
-  g_assert(!status);
+  g_assert_false(status);
   if (fits_read_errmsg(msg))
     g_error("Uncleared CFITSIO error message: %s", msg);
   check(&fix->inData);
@@ -177,7 +177,7 @@ static void test_default(TestFixture *fix, gconstpointer userData)
   basename = g_path_get_basename(filename);
   outFilename = g_strdup_printf("utest_%s", basename);
   g_free(basename);
-  g_assert(write_oi_fits(outFilename, fix->outData, &status) == 0);
+  g_assert_cmpint(write_oi_fits(outFilename, fix->outData, &status), ==, 0);
   unlink(outFilename);
   g_free(outFilename);
 }
@@ -188,8 +188,8 @@ static void test_arrname(TestFixture *fix, gconstpointer userData)
   g_test_log_set_fatal_handler(ignoreRemoved, NULL);
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
-  g_assert(oi_fits_lookup_array(&fix->outData, "CHARA_2004Jan") != NULL);
-  g_assert(oi_fits_lookup_array(&fix->outData, "IOTA_2002Dec17") == NULL);
+  g_assert_nonnull(oi_fits_lookup_array(&fix->outData, "CHARA_2004Jan"));
+  g_assert_null(oi_fits_lookup_array(&fix->outData, "IOTA_2002Dec17"));
 }
 
 static void test_insname(TestFixture *fix, gconstpointer userData)
@@ -198,9 +198,8 @@ static void test_insname(TestFixture *fix, gconstpointer userData)
   g_test_log_set_fatal_handler(ignoreRemoved, NULL);
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
-  g_assert(oi_fits_lookup_wavelength(&fix->outData, "IOTA_IONIC_PICNIC") !=
-           NULL);
-  g_assert(oi_fits_lookup_wavelength(&fix->outData, "CHARA_MIRC") == NULL);
+  g_assert_nonnull(oi_fits_lookup_wavelength(&fix->outData, "IOTA_IONIC_PICNIC"));
+  g_assert_null(oi_fits_lookup_wavelength(&fix->outData, "CHARA_MIRC"));
 }
 
 static void test_corrname(TestFixture *fix, gconstpointer userData)
@@ -209,7 +208,7 @@ static void test_corrname(TestFixture *fix, gconstpointer userData)
   g_test_log_set_fatal_handler(ignoreRemoved, NULL);
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
-  g_assert(oi_fits_lookup_corr(&fix->outData, "TEST") != NULL);
+  g_assert_nonnull(oi_fits_lookup_corr(&fix->outData, "TEST"));
 }
 
 static void test_target(TestFixture *fix, gconstpointer userData)
@@ -217,8 +216,8 @@ static void test_target(TestFixture *fix, gconstpointer userData)
   fix->filter.target_id = 1;
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
-  g_assert(oi_fits_lookup_target(&fix->outData, 1) != NULL);
-  g_assert(oi_fits_lookup_target(&fix->outData, 2) == NULL);
+  g_assert_nonnull(oi_fits_lookup_target(&fix->outData, 1));
+  g_assert_null(oi_fits_lookup_target(&fix->outData, 2));
 }
 
 static void test_wave(TestFixture *fix, gconstpointer userData)
@@ -371,7 +370,7 @@ static void test_bas(TestFixture *fix, gconstpointer userData)
     {                                                                          \
       tab = (tabType *)link->data;                                             \
       pWave = oi_fits_lookup_wavelength((pData), tab->insname);                \
-      g_assert(pWave != NULL);                                                 \
+      g_assert_nonnull(pWave);                                                 \
       for (i = 0; i < tab->numrec; i++)                                        \
       {                                                                        \
         u = tab->record[i].ucoord;                                             \
@@ -413,7 +412,7 @@ static void test_uvrad(TestFixture *fix, gconstpointer userData)
   {
     pT3 = (oi_t3 *)link->data;
     pWave = oi_fits_lookup_wavelength(&fix->outData, pT3->insname);
-    g_assert(pWave != NULL);
+    g_assert_nonnull(pWave);
     for (i = 0; i < pT3->numrec; i++)
     {
       u1 = pT3->record[i].u1coord;

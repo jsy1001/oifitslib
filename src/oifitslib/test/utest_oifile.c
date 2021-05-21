@@ -47,7 +47,7 @@ static void test_init(void)
 
   init_oi_fits(&data);
   status = 0;
-  g_assert(write_oi_fits(FILENAME_OUT, data, &status) == 0);
+  g_assert_cmpint(write_oi_fits(FILENAME_OUT, data, &status), ==, 0);
   unlink(FILENAME_OUT);
   free_oi_fits(&data);
 }
@@ -60,32 +60,31 @@ static void test_version(void)
 
   status = 0;
   read_oi_fits(FILENAME_V1, &data, &status);
-  g_assert(!status);
-  g_assert(is_oi_fits_one(&data));
-  g_assert(!is_oi_fits_two(&data));
+  g_assert_false(status);
+  g_assert_true(is_oi_fits_one(&data));
+  g_assert_false(is_oi_fits_two(&data));
 
   /* Test writing v1 yields v2 with mandatory primary header keywords */
   write_oi_fits(FILENAME_OUT, data, &status);
-  g_assert(!status);
+  g_assert_false(status);
   free_oi_fits(&data);
   read_oi_fits(FILENAME_OUT, &data2, &status);
-  g_assert(!status);
-  g_assert(!is_oi_fits_one(&data2));
-  g_assert(is_oi_fits_two(&data2));
-  g_assert(strlen(data2.header.date_obs) > 0);
-  g_assert(strlen(data2.header.telescop) > 0);
-  g_assert(strlen(data2.header.instrume) > 0);
-  g_assert(strlen(data2.header.object) > 0);
-  g_assert(strlen(data2.header.origin) > 0);
-  g_assert(strlen(data2.header.observer) > 0);
-  g_assert(strlen(data2.header.insmode) > 0);
+  g_assert_false(status);
+  g_assert_false(is_oi_fits_one(&data2));
+  g_assert_true(is_oi_fits_two(&data2));
+  g_assert_cmpint(strlen(data2.header.date_obs), >, 0);
+  g_assert_cmpint(strlen(data2.header.telescop), >, 0);
+  g_assert_cmpint(strlen(data2.header.object), >, 0);
+  g_assert_cmpint(strlen(data2.header.origin), >, 0);
+  g_assert_cmpint(strlen(data2.header.observer), >, 0);
+  g_assert_cmpint(strlen(data2.header.insmode), >, 0);
   free_oi_fits(&data2);
   unlink(FILENAME_OUT);
 
   read_oi_fits(FILENAME_V2, &data, &status);
-  g_assert(!status);
-  g_assert(!is_oi_fits_one(&data));
-  g_assert(is_oi_fits_two(&data));
+  g_assert_false(status);
+  g_assert_false(is_oi_fits_one(&data));
+  g_assert_true(is_oi_fits_two(&data));
   free_oi_fits(&data);
 
   if (fits_read_errmsg(msg))
@@ -99,18 +98,18 @@ static void test_atomic(void)
   char msg[FLEN_ERRMSG];
 
   init_oi_fits(&data);
-  g_assert(!is_atomic(&data, 0.5));
+  g_assert_false(is_atomic(&data, 0.5));
   free_oi_fits(&data);
 
   status = 0;
   read_oi_fits(FILENAME_ATOMIC, &data, &status);
-  g_assert(!status);
-  g_assert(is_atomic(&data, 0.5));
+  g_assert_false(status);
+  g_assert_true(is_atomic(&data, 0.5));
   free_oi_fits(&data);
 
   read_oi_fits(FILENAME_MULTI, &data, &status);
-  g_assert(!status);
-  g_assert(!is_atomic(&data, 0.5));
+  g_assert_false(status);
+  g_assert_false(is_atomic(&data, 0.5));
   free_oi_fits(&data);
 
   if (fits_read_errmsg(msg))
@@ -161,21 +160,21 @@ static void test_lookup(void)
   if (strlen(pVis2->arrname) > 0)
   {
     pArray = oi_fits_lookup_array(&data, pVis2->arrname);
-    g_assert(pArray != NULL);
+    g_assert_nonnull(pArray);
     g_assert_cmpstr(pArray->arrname, ==, pVis2->arrname);
     pElem = oi_fits_lookup_element(&data, pVis2->arrname, 1);
-    g_assert(pElem != NULL);
+    g_assert_nonnull(pElem);
     g_assert_cmpint(pElem->sta_index, ==, 1);
   }
 
   pWave = oi_fits_lookup_wavelength(&data, pVis2->insname);
-  g_assert(pWave != NULL);
+  g_assert_nonnull(pWave);
   g_assert_cmpstr(pWave->insname, ==, pVis2->insname);
 
   if (strlen(pVis2->corrname) > 0)
   {
     pCorr = oi_fits_lookup_corr(&data, pVis2->corrname);
-    g_assert(pCorr != NULL);
+    g_assert_nonnull(pCorr);
     g_assert_cmpstr(pCorr->corrname, ==, pVis2->corrname);
   }
 
@@ -195,7 +194,7 @@ static void test_long_target(void)
 
   status = 0;
   read_oi_fits(FILENAME_LONG_TARGET, &data, &status);
-  g_assert(!status);
+  g_assert_false(status);
   free_oi_fits(&data);
 
   if (fits_read_errmsg(msg))
@@ -210,7 +209,7 @@ static void test_bad_checksum(void)
 
   status = 0;
   read_oi_fits(FILENAME_BAD_CHECKSUM, &data, &status);
-  g_assert(!status);
+  g_assert_false(status);
   free_oi_fits(&data);
 
   if (fits_read_errmsg(msg))

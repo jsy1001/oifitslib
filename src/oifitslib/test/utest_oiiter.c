@@ -45,7 +45,7 @@ static void setup_fixture(TestFixture *fix, gconstpointer userData)
 
   status = 0;
   read_oi_fits(filename, &fix->inData, &status);
-  g_assert(!status);
+  g_assert_false(status);
   if (fits_read_errmsg(msg))
     g_error("Uncleared CFITSIO error message: %s", msg);
 }

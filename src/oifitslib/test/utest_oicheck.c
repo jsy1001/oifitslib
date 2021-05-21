@@ -124,7 +124,7 @@ static void test_check(gconstpointer userData)
   {
     status = 0;
     read_oi_fits(pSet->cases[i].filename, &inData, &status);
-    g_assert(!status);
+    g_assert_false(status);
     if (fits_read_errmsg(msg))
       g_error("Uncleared CFITSIO error message: %s", msg);
     if ((*pSet->cases[i].check)(&inData, &result) != pSet->cases[i].expected)
