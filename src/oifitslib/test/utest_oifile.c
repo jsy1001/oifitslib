@@ -24,7 +24,7 @@
  */
 
 #include "oifile.h"
-#include <unistd.h>  /* unlink() */
+#include <unistd.h> /* unlink() */
 #include <math.h>
 #include <string.h>
 
@@ -39,7 +39,6 @@
 #define MULTI_NUM_VIS 40
 #define MULTI_NUM_VIS2 40
 #define MULTI_NUM_T3 40
-
 
 static void test_init(void)
 {
@@ -159,7 +158,8 @@ static void test_lookup(void)
 
   pVis2 = (oi_vis2 *)data.vis2List->data;
 
-  if (strlen(pVis2->arrname) > 0) {
+  if (strlen(pVis2->arrname) > 0)
+  {
     pArray = oi_fits_lookup_array(&data, pVis2->arrname);
     g_assert(pArray != NULL);
     g_assert_cmpstr(pArray->arrname, ==, pVis2->arrname);
@@ -171,8 +171,9 @@ static void test_lookup(void)
   pWave = oi_fits_lookup_wavelength(&data, pVis2->insname);
   g_assert(pWave != NULL);
   g_assert_cmpstr(pWave->insname, ==, pVis2->insname);
-  
-  if (strlen(pVis2->corrname) > 0) {
+
+  if (strlen(pVis2->corrname) > 0)
+  {
     pCorr = oi_fits_lookup_corr(&data, pVis2->corrname);
     g_assert(pCorr != NULL);
     g_assert_cmpstr(pCorr->corrname, ==, pVis2->corrname);

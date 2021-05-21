@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 void *_chkmalloc(size_t size, const char *file, int line, const char *func)
 {
   if (size == 0)
@@ -46,21 +45,24 @@ void *_chkmalloc(size_t size, const char *file, int line, const char *func)
   return ret;
 }
 
-void *_chkrealloc(void *ptr, size_t size,
-                  const char *file, int line, const char *func)
+void *_chkrealloc(void *ptr, size_t size, const char *file, int line,
+                  const char *func)
 {
   /* Note that realloc() with a zero size could be used instead of
    * free(), but we don't allow that here */
   if (size == 0)
   {
-    fprintf(stderr, "ERROR:%s:%d:%s: Trapped reallocation of memory at %p"
-            " to zero bytes. Use free() instead\n", file, line, func, ptr);
+    fprintf(stderr,
+            "ERROR:%s:%d:%s: Trapped reallocation of memory at %p"
+            " to zero bytes. Use free() instead\n",
+            file, line, func, ptr);
     abort();
   }
   void *ret = realloc(ptr, size);
   if (ret == NULL)
   {
-    fprintf(stderr, "ERROR:%s:%d:%s: Reallocation of memory at %p"
+    fprintf(stderr,
+            "ERROR:%s:%d:%s: Reallocation of memory at %p"
             " to %lu bytes failed\n",
             file, line, func, ptr, (unsigned long)size);
     abort();

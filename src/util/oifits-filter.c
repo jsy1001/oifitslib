@@ -23,16 +23,13 @@
  */
 
 #include "oifilter.h"
-#include "glib/gstdio.h"  /* g_remove() */
+#include "glib/gstdio.h" /* g_remove() */
 
 static gboolean clobber = FALSE;
 
-static GOptionEntry entries[] =
-{
-  { "clobber", 'o', 0, G_OPTION_ARG_NONE, &clobber, "Overwrite output file",
-    NULL },
-  { NULL }
-};
+static GOptionEntry entries[] = {{"clobber", 'o', 0, G_OPTION_ARG_NONE,
+                                  &clobber, "Overwrite output file", NULL},
+                                 {NULL}};
 
 /**
  * Main function for command-line filter utility
@@ -47,19 +44,22 @@ int main(int argc, char *argv[])
 
   /* Parse command-line */
   error = NULL;
-  context =
-    g_option_context_new("INFILE OUTFILE - write filtered dataset to new file");
+  context = g_option_context_new(
+      "INFILE OUTFILE - write filtered dataset to new file");
   g_option_context_add_main_entries(context, entries, NULL);
   g_option_context_add_group(context, get_oi_filter_option_group());
   g_option_context_parse(context, &argc, &argv, &error);
-  if (error != NULL) {
+  if (error != NULL)
+  {
     printf("Error parsing command-line options: %s\n", error->message);
     g_error_free(error);
     exit(2); /* standard unix behaviour */
   }
-  if (argc != 3) {
+  if (argc != 3)
+  {
     printf("Wrong number of command-line arguments\n"
-           "Enter '%s --help' for usage information\n", argv[0]);
+           "Enter '%s --help' for usage information\n",
+           argv[0]);
     exit(2);
   }
   g_strlcpy(inFilename, argv[1], FLEN_FILENAME);
@@ -84,11 +84,15 @@ int main(int argc, char *argv[])
   /* Check for existing output file */
   if (g_file_test(outFilename, G_FILE_TEST_EXISTS))
   {
-    if (!clobber) {
+    if (!clobber)
+    {
       printf("Output file '%s' exists and '--clobber' not specified "
-             "-> Exiting...\n", outFilename);
+             "-> Exiting...\n",
+             outFilename);
       exit(1);
-    } else if (g_remove(outFilename)) {
+    }
+    else if (g_remove(outFilename))
+    {
       printf("Failed to remove existing output file '%s'\n", outFilename);
       exit(1);
     }

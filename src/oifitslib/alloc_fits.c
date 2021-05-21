@@ -26,7 +26,6 @@
 #include "exchange.h"
 #include "chkmalloc.h"
 
-
 /**
  * Allocate storage within oi_array struct
  *
@@ -101,7 +100,8 @@ void alloc_oi_inspol(oi_inspol *pInspol, long numrec, int nwave)
   oi_inspol_record *pRec;
 
   pInspol->record = chkmalloc(numrec * sizeof(oi_inspol_record));
-  for (i = 0; i < numrec; i++) {
+  for (i = 0; i < numrec; i++)
+  {
     pRec = &pInspol->record[i];
     pRec->jxx = chkmalloc(nwave * sizeof(pRec->jxx[0]));
     pRec->jyy = chkmalloc(nwave * sizeof(pRec->jyy[0]));
@@ -127,7 +127,8 @@ void alloc_oi_vis(oi_vis *pVis, long numrec, int nwave)
   oi_vis_record *pRec;
 
   pVis->record = chkmalloc(numrec * sizeof(oi_vis_record));
-  for (i = 0; i < numrec; i++) {
+  for (i = 0; i < numrec; i++)
+  {
     pRec = &pVis->record[i];
     pRec->visamp = chkmalloc(nwave * sizeof(pRec->visamp[0]));
     pRec->visamperr = chkmalloc(nwave * sizeof(pRec->visamperr[0]));
@@ -161,7 +162,8 @@ void alloc_oi_vis2(oi_vis2 *pVis2, long numrec, int nwave)
   oi_vis2_record *pRec;
 
   pVis2->record = chkmalloc(numrec * sizeof(oi_vis2_record));
-  for (i = 0; i < numrec; i++) {
+  for (i = 0; i < numrec; i++)
+  {
     pRec = &pVis2->record[i];
     pRec->vis2data = chkmalloc(nwave * sizeof(pRec->vis2data[0]));
     pRec->vis2err = chkmalloc(nwave * sizeof(pRec->vis2err[0]));
@@ -186,7 +188,8 @@ void alloc_oi_t3(oi_t3 *pT3, long numrec, int nwave)
   oi_t3_record *pRec;
 
   pT3->record = chkmalloc(numrec * sizeof(oi_t3_record));
-  for (i = 0; i < numrec; i++) {
+  for (i = 0; i < numrec; i++)
+  {
     pRec = &pT3->record[i];
     pRec->t3amp = chkmalloc(nwave * sizeof(pRec->t3amp[0]));
     pRec->t3amperr = chkmalloc(nwave * sizeof(pRec->t3amperr[0]));
@@ -214,7 +217,8 @@ void alloc_oi_flux(oi_flux *pFlux, long numrec, int nwave)
   oi_flux_record *pRec;
 
   pFlux->record = chkmalloc(numrec * sizeof(oi_flux_record));
-  for (i = 0; i < numrec; i++) {
+  for (i = 0; i < numrec; i++)
+  {
     pRec = &pFlux->record[i];
     pRec->fluxdata = chkmalloc(nwave * sizeof(pRec->fluxdata[0]));
     pRec->fluxerr = chkmalloc(nwave * sizeof(pRec->fluxerr[0]));

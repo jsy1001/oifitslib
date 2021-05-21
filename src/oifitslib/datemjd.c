@@ -25,7 +25,6 @@
 
 #include <assert.h>
 
-
 /**
  * Convert Gregorian date to Modified Julian Day
  *
@@ -40,9 +39,8 @@
 long date2mjd(long year, long month, long day)
 {
   assert(year >= 1901 && year <= 2099);
-  return (367 * year -
-          (7 * (year + (month + 9) / 12)) / 4 +
-          (275 * month) / 9 + day + 1721013 - 2400000);
+  return (367 * year - (7 * (year + (month + 9) / 12)) / 4 + (275 * month) / 9 +
+          day + 1721013 - 2400000);
 }
 
 /**
@@ -56,8 +54,7 @@ long date2mjd(long year, long month, long day)
  * @param pMonth  return location for month (1-12)
  * @param pDay    return location for day of month (1-31)
  */
-void mjd2date(long mjd,
-              long *const pYear, long *const pMonth, long *const pDay)
+void mjd2date(long mjd, long *const pYear, long *const pMonth, long *const pDay)
 {
   long L, N, I, J;
 

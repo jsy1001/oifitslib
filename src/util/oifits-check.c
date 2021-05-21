@@ -24,30 +24,27 @@
 
 #include "oicheck.h"
 
-
 /**
  * Main function for command-line check utility
  */
 int main(int argc, char *argv[])
 {
   /** Checking functions to call */
-  check_func checks[] = {
-    check_tables,
-    check_header,
-    check_keywords,
-    check_visrefmap,
-    check_unique_targets,
-    check_targets_present,
-    check_arrname,
-    check_elements_present,
-    check_corr_present,
-    check_flagging,
-    check_t3amp,
-    check_waveorder,
-    check_time,
-    check_flux,
-    NULL
-  };
+  check_func checks[] = {check_tables,
+                         check_header,
+                         check_keywords,
+                         check_visrefmap,
+                         check_unique_targets,
+                         check_targets_present,
+                         check_arrname,
+                         check_elements_present,
+                         check_corr_present,
+                         check_flagging,
+                         check_t3amp,
+                         check_waveorder,
+                         check_time,
+                         check_flux,
+                         NULL};
   oi_fits oi;
   oi_check_result result;
   oi_breach_level worst;
@@ -55,7 +52,8 @@ int main(int argc, char *argv[])
   int status, i;
 
   /* Parse command-line */
-  if (argc != 2) {
+  if (argc != 2)
+  {
     printf("Usage:\n%s FILE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
@@ -72,16 +70,17 @@ int main(int argc, char *argv[])
   /* Run checks */
   worst = OI_BREACH_NONE;
   i = 0;
-  while (checks[i] != NULL) {
-    if ((*checks[i++])(&oi, &result) != OI_BREACH_NONE) {
+  while (checks[i] != NULL)
+  {
+    if ((*checks[i++])(&oi, &result) != OI_BREACH_NONE)
+    {
       print_check_result(&result);
       if (result.level > worst) worst = result.level;
     }
     free_check_result(&result);
   }
 
-  if (worst == OI_BREACH_NONE)
-    printf("All checks passed\n");
+  if (worst == OI_BREACH_NONE) printf("All checks passed\n");
 
   free_oi_fits(&oi);
   exit(EXIT_SUCCESS);

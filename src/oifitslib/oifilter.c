@@ -30,14 +30,12 @@
 #include <math.h>
 #include <stdbool.h>
 
-
 /** Internal use GString, defined in oifile.c */
 extern GString *pGStr;
 
 #define RAD2DEG (180.0 / 3.14159)
 
 #define UNSET -9999.9
-
 
 /** Filter specified on command-line via g_option_context_parse() */
 static oi_filter_spec parsedFilter;
@@ -50,49 +48,47 @@ static gboolean doneParse = FALSE;
 
 /** Specification of command-line options for dataset filtering */
 static GOptionEntry filterEntries[] = {
-  {"arrname", 0, 0, G_OPTION_ARG_STRING, &arrname,
-   "Accept ARRNAMEs matching this pattern (use * and ?)", "PATTERN" },
-  {"insname", 0, 0, G_OPTION_ARG_STRING, &insname,
-   "Accept INSNAMEs matching this pattern (use * and ?)", "PATTERN" },
-  {"corrname", 0, 0, G_OPTION_ARG_STRING, &corrname,
-   "Accept CORRNAMEs matching this pattern (use * and ?)", "PATTERN" },
-  {"target-id", 0, 0, G_OPTION_ARG_INT, &parsedFilter.target_id,
-   "Accept only this TARGET_ID", "ID" },
-  {"mjd-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.mjd_range[0],
-   "Minimum MJD to accept", "MJD" },
-  {"mjd-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.mjd_range[1],
-   "Maximum MJD to accept", "MJD" },
-  {"wave-min", 0, 0, G_OPTION_ARG_DOUBLE, &waveMinNm,
-   "Minimum wavelength to accept /nm", "WL" },
-  {"wave-max", 0, 0, G_OPTION_ARG_DOUBLE, &waveMaxNm,
-   "Maximum wavelength to accept /nm", "WL" },
-  {"bas-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[0],
-   "Minimum baseline to accept /m", "BASE" },
-  {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[1],
-   "Maximum baseline to accept /m", "BASE" },
-  {"uvrad-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.uvrad_range[0],
-   "Minimum UV radius to accept /wavelength", "UVRADIUS" },
-  {"uvrad-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.uvrad_range[1],
-   "Maximum UV radius to accept /wavelength", "UVRADIUS" },
-  {"snr-min", 0, 0, G_OPTION_ARG_DOUBLE, &snrMin,
-   "Minimum SNR to accept", "SNR" },
-  {"snr-max", 0, 0, G_OPTION_ARG_DOUBLE, &snrMax,
-   "Maximum SNR to accept", "SNR" },
-  {"accept-vis", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis,
-   "If non-zero, accept complex visibilities (default 1)", "0/1" },
-  {"accept-vis2", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis2,
-   "If non-zero, accept squared visibilities (default 1)", "0/1" },
-  {"accept-t3amp", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3amp,
-   "If non-zero, accept triple amplitudes (default 1)", "0/1" },
-  {"accept-t3phi", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3phi,
-   "If non-zero, accept closure phases (default 1)", "0/1" },
-  {"accept-flux", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flux,
-   "If non-zero, accept fluxes (default 1)", "0/1" },
-  {"accept-flagged", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flagged,
-   "If non-zero, accept records with all data flagged (default 1)", "0/1" },
-  { NULL }
-};
-
+    {"arrname", 0, 0, G_OPTION_ARG_STRING, &arrname,
+     "Accept ARRNAMEs matching this pattern (use * and ?)", "PATTERN"},
+    {"insname", 0, 0, G_OPTION_ARG_STRING, &insname,
+     "Accept INSNAMEs matching this pattern (use * and ?)", "PATTERN"},
+    {"corrname", 0, 0, G_OPTION_ARG_STRING, &corrname,
+     "Accept CORRNAMEs matching this pattern (use * and ?)", "PATTERN"},
+    {"target-id", 0, 0, G_OPTION_ARG_INT, &parsedFilter.target_id,
+     "Accept only this TARGET_ID", "ID"},
+    {"mjd-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.mjd_range[0],
+     "Minimum MJD to accept", "MJD"},
+    {"mjd-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.mjd_range[1],
+     "Maximum MJD to accept", "MJD"},
+    {"wave-min", 0, 0, G_OPTION_ARG_DOUBLE, &waveMinNm,
+     "Minimum wavelength to accept /nm", "WL"},
+    {"wave-max", 0, 0, G_OPTION_ARG_DOUBLE, &waveMaxNm,
+     "Maximum wavelength to accept /nm", "WL"},
+    {"bas-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[0],
+     "Minimum baseline to accept /m", "BASE"},
+    {"bas-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.bas_range[1],
+     "Maximum baseline to accept /m", "BASE"},
+    {"uvrad-min", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.uvrad_range[0],
+     "Minimum UV radius to accept /wavelength", "UVRADIUS"},
+    {"uvrad-max", 0, 0, G_OPTION_ARG_DOUBLE, &parsedFilter.uvrad_range[1],
+     "Maximum UV radius to accept /wavelength", "UVRADIUS"},
+    {"snr-min", 0, 0, G_OPTION_ARG_DOUBLE, &snrMin, "Minimum SNR to accept",
+     "SNR"},
+    {"snr-max", 0, 0, G_OPTION_ARG_DOUBLE, &snrMax, "Maximum SNR to accept",
+     "SNR"},
+    {"accept-vis", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis,
+     "If non-zero, accept complex visibilities (default 1)", "0/1"},
+    {"accept-vis2", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_vis2,
+     "If non-zero, accept squared visibilities (default 1)", "0/1"},
+    {"accept-t3amp", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3amp,
+     "If non-zero, accept triple amplitudes (default 1)", "0/1"},
+    {"accept-t3phi", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_t3phi,
+     "If non-zero, accept closure phases (default 1)", "0/1"},
+    {"accept-flux", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flux,
+     "If non-zero, accept fluxes (default 1)", "0/1"},
+    {"accept-flagged", 0, 0, G_OPTION_ARG_INT, &parsedFilter.accept_flagged,
+     "If non-zero, accept records with all data flagged (default 1)", "0/1"},
+    {NULL}};
 
 /*
  * Private functions
@@ -123,12 +119,9 @@ static gboolean filter_post_parse(GOptionContext *context, GOptionGroup *group,
                                   gpointer unusedData, GError **error)
 {
   doneParse = TRUE;
-  if (arrname != NULL)
-    g_strlcpy(parsedFilter.arrname, arrname, FLEN_VALUE);
-  if (insname != NULL)
-    g_strlcpy(parsedFilter.insname, insname, FLEN_VALUE);
-  if (corrname != NULL)
-    g_strlcpy(parsedFilter.corrname, corrname, FLEN_VALUE);
+  if (arrname != NULL) g_strlcpy(parsedFilter.arrname, arrname, FLEN_VALUE);
+  if (insname != NULL) g_strlcpy(parsedFilter.insname, insname, FLEN_VALUE);
+  if (corrname != NULL) g_strlcpy(parsedFilter.corrname, corrname, FLEN_VALUE);
   /* Convert nm -> m */
   parsedFilter.wave_range[0] = (float)(1e-9 * waveMinNm);
   parsedFilter.wave_range[1] = (float)(1e-9 * waveMaxNm);
@@ -152,41 +145,45 @@ static GList *get_arrname_list(const oi_fits *pData)
   arrnameList = NULL;
 
   link = pData->visList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis = (oi_vis *)link->data;
     if (pVis->arrname[0] != '\0' &&
-        g_list_find_custom(arrnameList, pVis->arrname,
-                           (GCompareFunc)strcmp) == NULL)
+        g_list_find_custom(arrnameList, pVis->arrname, (GCompareFunc)strcmp) ==
+            NULL)
       arrnameList = g_list_prepend(arrnameList, pVis->arrname);
     link = link->next;
   }
 
   link = pData->vis2List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis2 = (oi_vis2 *)link->data;
     if (pVis2->arrname[0] != '\0' &&
-        g_list_find_custom(arrnameList, pVis2->arrname,
-                           (GCompareFunc)strcmp) == NULL)
+        g_list_find_custom(arrnameList, pVis2->arrname, (GCompareFunc)strcmp) ==
+            NULL)
       arrnameList = g_list_prepend(arrnameList, pVis2->arrname);
     link = link->next;
   }
 
   link = pData->t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pT3 = (oi_t3 *)link->data;
     if (pT3->arrname[0] != '\0' &&
-        g_list_find_custom(arrnameList, pT3->arrname,
-                           (GCompareFunc)strcmp) == NULL)
+        g_list_find_custom(arrnameList, pT3->arrname, (GCompareFunc)strcmp) ==
+            NULL)
       arrnameList = g_list_prepend(arrnameList, pT3->arrname);
     link = link->next;
   }
 
   link = pData->fluxList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pFlux = (oi_flux *)link->data;
     if (pFlux->arrname[0] != '\0' &&
-        g_list_find_custom(arrnameList, pFlux->arrname,
-                           (GCompareFunc)strcmp) == NULL)
+        g_list_find_custom(arrnameList, pFlux->arrname, (GCompareFunc)strcmp) ==
+            NULL)
       arrnameList = g_list_prepend(arrnameList, pFlux->arrname);
     link = link->next;
   }
@@ -208,37 +205,41 @@ static GList *get_insname_list(const oi_fits *pData)
   insnameList = NULL;
 
   link = pData->visList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis = (oi_vis *)link->data;
-    if (g_list_find_custom(insnameList, pVis->insname,
-                           (GCompareFunc)strcmp) == NULL)
+    if (g_list_find_custom(insnameList, pVis->insname, (GCompareFunc)strcmp) ==
+        NULL)
       insnameList = g_list_prepend(insnameList, pVis->insname);
     link = link->next;
   }
 
   link = pData->vis2List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis2 = (oi_vis2 *)link->data;
-    if (g_list_find_custom(insnameList, pVis2->insname,
-                           (GCompareFunc)strcmp) == NULL)
+    if (g_list_find_custom(insnameList, pVis2->insname, (GCompareFunc)strcmp) ==
+        NULL)
       insnameList = g_list_prepend(insnameList, pVis2->insname);
     link = link->next;
   }
 
   link = pData->t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pT3 = (oi_t3 *)link->data;
-    if (g_list_find_custom(insnameList, pT3->insname,
-                           (GCompareFunc)strcmp) == NULL)
+    if (g_list_find_custom(insnameList, pT3->insname, (GCompareFunc)strcmp) ==
+        NULL)
       insnameList = g_list_prepend(insnameList, pT3->insname);
     link = link->next;
   }
 
   link = pData->fluxList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pFlux = (oi_flux *)link->data;
-    if (g_list_find_custom(insnameList, pFlux->insname,
-                           (GCompareFunc)strcmp) == NULL)
+    if (g_list_find_custom(insnameList, pFlux->insname, (GCompareFunc)strcmp) ==
+        NULL)
       insnameList = g_list_prepend(insnameList, pFlux->insname);
     link = link->next;
   }
@@ -260,7 +261,8 @@ static GList *get_corrname_list(const oi_fits *pData)
   corrnameList = NULL;
 
   link = pData->visList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis = (oi_vis *)link->data;
     if (pVis->corrname[0] != '\0' &&
         g_list_find_custom(corrnameList, pVis->corrname,
@@ -270,7 +272,8 @@ static GList *get_corrname_list(const oi_fits *pData)
   }
 
   link = pData->vis2List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis2 = (oi_vis2 *)link->data;
     if (pVis2->corrname[0] != '\0' &&
         g_list_find_custom(corrnameList, pVis2->corrname,
@@ -280,17 +283,19 @@ static GList *get_corrname_list(const oi_fits *pData)
   }
 
   link = pData->t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pT3 = (oi_t3 *)link->data;
     if (pT3->corrname[0] != '\0' &&
-        g_list_find_custom(corrnameList, pT3->corrname,
-                           (GCompareFunc)strcmp) == NULL)
+        g_list_find_custom(corrnameList, pT3->corrname, (GCompareFunc)strcmp) ==
+            NULL)
       corrnameList = g_list_prepend(corrnameList, pT3->corrname);
     link = link->next;
   }
 
   link = pData->fluxList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pFlux = (oi_flux *)link->data;
     if (pFlux->corrname[0] != '\0' &&
         g_list_find_custom(corrnameList, pFlux->corrname,
@@ -319,7 +324,8 @@ static gboolean prune_oi_array(oi_fits *pData, GList *arrnameList)
                            (GCompareFunc)strcmp) == NULL)
     {
       g_warning("Unreferenced OI_ARRAY table with ARRNAME=%s "
-                "removed from filter output", pArray->arrname);
+                "removed from filter output",
+                pArray->arrname);
       g_hash_table_remove(pData->arrayHash, pArray->arrname);
       pData->arrayList = g_list_remove(pData->arrayList, pArray);
       --pData->numArray;
@@ -346,11 +352,12 @@ static gboolean prune_oi_wavelength(oi_fits *pData, GList *insnameList)
   while (link != NULL)
   {
     pWave = (oi_wavelength *)link->data;
-    if (g_list_find_custom(insnameList, pWave->insname,
-                           (GCompareFunc)strcmp) == NULL)
+    if (g_list_find_custom(insnameList, pWave->insname, (GCompareFunc)strcmp) ==
+        NULL)
     {
       g_warning("Unreferenced OI_WAVELENGTH table with INSNAME=%s "
-                "removed from filter output", pWave->insname);
+                "removed from filter output",
+                pWave->insname);
       g_hash_table_remove(pData->wavelengthHash, pWave->insname);
       pData->wavelengthList = g_list_remove(pData->wavelengthList, pWave);
       --pData->numWavelength;
@@ -381,7 +388,8 @@ static gboolean prune_oi_corr(oi_fits *pData, GList *corrnameList)
                            (GCompareFunc)strcmp) == NULL)
     {
       g_warning("Unreferenced OI_CORR table with CORRNAME=%s "
-                "removed from filter output", pCorr->corrname);
+                "removed from filter output",
+                pCorr->corrname);
       g_hash_table_remove(pData->corrHash, pCorr->corrname);
       pData->corrList = g_list_remove(pData->corrList, pCorr);
       --pData->numCorr;
@@ -412,7 +420,8 @@ static gboolean prune_oi_inspol(oi_fits *pData, GList *arrnameList)
                            (GCompareFunc)strcmp) == NULL)
     {
       g_warning("Unreferenced OI_INSPOL table with ARRNAME=%s "
-                "removed from filter output", pInspol->arrname);
+                "removed from filter output",
+                pInspol->arrname);
       pData->inspolList = g_list_remove(pData->inspolList, pInspol);
       --pData->numInspol;
       free_oi_inspol(pInspol);
@@ -423,7 +432,6 @@ static gboolean prune_oi_inspol(oi_fits *pData, GList *arrnameList)
   }
   return FALSE;
 }
-
 
 /*
  * Public functions
@@ -514,8 +522,7 @@ void init_oi_filter(oi_filter_spec *pFilter)
  */
 const char *format_oi_filter(const oi_filter_spec *pFilter)
 {
-  if (pGStr == NULL)
-    pGStr = g_string_sized_new(256);
+  if (pGStr == NULL) pGStr = g_string_sized_new(256);
 
   g_string_printf(pGStr, "Filter accepts:\n");
   g_string_append_printf(pGStr, "  ARRNAME='%s'\n", pFilter->arrname);
@@ -525,8 +532,8 @@ const char *format_oi_filter(const oi_filter_spec *pFilter)
     g_string_append_printf(pGStr, "  TARGET_ID=%d\n", pFilter->target_id);
   else
     g_string_append_printf(pGStr, "  [Any TARGET_ID]\n");
-  g_string_append_printf(pGStr, "  MJD: %.2lf - %.2lf\n",
-                         pFilter->mjd_range[0], pFilter->mjd_range[1]);
+  g_string_append_printf(pGStr, "  MJD: %.2lf - %.2lf\n", pFilter->mjd_range[0],
+                         pFilter->mjd_range[1]);
   g_string_append_printf(pGStr, "  Wavelength: %.1f - %.1fnm\n",
                          1e9 * pFilter->wave_range[0],
                          1e9 * pFilter->wave_range[1]);
@@ -534,8 +541,8 @@ const char *format_oi_filter(const oi_filter_spec *pFilter)
                          pFilter->bas_range[0], pFilter->bas_range[1]);
   g_string_append_printf(pGStr, "  UV Radius: %.1lg - %.1lg waves\n",
                          pFilter->uvrad_range[0], pFilter->uvrad_range[1]);
-  g_string_append_printf(pGStr, "  SNR: %.1f - %.1f\n",
-                         pFilter->snr_range[0], pFilter->snr_range[1]);
+  g_string_append_printf(pGStr, "  SNR: %.1f - %.1f\n", pFilter->snr_range[0],
+                         pFilter->snr_range[1]);
   if (pFilter->accept_vis)
     g_string_append_printf(pGStr, "  OI_VIS (complex visibilities)\n");
   else
@@ -574,18 +581,17 @@ void print_oi_filter(const oi_filter_spec *pFilter)
   printf("%s", format_oi_filter(pFilter));
 }
 
+#define ACCEPT_ARRNAME(pObject, pFilter)                                       \
+  ((pFilter)->arrname_pttn == NULL ||                                          \
+   g_pattern_match_string((pFilter)->arrname_pttn, (pObject)->arrname))
 
-#define ACCEPT_ARRNAME(pObject, pFilter) \
-  ( (pFilter)->arrname_pttn == NULL ||   \
-    g_pattern_match_string((pFilter)->arrname_pttn, (pObject)->arrname) )
+#define ACCEPT_INSNAME(pObject, pFilter)                                       \
+  ((pFilter)->insname_pttn == NULL ||                                          \
+   g_pattern_match_string((pFilter)->insname_pttn, (pObject)->insname))
 
-#define ACCEPT_INSNAME(pObject, pFilter) \
-  ( (pFilter)->insname_pttn == NULL ||   \
-    g_pattern_match_string((pFilter)->insname_pttn, (pObject)->insname) )
-
-#define ACCEPT_CORRNAME(pObject, pFilter) \
-  ( (pFilter)->corrname_pttn == NULL ||   \
-    g_pattern_match_string((pFilter)->corrname_pttn, (pObject)->corrname) )
+#define ACCEPT_CORRNAME(pObject, pFilter)                                      \
+  ((pFilter)->corrname_pttn == NULL ||                                         \
+   g_pattern_match_string((pFilter)->corrname_pttn, (pObject)->corrname))
 
 /**
  * Filter primary header keywords
@@ -594,8 +600,8 @@ void print_oi_filter(const oi_filter_spec *pFilter)
  * @param pFilter     pointer to filter specification
  * @param pOutHeader  pointer to oi_header to write filtered keywords to
  */
-void filter_oi_header(const oi_header *pInHeader,
-                      const oi_filter_spec *pFilter, oi_header *pOutHeader)
+void filter_oi_header(const oi_header *pInHeader, const oi_filter_spec *pFilter,
+                      oi_header *pOutHeader)
 {
   memcpy(pOutHeader, pInHeader, sizeof(*pInHeader));
   // TODO: overwrite header values if dataset becomes atomic?
@@ -614,18 +620,23 @@ void filter_oi_target(const oi_target *pInTargets,
 {
   int i;
 
-  if (pFilter->target_id >= 0) {
+  if (pFilter->target_id >= 0)
+  {
     /* New oi_target containing single record. TARGET_ID is set to 1 */
     pOutTargets->revision = pInTargets->revision;
     pOutTargets->ntarget = 0;
-    for (i = 0; i < pInTargets->ntarget; i++) {
-      if (pInTargets->targ[i].target_id == pFilter->target_id) {
+    for (i = 0; i < pInTargets->ntarget; i++)
+    {
+      if (pInTargets->targ[i].target_id == pFilter->target_id)
+      {
         alloc_oi_target(pOutTargets, 1);
         memcpy(pOutTargets->targ, &pInTargets->targ[i], sizeof(target));
         pOutTargets->targ[0].target_id = 1;
       }
     }
-  } else {
+  }
+  else
+  {
     /* Copy input table */
     memcpy(pOutTargets, pInTargets, sizeof(*pInTargets));
     MEMDUP(pOutTargets->targ, pInTargets->targ,
@@ -650,9 +661,11 @@ void filter_all_oi_array(const oi_fits *pInput, const oi_filter_spec *pFilter,
 
   /* Filter OI_ARRAY tables in turn */
   link = pInput->arrayList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_array *)link->data;
-    if (ACCEPT_ARRNAME(pInTab, pFilter)) {
+    if (ACCEPT_ARRNAME(pInTab, pFilter))
+    {
       /* Copy this table */
       pOutTab = dup_oi_array(pInTab);
       pOutput->arrayList = g_list_append(pOutput->arrayList, pOutTab);
@@ -685,20 +698,25 @@ GHashTable *filter_all_oi_wavelength(const oi_fits *pInput,
 
   useWaveHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
   link = pInput->wavelengthList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInWave = (oi_wavelength *)link->data;
-    if (ACCEPT_INSNAME(pInWave, pFilter)) {
+    if (ACCEPT_INSNAME(pInWave, pFilter))
+    {
       useWave = chkmalloc(pInWave->nwave * sizeof(useWave[0]));
       pOutWave = chkmalloc(sizeof(oi_wavelength));
       filter_oi_wavelength(pInWave, pFilter->wave_range, pOutWave, useWave);
-      if (pOutWave->nwave > 0) {
-        pOutput->wavelengthList = g_list_append(pOutput->wavelengthList,
-                                                pOutWave);
+      if (pOutWave->nwave > 0)
+      {
+        pOutput->wavelengthList =
+            g_list_append(pOutput->wavelengthList, pOutWave);
         ++pOutput->numWavelength;
-        g_hash_table_insert(pOutput->wavelengthHash,
-                            pOutWave->insname, pOutWave);
+        g_hash_table_insert(pOutput->wavelengthHash, pOutWave->insname,
+                            pOutWave);
         g_hash_table_insert(useWaveHash, g_strdup(pInWave->insname), useWave);
-      } else {
+      }
+      else
+      {
         g_hash_table_insert(useWaveHash, g_strdup(pInWave->insname), NULL);
         g_warning("Empty tables with INSNAME=%s removed from filter output",
                   pInWave->insname);
@@ -733,21 +751,26 @@ void filter_oi_wavelength(const oi_wavelength *pInWave,
   pOutWave->eff_wave = chkmalloc(pInWave->nwave * sizeof(pInWave->eff_wave[0]));
   pOutWave->eff_band = chkmalloc(pInWave->nwave * sizeof(pInWave->eff_band[0]));
 
-  for (i = 0; i < pInWave->nwave; i++) {
+  for (i = 0; i < pInWave->nwave; i++)
+  {
     if (pInWave->eff_wave[i] < waveRange[0] ||
-        pInWave->eff_wave[i] > waveRange[1]) {
+        pInWave->eff_wave[i] > waveRange[1])
+    {
       useWave[i] = FALSE;
-    } else {
+    }
+    else
+    {
       useWave[i] = TRUE;
       pOutWave->eff_wave[pOutWave->nwave] = pInWave->eff_wave[i];
       pOutWave->eff_band[pOutWave->nwave++] = pInWave->eff_band[i];
     }
   }
-  if (pOutWave->nwave < pInWave->nwave) {
-    pOutWave->eff_wave = realloc(pOutWave->eff_wave,
-                                 pOutWave->nwave * sizeof(pInWave->eff_wave[0]));
-    pOutWave->eff_band = realloc(pOutWave->eff_band,
-                                 pOutWave->nwave * sizeof(pInWave->eff_band[0]));
+  if (pOutWave->nwave < pInWave->nwave)
+  {
+    pOutWave->eff_wave = realloc(
+        pOutWave->eff_wave, pOutWave->nwave * sizeof(pInWave->eff_wave[0]));
+    pOutWave->eff_band = realloc(
+        pOutWave->eff_band, pOutWave->nwave * sizeof(pInWave->eff_band[0]));
   }
 }
 
@@ -768,9 +791,11 @@ void filter_all_oi_corr(const oi_fits *pInput, const oi_filter_spec *pFilter,
 
   /* Filter OI_CORR tables in turn */
   link = pInput->corrList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_corr *)link->data;
-    if (ACCEPT_CORRNAME(pInTab, pFilter)) {
+    if (ACCEPT_CORRNAME(pInTab, pFilter))
+    {
       /* Copy this table */
       pOutTab = dup_oi_corr(pInTab);
       pOutput->corrList = g_list_append(pOutput->corrList, pOutTab);
@@ -798,7 +823,8 @@ void filter_all_oi_inspol(const oi_fits *pInput, const oi_filter_spec *pFilter,
 
   /* Filter OI_INSPOL tables in turn */
   link = pInput->inspolList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_inspol *)link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
@@ -807,10 +833,13 @@ void filter_all_oi_inspol(const oi_fits *pInput, const oi_filter_spec *pFilter,
 
     pOutTab = chkmalloc(sizeof(oi_inspol));
     filter_oi_inspol(pInTab, pFilter, useWaveHash, pOutTab);
-    if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+    if (pOutTab->nwave > 0 && pOutTab->numrec > 0)
+    {
       pOutput->inspolList = g_list_append(pOutput->inspolList, pOutTab);
       ++pOutput->numInspol;
-    } else {
+    }
+    else
+    {
       g_warning("Empty OI_INSPOL table removed from filter output");
       g_debug("Removed empty OI_INSPOL with ARRNAME=%s", pOutTab->arrname);
       free(pOutTab);
@@ -838,49 +867,42 @@ void filter_oi_inspol(const oi_inspol *pInTab, const oi_filter_spec *pFilter,
 
   /* Filter records */
   nrec = 0; /* counter */
-  pOutTab->record =
-    chkmalloc(pInTab->numrec * sizeof(oi_inspol_record)); /* will reallocate */
-  pOutTab->nwave = pInTab->nwave; /* upper limit */
-  for (i = 0; i < pInTab->numrec; i++) {
+  pOutTab->record = chkmalloc(pInTab->numrec *
+                              sizeof(oi_inspol_record)); /* will reallocate */
+  pOutTab->nwave = pInTab->nwave;                        /* upper limit */
+  for (i = 0; i < pInTab->numrec; i++)
+  {
     if (pFilter->target_id >= 0 &&
         pInTab->record[i].target_id != pFilter->target_id)
-      continue;  /* skip record as TARGET_ID doesn't match */
+      continue; /* skip record as TARGET_ID doesn't match */
     if (pFilter->insname_pttn != NULL &&
         !g_pattern_match_string(pFilter->insname_pttn,
                                 pInTab->record[i].insname))
-      continue;  /* skip record as INSNAME doesn't match */
+      continue; /* skip record as INSNAME doesn't match */
     if ((pInTab->record[i].mjd_end < pFilter->mjd_range[0]) ||
         (pInTab->record[i].mjd_obs > pFilter->mjd_range[1]))
-      continue;  /* skip record as MJD ranges don't overlap */
+      continue; /* skip record as MJD ranges don't overlap */
     useWave = g_hash_table_lookup(useWaveHash, pInTab->record[i].insname);
-    if (useWave == NULL)
-      continue;  /* skip record as INSNAME filtered out */
+    if (useWave == NULL) continue; /* skip record as INSNAME filtered out */
 
     /* Create output record */
     memcpy(&pOutTab->record[nrec], &pInTab->record[i],
            sizeof(oi_inspol_record));
-    if (pFilter->target_id >= 0)
-      pOutTab->record[nrec].target_id = 1;
-    pOutTab->record[nrec].jxx = chkmalloc
-      (
-        pOutTab->nwave * sizeof(pOutTab->record[0].jxx[0])
-      );
-    pOutTab->record[nrec].jyy = chkmalloc
-      (
-        pOutTab->nwave * sizeof(pOutTab->record[0].jyy[0])
-      );
-    pOutTab->record[nrec].jxy = chkmalloc
-      (
-        pOutTab->nwave * sizeof(pOutTab->record[0].jxy[0])
-      );
-    pOutTab->record[nrec].jyx = chkmalloc
-      (
-        pOutTab->nwave * sizeof(pOutTab->record[0].jyx[0])
-      );
+    if (pFilter->target_id >= 0) pOutTab->record[nrec].target_id = 1;
+    pOutTab->record[nrec].jxx =
+        chkmalloc(pOutTab->nwave * sizeof(pOutTab->record[0].jxx[0]));
+    pOutTab->record[nrec].jyy =
+        chkmalloc(pOutTab->nwave * sizeof(pOutTab->record[0].jyy[0]));
+    pOutTab->record[nrec].jxy =
+        chkmalloc(pOutTab->nwave * sizeof(pOutTab->record[0].jxy[0]));
+    pOutTab->record[nrec].jyx =
+        chkmalloc(pOutTab->nwave * sizeof(pOutTab->record[0].jyx[0]));
     k = 0;
     g_assert(useWave != NULL);
-    for (j = 0; j < pInTab->nwave; j++) {
-      if (useWave[j]) {
+    for (j = 0; j < pInTab->nwave; j++)
+    {
+      if (useWave[j])
+      {
         pOutTab->record[nrec].jxx[k] = pInTab->record[i].jxx[j];
         pOutTab->record[nrec].jyy[k] = pInTab->record[i].jyy[j];
         pOutTab->record[nrec].jxy[k] = pInTab->record[i].jxy[j];
@@ -888,18 +910,19 @@ void filter_oi_inspol(const oi_inspol *pInTab, const oi_filter_spec *pFilter,
         ++k;
       }
     }
-    if (nrec == 0 && k < pOutTab->nwave) {
+    if (nrec == 0 && k < pOutTab->nwave)
+    {
       /* For 1st output record, length of vectors wasn't known when
          originally allocated, so reallocate */
       pOutTab->nwave = k;
-      pOutTab->record[nrec].jxx = realloc(pOutTab->record[nrec].jxx,
-                                          k * sizeof(pOutTab->record[0].jxx[0]));
-      pOutTab->record[nrec].jyy = realloc(pOutTab->record[nrec].jyy,
-                                          k * sizeof(pOutTab->record[0].jyy[0]));
-      pOutTab->record[nrec].jxy = realloc(pOutTab->record[nrec].jxy,
-                                          k * sizeof(pOutTab->record[0].jxy[0]));
-      pOutTab->record[nrec].jyx = realloc(pOutTab->record[nrec].jyx,
-                                          k * sizeof(pOutTab->record[0].jyx[0]));
+      pOutTab->record[nrec].jxx = realloc(
+          pOutTab->record[nrec].jxx, k * sizeof(pOutTab->record[0].jxx[0]));
+      pOutTab->record[nrec].jyy = realloc(
+          pOutTab->record[nrec].jyy, k * sizeof(pOutTab->record[0].jyy[0]));
+      pOutTab->record[nrec].jxy = realloc(
+          pOutTab->record[nrec].jxy, k * sizeof(pOutTab->record[0].jxy[0]));
+      pOutTab->record[nrec].jyx = realloc(
+          pOutTab->record[nrec].jyx, k * sizeof(pOutTab->record[0].jyx[0]));
     }
     ++nrec;
   }
@@ -924,11 +947,12 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
   oi_vis *pInTab, *pOutTab;
   char *useWave;
 
-  if (!pFilter->accept_vis) return;  /* don't copy any complex vis data */
+  if (!pFilter->accept_vis) return; /* don't copy any complex vis data */
 
   /* Filter OI_VIS tables in turn */
   link = pInput->visList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_vis *)link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
@@ -938,17 +962,21 @@ void filter_all_oi_vis(const oi_fits *pInput, const oi_filter_spec *pFilter,
     if (!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
-    if (useWave != NULL) {
+    if (useWave != NULL)
+    {
       pOutTab = chkmalloc(sizeof(oi_vis));
       pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
       // TODO: test with missing OI_WAVELENGTH
       if (pWave == NULL)
         g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
       filter_oi_vis(pInTab, pFilter, pWave, useWave, pOutTab);
-      if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+      if (pOutTab->nwave > 0 && pOutTab->numrec > 0)
+      {
         pOutput->visList = g_list_append(pOutput->visList, pOutTab);
         ++pOutput->numVis;
-      } else {
+      }
+      else
+      {
         g_warning("Empty OI_VIS table removed from filter output");
         g_debug("Removed empty OI_VIS with DATE-OBS=%s INSNAME=%s",
                 pOutTab->date_obs, pOutTab->insname);
@@ -971,20 +999,22 @@ static bool any_vis_chan_ok(const oi_vis_record *pRec,
   float snrAmp, snrPhi;
 
   bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
-  for (j = 0; j < nwave; j++) {
-    if (useWave[j] && !pRec->flag[j]) {
-      if (pWave != NULL) {
+  for (j = 0; j < nwave; j++)
+  {
+    if (useWave[j] && !pRec->flag[j])
+    {
+      if (pWave != NULL)
+      {
         uvrad = bas / pWave->eff_wave[j];
-        if (uvrad < pFilter->uvrad_range[0] ||
-            uvrad > pFilter->uvrad_range[1])
+        if (uvrad < pFilter->uvrad_range[0] || uvrad > pFilter->uvrad_range[1])
           continue;
-      }  /* else accept uv radius */
+      } /* else accept uv radius */
       snrAmp = pRec->visamp[j] / pRec->visamperr[j];
       snrPhi = RAD2DEG / pRec->visphierr[j];
       if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1] ||
           snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
         continue;
-      return TRUE;  /* this channel is OK */
+      return TRUE; /* this channel is OK */
     }
   }
   return FALSE;
@@ -996,8 +1026,7 @@ static bool any_vis_chan_ok(const oi_vis_record *pRec,
 static void filter_oi_vis_record(const oi_vis_record *pInRec,
                                  const oi_filter_spec *pFilter,
                                  const oi_wavelength *pWave,
-                                 const char *useWave,
-                                 int nwaveIn, int nwaveOut,
+                                 const char *useWave, int nwaveIn, int nwaveOut,
                                  BOOL usevisrefmap, BOOL usecomplex,
                                  oi_vis_record *pOutRec)
 {
@@ -1007,26 +1036,26 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
   double uvrad;
 
   memcpy(pOutRec, pInRec, sizeof(oi_vis_record));
-  if (pFilter->target_id >= 0)
-    pOutRec->target_id = 1;
+  if (pFilter->target_id >= 0) pOutRec->target_id = 1;
   pOutRec->visamp = chkmalloc(nwaveOut * sizeof(pOutRec->visamp[0]));
   pOutRec->visamperr = chkmalloc(nwaveOut * sizeof(pOutRec->visamperr[0]));
   pOutRec->visphi = chkmalloc(nwaveOut * sizeof(pOutRec->visphi[0]));
   pOutRec->visphierr = chkmalloc(nwaveOut * sizeof(pOutRec->visphierr[0]));
   pOutRec->flag = chkmalloc(nwaveOut * sizeof(pOutRec->flag[0]));
   if (usevisrefmap)
-    pOutRec->visrefmap = chkmalloc
-      (
-        nwaveOut * nwaveOut * sizeof(pOutRec->visrefmap[0])
-      );
+    pOutRec->visrefmap =
+        chkmalloc(nwaveOut * nwaveOut * sizeof(pOutRec->visrefmap[0]));
   else
     pOutRec->visrefmap = NULL;
-  if (usecomplex) {
+  if (usecomplex)
+  {
     pOutRec->rvis = chkmalloc(nwaveOut * sizeof(pOutRec->rvis[0]));
     pOutRec->rviserr = chkmalloc(nwaveOut * sizeof(pOutRec->rviserr[0]));
     pOutRec->ivis = chkmalloc(nwaveOut * sizeof(pOutRec->ivis[0]));
     pOutRec->iviserr = chkmalloc(nwaveOut * sizeof(pOutRec->iviserr[0]));
-  } else {
+  }
+  else
+  {
     pOutRec->rvis = NULL;
     pOutRec->rviserr = NULL;
     pOutRec->ivis = NULL;
@@ -1034,17 +1063,22 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
   }
   k = 0;
   someUnflagged = FALSE;
-  for (j = 0; j < nwaveIn; j++) {
-    if (useWave[j]) {
+  for (j = 0; j < nwaveIn; j++)
+  {
+    if (useWave[j])
+    {
       pOutRec->visamp[k] = pInRec->visamp[j];
       pOutRec->visamperr[k] = pInRec->visamperr[j];
       pOutRec->visphi[k] = pInRec->visphi[j];
       pOutRec->visphierr[k] = pInRec->visphierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (!pInRec->flag[j]) {
-        if (pWave != NULL) {
+      if (!pInRec->flag[j])
+      {
+        if (pWave != NULL)
+        {
           uvrad = (pow(pInRec->ucoord * pInRec->ucoord +
-                       pInRec->vcoord * pInRec->vcoord, 0.5) /
+                           pInRec->vcoord * pInRec->vcoord,
+                       0.5) /
                    pWave->eff_wave[j]);
           if (uvrad < pFilter->uvrad_range[0] ||
               uvrad > pFilter->uvrad_range[1])
@@ -1057,17 +1091,21 @@ static void filter_oi_vis_record(const oi_vis_record *pInRec,
           pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
       }
       if (!pOutRec->flag[k]) someUnflagged = TRUE;
-      if (usevisrefmap) {
+      if (usevisrefmap)
+      {
         m = 0;
-        for (l = 0; l < nwaveIn; l++) {
-          if (useWave[l]) {
-            pOutRec->visrefmap[m + k *
-                               nwaveOut] = pInRec->visrefmap[l + j * nwaveIn];
+        for (l = 0; l < nwaveIn; l++)
+        {
+          if (useWave[l])
+          {
+            pOutRec->visrefmap[m + k * nwaveOut] =
+                pInRec->visrefmap[l + j * nwaveIn];
             ++m;
           }
         }
       }
-      if (usecomplex) {
+      if (usecomplex)
+      {
         pOutRec->rvis[k] = pInRec->rvis[j];
         pOutRec->rviserr[k] = pInRec->rviserr[j];
         pOutRec->ivis[k] = pInRec->ivis[j];
@@ -1104,29 +1142,29 @@ void filter_oi_vis(const oi_vis *pInTab, const oi_filter_spec *pFilter,
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
-    chkmalloc(pInTab->numrec * sizeof(oi_vis_record)); /* will reallocate */
-  for (i = 0; i < pInTab->numrec; i++) {
+      chkmalloc(pInTab->numrec * sizeof(oi_vis_record)); /* will reallocate */
+  for (i = 0; i < pInTab->numrec; i++)
+  {
     if (pFilter->target_id >= 0 &&
         pInTab->record[i].target_id != pFilter->target_id)
-      continue;  /* skip record as TARGET_ID doesn't match */
+      continue; /* skip record as TARGET_ID doesn't match */
     if (pInTab->record[i].mjd < pFilter->mjd_range[0] ||
-                                pInTab->record[i].mjd > pFilter->mjd_range[1])
-      continue;  /* skip record as MJD out of range */
+        pInTab->record[i].mjd > pFilter->mjd_range[1])
+      continue; /* skip record as MJD out of range */
     u1 = pInTab->record[i].ucoord;
     v1 = pInTab->record[i].vcoord;
     bas = pow(u1 * u1 + v1 * v1, 0.5);
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue;  /* skip record as projected baseline out of range */
+      continue; /* skip record as projected baseline out of range */
     if (!pFilter->accept_flagged &&
-        !any_vis_chan_ok(&pInTab->record[i], pFilter,
-                         pWave, useWave, pInTab->nwave))
-      continue;  /* filter out all-flagged record */
+        !any_vis_chan_ok(&pInTab->record[i], pFilter, pWave, useWave,
+                         pInTab->nwave))
+      continue; /* filter out all-flagged record */
 
     /* Create output record */
     filter_oi_vis_record(&pInTab->record[i], pFilter, pWave, useWave,
-                         pInTab->nwave, pOutTab->nwave,
-                         pInTab->usevisrefmap, pInTab->usecomplex,
-                         &pOutTab->record[nrec++]);
+                         pInTab->nwave, pOutTab->nwave, pInTab->usevisrefmap,
+                         pInTab->usecomplex, &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec * sizeof(oi_vis_record));
@@ -1150,11 +1188,12 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
   char *useWave;
   int j = 0;
 
-  if (!pFilter->accept_vis2) return;  /* don't copy any vis2 data */
+  if (!pFilter->accept_vis2) return; /* don't copy any vis2 data */
 
   /* Filter OI_VIS2 tables in turn */
   link = pInput->vis2List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_vis2 *)link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
@@ -1164,16 +1203,20 @@ void filter_all_oi_vis2(const oi_fits *pInput, const oi_filter_spec *pFilter,
     if (!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
-    if (useWave != NULL) {
+    if (useWave != NULL)
+    {
       pOutTab = chkmalloc(sizeof(oi_vis2));
       pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
       if (pWave == NULL)
         g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
       filter_oi_vis2(pInTab, pFilter, pWave, useWave, pOutTab);
-      if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+      if (pOutTab->nwave > 0 && pOutTab->numrec > 0)
+      {
         pOutput->vis2List = g_list_append(pOutput->vis2List, pOutTab);
         ++pOutput->numVis2;
-      } else {
+      }
+      else
+      {
         g_warning("Empty OI_VIS2 table removed from filter output");
         g_debug("Removed empty OI_VIS2 with DATE-OBS=%s INSNAME=%s",
                 pOutTab->date_obs, pOutTab->insname);
@@ -1196,18 +1239,19 @@ static bool any_vis2_chan_ok(const oi_vis2_record *pRec,
   float snr;
 
   bas = pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5);
-  for (j = 0; j < nwave; j++) {
-    if (useWave[j] && !pRec->flag[j]) {
-      if (pWave != NULL) {
+  for (j = 0; j < nwave; j++)
+  {
+    if (useWave[j] && !pRec->flag[j])
+    {
+      if (pWave != NULL)
+      {
         uvrad = bas / pWave->eff_wave[j];
-        if (uvrad < pFilter->uvrad_range[0] ||
-            uvrad > pFilter->uvrad_range[1])
+        if (uvrad < pFilter->uvrad_range[0] || uvrad > pFilter->uvrad_range[1])
           continue;
-      }  /* else accept uv radius */
+      } /* else accept uv radius */
       snr = pRec->vis2data[j] / pRec->vis2err[j];
-      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
-        continue;
-      return TRUE;  /* this channel is OK */
+      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) continue;
+      return TRUE; /* this channel is OK */
     }
   }
   return FALSE;
@@ -1219,9 +1263,8 @@ static bool any_vis2_chan_ok(const oi_vis2_record *pRec,
 static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
                                   const oi_filter_spec *pFilter,
                                   const oi_wavelength *pWave,
-                                  const char *useWave,
-                                  int nwaveIn, int nwaveOut,
-                                  oi_vis2_record *pOutRec)
+                                  const char *useWave, int nwaveIn,
+                                  int nwaveOut, oi_vis2_record *pOutRec)
 {
   bool someUnflagged;
   int j, k;
@@ -1229,22 +1272,26 @@ static void filter_oi_vis2_record(const oi_vis2_record *pInRec,
   double uvrad;
 
   memcpy(pOutRec, pInRec, sizeof(oi_vis2_record));
-  if (pFilter->target_id >= 0)
-    pOutRec->target_id = 1;
+  if (pFilter->target_id >= 0) pOutRec->target_id = 1;
   pOutRec->vis2data = chkmalloc(nwaveOut * sizeof(pOutRec->vis2data[0]));
   pOutRec->vis2err = chkmalloc(nwaveOut * sizeof(pOutRec->vis2err[0]));
   pOutRec->flag = chkmalloc(nwaveOut * sizeof(pOutRec->flag[0]));
   k = 0;
   someUnflagged = FALSE;
-  for (j = 0; j < nwaveIn; j++) {
-    if (useWave[j]) {
+  for (j = 0; j < nwaveIn; j++)
+  {
+    if (useWave[j])
+    {
       pOutRec->vis2data[k] = pInRec->vis2data[j];
       pOutRec->vis2err[k] = pInRec->vis2err[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (!pInRec->flag[j]) {
-        if (pWave != NULL) {
+      if (!pInRec->flag[j])
+      {
+        if (pWave != NULL)
+        {
           uvrad = (pow(pInRec->ucoord * pInRec->ucoord +
-                       pInRec->vcoord * pInRec->vcoord, 0.5) /
+                           pInRec->vcoord * pInRec->vcoord,
+                       0.5) /
                    pWave->eff_wave[j]);
           if (uvrad < pFilter->uvrad_range[0] ||
               uvrad > pFilter->uvrad_range[1])
@@ -1286,23 +1333,24 @@ void filter_oi_vis2(const oi_vis2 *pInTab, const oi_filter_spec *pFilter,
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
-    chkmalloc(pInTab->numrec * sizeof(oi_vis2_record)); /* will reallocate */
-  for (i = 0; i < pInTab->numrec; i++) {
+      chkmalloc(pInTab->numrec * sizeof(oi_vis2_record)); /* will reallocate */
+  for (i = 0; i < pInTab->numrec; i++)
+  {
     if (pFilter->target_id >= 0 &&
         pInTab->record[i].target_id != pFilter->target_id)
-      continue;  /* skip record as TARGET_ID doesn't match */
+      continue; /* skip record as TARGET_ID doesn't match */
     if ((pInTab->record[i].mjd < pFilter->mjd_range[0]) ||
         (pInTab->record[i].mjd > pFilter->mjd_range[1]))
-      continue;  /* skip record as MJD out of range */
+      continue; /* skip record as MJD out of range */
     u1 = pInTab->record[i].ucoord;
     v1 = pInTab->record[i].vcoord;
     bas = pow(u1 * u1 + v1 * v1, 0.5);
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue;  /* skip record as projected baseline out of range */
+      continue; /* skip record as projected baseline out of range */
     if (!pFilter->accept_flagged &&
         !any_vis2_chan_ok(&pInTab->record[i], pFilter, pWave, useWave,
                           pInTab->nwave))
-      continue;  /* filter out all-flagged record */
+      continue; /* filter out all-flagged record */
 
     /* Create output record */
     filter_oi_vis2_record(&pInTab->record[i], pFilter, pWave, useWave,
@@ -1334,7 +1382,8 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
 
   /* Filter OI_T3 tables in turn */
   link = pInput->t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_t3 *)link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
@@ -1344,16 +1393,20 @@ void filter_all_oi_t3(const oi_fits *pInput, const oi_filter_spec *pFilter,
     if (!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
-    if (useWave != NULL) {
+    if (useWave != NULL)
+    {
       pOutTab = chkmalloc(sizeof(oi_t3));
       pWave = oi_fits_lookup_wavelength(pInput, pInTab->insname);
       if (pWave == NULL)
         g_warning("OI_WAVELENGTH with INSNAME=%s missing", pInTab->insname);
       filter_oi_t3(pInTab, pFilter, pWave, useWave, pOutTab);
-      if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+      if (pOutTab->nwave > 0 && pOutTab->numrec > 0)
+      {
         pOutput->t3List = g_list_append(pOutput->t3List, pOutTab);
         ++pOutput->numT3;
-      } else {
+      }
+      else
+      {
         g_warning("Empty OI_T3 table removed from filter output");
         g_debug("Removed empty OI_T3 with DATE-OBS=%s INSNAME=%s",
                 pOutTab->date_obs, pOutTab->insname);
@@ -1376,14 +1429,17 @@ static bool any_t3_chan_ok(const oi_t3_record *pRec,
   float snrAmp, snrPhi;
 
   if (pWave == NULL)
-    return TRUE;  /* cannot filter by UV radius, so keep record */
+    return TRUE; /* cannot filter by UV radius, so keep record */
   u1 = pRec->u1coord;
   v1 = pRec->v1coord;
   u2 = pRec->u2coord;
   v2 = pRec->v2coord;
-  for (j = 0; j < nwave; j++) {
-    if (useWave[j] && !pRec->flag[j]) {
-      if (pWave != NULL) {
+  for (j = 0; j < nwave; j++)
+  {
+    if (useWave[j] && !pRec->flag[j])
+    {
+      if (pWave != NULL)
+      {
         abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
         bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
         acRad = (pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
@@ -1392,21 +1448,22 @@ static bool any_t3_chan_ok(const oi_t3_record *pRec,
             abRad > pFilter->uvrad_range[1] ||
             bcRad < pFilter->uvrad_range[0] ||
             bcRad > pFilter->uvrad_range[1] ||
-            acRad < pFilter->uvrad_range[0] ||
-            acRad > pFilter->uvrad_range[1])
+            acRad < pFilter->uvrad_range[0] || acRad > pFilter->uvrad_range[1])
           continue;
-      }  /* else accept uv radius */
-      if (pFilter->accept_t3amp) {
+      } /* else accept uv radius */
+      if (pFilter->accept_t3amp)
+      {
         snrAmp = pRec->t3amp[j] / pRec->t3amperr[j];
         if (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1])
           continue;
       }
-      if (pFilter->accept_t3phi) {
+      if (pFilter->accept_t3phi)
+      {
         snrPhi = RAD2DEG / pRec->t3phierr[j];
         if (snrPhi < pFilter->snr_range[0] || snrPhi > pFilter->snr_range[1])
           continue;
       }
-      return TRUE;  /* this channel is OK */
+      return TRUE; /* this channel is OK */
     }
   }
   return FALSE;
@@ -1417,8 +1474,7 @@ static bool any_t3_chan_ok(const oi_t3_record *pRec,
  */
 static void filter_oi_t3_record(const oi_t3_record *pInRec,
                                 const oi_filter_spec *pFilter,
-                                const oi_wavelength *pWave,
-                                const char *useWave,
+                                const oi_wavelength *pWave, const char *useWave,
                                 int nwaveIn, int nwaveOut,
                                 oi_t3_record *pOutRec)
 {
@@ -1428,14 +1484,14 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
   float snrAmp, snrPhi;
 
   /* If needed, make a NaN */
-  if (!pFilter->accept_t3amp || !pFilter->accept_t3phi) {
+  if (!pFilter->accept_t3amp || !pFilter->accept_t3phi)
+  {
     nan = 0.0;
     nan /= nan;
   }
 
   memcpy(pOutRec, pInRec, sizeof(oi_t3_record));
-  if (pFilter->target_id >= 0)
-    pOutRec->target_id = 1;
+  if (pFilter->target_id >= 0) pOutRec->target_id = 1;
   pOutRec->t3amp = chkmalloc(nwaveOut * sizeof(pOutRec->t3amp[0]));
   pOutRec->t3amperr = chkmalloc(nwaveOut * sizeof(pOutRec->t3amperr[0]));
   pOutRec->t3phi = chkmalloc(nwaveOut * sizeof(pOutRec->t3phi[0]));
@@ -1447,23 +1503,33 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
   v1 = pInRec->v1coord;
   u2 = pInRec->u2coord;
   v2 = pInRec->v2coord;
-  for (j = 0; j < nwaveIn; j++) {
-    if (useWave[j]) {
-      if (pFilter->accept_t3amp) {
+  for (j = 0; j < nwaveIn; j++)
+  {
+    if (useWave[j])
+    {
+      if (pFilter->accept_t3amp)
+      {
         pOutRec->t3amp[k] = pInRec->t3amp[j];
-      } else {
+      }
+      else
+      {
         pOutRec->t3amp[k] = nan;
       }
       pOutRec->t3amperr[k] = pInRec->t3amperr[j];
-      if (pFilter->accept_t3phi) {
+      if (pFilter->accept_t3phi)
+      {
         pOutRec->t3phi[k] = pInRec->t3phi[j];
-      } else {
+      }
+      else
+      {
         pOutRec->t3phi[k] = nan;
       }
       pOutRec->t3phierr[k] = pInRec->t3phierr[j];
       pOutRec->flag[k] = pInRec->flag[j];
-      if (!pInRec->flag[j]) {
-        if (pWave != NULL) {
+      if (!pInRec->flag[j])
+      {
+        if (pWave != NULL)
+        {
           abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
           if (abRad < pFilter->uvrad_range[0] ||
               abRad > pFilter->uvrad_range[1])
@@ -1472,16 +1538,16 @@ static void filter_oi_t3_record(const oi_t3_record *pInRec,
           if (bcRad < pFilter->uvrad_range[0] ||
               bcRad > pFilter->uvrad_range[1])
             pOutRec->flag[k] = 1; /* UV radius bc out of range, flag datum */
-          acRad = pow((u1 + u2) * (u1 + u2) +
-                      (v1 + v2) * (v1 + v2), 0.5) / pWave->eff_wave[j];
+          acRad = pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
+                  pWave->eff_wave[j];
           if (acRad < pFilter->uvrad_range[0] ||
               acRad > pFilter->uvrad_range[1])
             pOutRec->flag[k] = 1; /* UV radius ac out of range, flag datum */
         }
         snrAmp = pInRec->t3amp[j] / pInRec->t3amperr[j];
         snrPhi = RAD2DEG / pInRec->t3phierr[j];
-        if (pFilter->accept_t3amp && (snrAmp < pFilter->snr_range[0] ||
-                                      snrAmp > pFilter->snr_range[1]))
+        if (pFilter->accept_t3amp &&
+            (snrAmp < pFilter->snr_range[0] || snrAmp > pFilter->snr_range[1]))
           pOutRec->flag[k] = 1; /* SNR out of range, flag datum */
         else if (pFilter->accept_t3phi && (snrPhi < pFilter->snr_range[0] ||
                                            snrPhi > pFilter->snr_range[1]))
@@ -1519,31 +1585,32 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
-    chkmalloc(pInTab->numrec * sizeof(oi_t3_record)); /* will reallocate */
-  for (i = 0; i < pInTab->numrec; i++) {
+      chkmalloc(pInTab->numrec * sizeof(oi_t3_record)); /* will reallocate */
+  for (i = 0; i < pInTab->numrec; i++)
+  {
     if (pFilter->target_id >= 0 &&
         pInTab->record[i].target_id != pFilter->target_id)
-      continue;  /* skip record as TARGET_ID doesn't match */
+      continue; /* skip record as TARGET_ID doesn't match */
     if ((pInTab->record[i].mjd < pFilter->mjd_range[0]) ||
         (pInTab->record[i].mjd > pFilter->mjd_range[1]))
-      continue;  /* skip record as MJD out of range */
+      continue; /* skip record as MJD out of range */
     u1 = pInTab->record[i].u1coord;
     v1 = pInTab->record[i].v1coord;
     u2 = pInTab->record[i].u2coord;
     v2 = pInTab->record[i].v2coord;
     bas = pow(u1 * u1 + v1 * v1, 0.5);
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue;  /* skip record as projected baseline ab out of range */
+      continue; /* skip record as projected baseline ab out of range */
     bas = pow(u2 * u2 + v2 * v2, 0.5);
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue;  /* skip record as projected baseline bc out of range */
+      continue; /* skip record as projected baseline bc out of range */
     bas = pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5);
     if (bas < pFilter->bas_range[0] || bas > pFilter->bas_range[1])
-      continue;  /* skip record as projected baseline ac out of range */
+      continue; /* skip record as projected baseline ac out of range */
     if (!pFilter->accept_flagged &&
         !any_t3_chan_ok(&pInTab->record[i], pFilter, pWave, useWave,
                         pInTab->nwave))
-      continue;  /* filter out all-flagged record */
+      continue; /* filter out all-flagged record */
 
     /* Create output record */
     filter_oi_t3_record(&pInTab->record[i], pFilter, pWave, useWave,
@@ -1563,19 +1630,19 @@ void filter_oi_t3(const oi_t3 *pInTab, const oi_filter_spec *pFilter,
  *                     specifying wavelength channels to accept as values
  * @param pOutput      pointer to output oi_fits struct
  */
-void filter_all_oi_flux(const oi_fits *pInput,
-                        const oi_filter_spec *pFilter,
+void filter_all_oi_flux(const oi_fits *pInput, const oi_filter_spec *pFilter,
                         GHashTable *useWaveHash, oi_fits *pOutput)
 {
   GList *link;
   oi_flux *pInTab, *pOutTab;
   char *useWave;
 
-  if (!pFilter->accept_flux) return;  /* don't copy any spectra */
+  if (!pFilter->accept_flux) return; /* don't copy any spectra */
 
   /* Filter OI_FLUX tables in turn */
   link = pInput->fluxList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pInTab = (oi_flux *)link->data;
     link = link->next; /* follow link now so we can use continue statements */
 
@@ -1585,13 +1652,17 @@ void filter_all_oi_flux(const oi_fits *pInput,
     if (!ACCEPT_CORRNAME(pInTab, pFilter)) continue;
 
     useWave = g_hash_table_lookup(useWaveHash, pInTab->insname);
-    if (useWave != NULL) {
+    if (useWave != NULL)
+    {
       pOutTab = chkmalloc(sizeof(oi_flux));
       filter_oi_flux(pInTab, pFilter, useWave, pOutTab);
-      if (pOutTab->nwave > 0 && pOutTab->numrec > 0) {
+      if (pOutTab->nwave > 0 && pOutTab->numrec > 0)
+      {
         pOutput->fluxList = g_list_append(pOutput->fluxList, pOutTab);
         ++pOutput->numFlux;
-      } else {
+      }
+      else
+      {
         g_warning("Empty OI_FLUX table removed from filter output");
         g_debug("Removed empty OI_FLUX with DATE-OBS=%s INSNAME=%s",
                 pOutTab->date_obs, pOutTab->insname);
@@ -1606,9 +1677,8 @@ void filter_all_oi_flux(const oi_fits *pInput,
  */
 static void filter_oi_flux_record(const oi_flux_record *pInRec,
                                   const oi_filter_spec *pFilter,
-                                  const char *useWave,
-                                  int nwaveIn, int nwaveOut,
-                                  oi_flux_record *pOutRec)
+                                  const char *useWave, int nwaveIn,
+                                  int nwaveOut, oi_flux_record *pOutRec)
 {
   int j, k;
   double nan;
@@ -1619,19 +1689,23 @@ static void filter_oi_flux_record(const oi_flux_record *pInRec,
   nan /= nan;
 
   memcpy(pOutRec, pInRec, sizeof(oi_flux_record));
-  if (pFilter->target_id >= 0)
-    pOutRec->target_id = 1;
+  if (pFilter->target_id >= 0) pOutRec->target_id = 1;
   pOutRec->fluxdata = chkmalloc(nwaveOut * sizeof(pOutRec->fluxdata[0]));
   pOutRec->fluxerr = chkmalloc(nwaveOut * sizeof(pOutRec->fluxerr[0]));
   pOutRec->flag = chkmalloc(nwaveOut * sizeof(pOutRec->flag[0]));
   k = 0;
-  for (j = 0; j < nwaveIn; j++) {
-    if (useWave[j]) {
+  for (j = 0; j < nwaveIn; j++)
+  {
+    if (useWave[j])
+    {
       snr = pInRec->fluxdata[j] / pInRec->fluxerr[j];
-      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1]) {
+      if (snr < pFilter->snr_range[0] || snr > pFilter->snr_range[1])
+      {
         /* SNR out of range, null datum */
         pOutRec->fluxdata[k] = nan;
-      } else {
+      }
+      else
+      {
         pOutRec->fluxdata[k] = pInRec->fluxdata[j];
       }
       pOutRec->fluxerr[k] = pInRec->fluxerr[j];
@@ -1649,8 +1723,7 @@ static void filter_oi_flux_record(const oi_flux_record *pInRec,
  * @param useWave      boolean array giving wavelength channels to accept
  * @param pOutTab      pointer to output oi_flux
  */
-void filter_oi_flux(const oi_flux *pInTab,
-                    const oi_filter_spec *pFilter,
+void filter_oi_flux(const oi_flux *pInTab, const oi_filter_spec *pFilter,
                     const char *useWave, oi_flux *pOutTab)
 {
   int i, j, nrec;
@@ -1664,19 +1737,19 @@ void filter_oi_flux(const oi_flux *pInTab,
   /* Filter records */
   nrec = 0; /* counter */
   pOutTab->record =
-    chkmalloc(pInTab->numrec * sizeof(oi_flux_record)); /* will reallocate */
-  for (i = 0; i < pInTab->numrec; i++) {
+      chkmalloc(pInTab->numrec * sizeof(oi_flux_record)); /* will reallocate */
+  for (i = 0; i < pInTab->numrec; i++)
+  {
     if (pFilter->target_id >= 0 &&
         pInTab->record[i].target_id != pFilter->target_id)
-      continue;  /* skip record as TARGET_ID doesn't match */
+      continue; /* skip record as TARGET_ID doesn't match */
     if (pInTab->record[i].mjd < pFilter->mjd_range[0] ||
-                                pInTab->record[i].mjd > pFilter->mjd_range[1])
-      continue;  /* skip record as MJD out of range */
+        pInTab->record[i].mjd > pFilter->mjd_range[1])
+      continue; /* skip record as MJD out of range */
 
     /* Create output record */
-    filter_oi_flux_record(&pInTab->record[i], pFilter, useWave,
-                          pInTab->nwave, pOutTab->nwave,
-                          &pOutTab->record[nrec++]);
+    filter_oi_flux_record(&pInTab->record[i], pFilter, useWave, pInTab->nwave,
+                          pOutTab->nwave, &pOutTab->record[nrec++]);
   }
   pOutTab->numrec = nrec;
   pOutTab->record = realloc(pOutTab->record, nrec * sizeof(oi_flux_record));
@@ -1726,14 +1799,18 @@ void apply_oi_filter(const oi_fits *pInput, oi_filter_spec *pFilter,
 
   /* Remove orphaned OI_ARRAY, OI_INSPOL, OI_WAVELENGTH and OI_CORR tables */
   list = get_arrname_list(pOutput);
-  while (prune_oi_array(pOutput, list)) ;
-  while (prune_oi_inspol(pOutput, list)) ;
+  while (prune_oi_array(pOutput, list))
+    ;
+  while (prune_oi_inspol(pOutput, list))
+    ;
   g_list_free(list);
   list = get_insname_list(pOutput);
-  while (prune_oi_wavelength(pOutput, list)) ;
+  while (prune_oi_wavelength(pOutput, list))
+    ;
   g_list_free(list);
   list = get_corrname_list(pOutput);
-  while (prune_oi_corr(pOutput, list)) ;
+  while (prune_oi_corr(pOutput, list))
+    ;
   g_list_free(list);
 
   // TODO: remove orphaned OI_INSPOL records?

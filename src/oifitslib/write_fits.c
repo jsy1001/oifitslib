@@ -34,9 +34,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-
 int oi_hush_errors = 0;
-
 
 /*
  * Private functions
@@ -52,13 +50,17 @@ char **make_tform(const char **template, int n, int value)
   int i, size, needed;
 
   tform = chkmalloc(n * sizeof(*tform));
-  for (i = 0; i < n; i++) {
-    if (template[i][0] == '?') {
+  for (i = 0; i < n; i++)
+  {
+    if (template[i][0] == '?')
+    {
       size = strlen(template[i]) + 4; /* allow for extra digits + \0 */
       tform[i] = chkmalloc(size);
       needed = snprintf(tform[i], size, "%d%s", value, &template[i][1]);
       assert(needed < size); /* fails if string was truncated */
-    } else {
+    }
+    else
+    {
       tform[i] = chkmalloc((strlen(template[i]) + 1)); /* +1 for \0 */
       strcpy(tform[i], template[i]);
     }
@@ -77,7 +79,6 @@ void free_tform(char **tform, int n)
     free(tform[i]);
   free(tform);
 }
-
 
 /*
  * Public functions
@@ -101,19 +102,22 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
   const char function[] = "write_oi_header";
   int nhdu;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Move to primary HDU */
-  if (fits_get_num_hdus(fptr, &nhdu, pStatus) == 0) {
+  if (fits_get_num_hdus(fptr, &nhdu, pStatus) == 0)
+  {
     /* primary HDU doesn't exist, so create it */
     fits_create_img(fptr, 16, 0, NULL, pStatus);
-  } else {
+  }
+  else
+  {
     fits_movabs_hdu(fptr, 1, NULL, pStatus);
   }
 
   /* Write mandatory keywords */
-  fits_write_key(fptr, TSTRING, "ORIGIN", header.origin,
-                 "Institution", pStatus);
+  fits_write_key(fptr, TSTRING, "ORIGIN", header.origin, "Institution",
+                 pStatus);
   fits_write_date(fptr, pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", header.date_obs,
                  "UTC start date of observation", pStatus);
@@ -126,10 +130,10 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
   /* we always write OIFITS2 */
   fits_write_key(fptr, TSTRING, "CONTENT", "OIFITS2",
                  "This file is an OIFITS2 container", pStatus);
-  fits_write_key(fptr, TSTRING, "INSMODE", header.insmode,
-                 "Instrument mode", pStatus);
-  fits_write_key(fptr, TSTRING, "OBJECT", header.object,
-                 "Object identifier", pStatus);
+  fits_write_key(fptr, TSTRING, "INSMODE", header.insmode, "Instrument mode",
+                 pStatus);
+  fits_write_key(fptr, TSTRING, "OBJECT", header.object, "Object identifier",
+                 pStatus);
 
   /* Write optional keywords */
   if (strlen(header.referenc) > 0)
@@ -139,24 +143,24 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
     fits_write_key(fptr, TSTRING, "AUTHOR", header.author,
                    "Who compiled the data", pStatus);
   if (strlen(header.prog_id) > 0)
-    fits_write_key(fptr, TSTRING, "PROG_ID", header.prog_id,
-                   "Programme ID", pStatus);
+    fits_write_key(fptr, TSTRING, "PROG_ID", header.prog_id, "Programme ID",
+                   pStatus);
   if (strlen(header.procsoft) > 0)
-    fits_write_key(fptr, TSTRING, "PROCSOFT", header.procsoft,
-                   "Versioned DRS", pStatus);
+    fits_write_key(fptr, TSTRING, "PROCSOFT", header.procsoft, "Versioned DRS",
+                   pStatus);
   if (strlen(header.obstech) > 0)
     fits_write_key(fptr, TSTRING, "OBSTECH", header.obstech,
                    "Observation technique", pStatus);
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_ARRAY fits binary table
@@ -173,27 +177,29 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
 {
   const char function[] = "write_oi_array";
   const int tfields = 7;
-  char *ttype[] = {"TEL_NAME", "STA_NAME", "STA_INDEX", "DIAMETER", "STAXYZ",
-                   "FOV", "FOVTYPE"};
+  char *ttype[] = {"TEL_NAME", "STA_NAME", "STA_INDEX", "DIAMETER",
+                   "STAXYZ",   "FOV",      "FOVTYPE"};
   char *tform[] = {"16A", "16A", "I", "E", "3D", "D", "6A"};
   char *tunit[] = {"\0", "\0", "\0", "m", "m", "arcsec", ""};
   char extname[] = "OI_ARRAY";
   char *str;
   int revision = OI_REVN_V2_ARRAY, irow;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
-  if (array.revision != revision) {
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
+  if (array.revision != revision)
+  {
     printf("WARNING! array.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
-  fits_write_key(fptr, TSTRING, "ARRNAME", array.arrname,
-                 "Array name", pStatus);
-  fits_write_key(fptr, TSTRING, "FRAME", array.frame,
-                 "Coordinate frame", pStatus);
+  fits_write_key(fptr, TSTRING, "ARRNAME", array.arrname, "Array name",
+                 pStatus);
+  fits_write_key(fptr, TSTRING, "FRAME", array.frame, "Coordinate frame",
+                 pStatus);
   fits_write_key(fptr, TDOUBLE, "ARRAYX", &array.arrayx,
                  "Array centre x coordinate", pStatus);
   fits_write_key_unit(fptr, "ARRAYX", "m", pStatus);
@@ -203,9 +209,10 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
   fits_write_key(fptr, TDOUBLE, "ARRAYZ", &array.arrayz,
                  "Array centre z coordinate", pStatus);
   fits_write_key_unit(fptr, "ARRAYZ", "m", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_ARRAY", pStatus);
-  for (irow = 1; irow <= array.nelement; irow++) {
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_ARRAY",
+                 pStatus);
+  for (irow = 1; irow <= array.nelement; irow++)
+  {
     str = array.elem[irow - 1].tel_name;
     fits_write_col(fptr, TSTRING, 1, irow, 1, 1, &str, pStatus);
     str = array.elem[irow - 1].sta_name;
@@ -225,13 +232,13 @@ STATUS write_oi_array(fitsfile *fptr, oi_array array, int extver,
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_TARGET fits binary table
@@ -246,57 +253,57 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
 {
   const char function[] = "write_oi_target";
   const int tfields = 17;
-  char *ttype[] = {"TARGET_ID", "TARGET", "RAEP0", "DECEP0", "EQUINOX",
-                   "RA_ERR", "DEC_ERR", "SYSVEL", "VELTYP",
-                   "VELDEF", "PMRA", "PMDEC", "PMRA_ERR", "PMDEC_ERR",
-                   "PARALLAX", "PARA_ERR", "SPECTYP"};
-  char *tform[] = {"I", "32A", "D", "D", "E",
-                   "D", "D", "D", "8A",
-                   "8A", "D", "D", "D", "D",
-                   "E", "E", "32A"};
-  char *tunit[] = {"\0", "\0", "deg", "deg", "yr",
-                   "deg", "deg", "m/s", "\0",
-                   "\0", "deg/yr", "deg/yr", "deg/yr", "deg/yr",
-                   "deg", "deg", "\0"};
+  char *ttype[] = {"TARGET_ID", "TARGET",  "RAEP0",    "DECEP0",    "EQUINOX",
+                   "RA_ERR",    "DEC_ERR", "SYSVEL",   "VELTYP",    "VELDEF",
+                   "PMRA",      "PMDEC",   "PMRA_ERR", "PMDEC_ERR", "PARALLAX",
+                   "PARA_ERR",  "SPECTYP"};
+  char *tform[] = {"I",  "32A", "D", "D", "E", "D", "D", "D",  "8A",
+                   "8A", "D",   "D", "D", "D", "E", "E", "32A"};
+  char *tunit[] = {"\0",     "\0",     "deg", "deg", "yr",     "deg",
+                   "deg",    "m/s",    "\0",  "\0",  "deg/yr", "deg/yr",
+                   "deg/yr", "deg/yr", "deg", "deg", "\0"};
   char extname[] = "OI_TARGET";
   char *str;
   int revision = OI_REVN_V2_TARGET, irow;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
-  if (targets.revision != revision) {
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
+  if (targets.revision != revision)
+  {
     printf("WARNING! targets.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
-  for (irow = 1; irow <= targets.ntarget; irow++) {
+  for (irow = 1; irow <= targets.ntarget; irow++)
+  {
     /* make cfitsio convert int->short here */
-    fits_write_col(fptr, TINT, 1, irow, 1, 1,
-                   &targets.targ[irow - 1].target_id, pStatus);
+    fits_write_col(fptr, TINT, 1, irow, 1, 1, &targets.targ[irow - 1].target_id,
+                   pStatus);
     str = targets.targ[irow - 1].target;
     fits_write_col(fptr, TSTRING, 2, irow, 1, 1, &str, pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1, &targets.targ[irow - 1].raep0,
                    pStatus);
-    fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1,
-                   &targets.targ[irow - 1].decep0, pStatus);
-    fits_write_col(fptr, TFLOAT, 5, irow, 1, 1,
-                   &targets.targ[irow - 1].equinox, pStatus);
-    fits_write_col(fptr, TDOUBLE, 6, irow, 1, 1,
-                   &targets.targ[irow - 1].ra_err, pStatus);
+    fits_write_col(fptr, TDOUBLE, 4, irow, 1, 1, &targets.targ[irow - 1].decep0,
+                   pStatus);
+    fits_write_col(fptr, TFLOAT, 5, irow, 1, 1, &targets.targ[irow - 1].equinox,
+                   pStatus);
+    fits_write_col(fptr, TDOUBLE, 6, irow, 1, 1, &targets.targ[irow - 1].ra_err,
+                   pStatus);
     fits_write_col(fptr, TDOUBLE, 7, irow, 1, 1,
                    &targets.targ[irow - 1].dec_err, pStatus);
-    fits_write_col(fptr, TDOUBLE, 8, irow, 1, 1,
-                   &targets.targ[irow - 1].sysvel, pStatus);
+    fits_write_col(fptr, TDOUBLE, 8, irow, 1, 1, &targets.targ[irow - 1].sysvel,
+                   pStatus);
     str = targets.targ[irow - 1].veltyp;
     fits_write_col(fptr, TSTRING, 9, irow, 1, 1, &str, pStatus);
     str = targets.targ[irow - 1].veldef;
     fits_write_col(fptr, TSTRING, 10, irow, 1, 1, &str, pStatus);
-    fits_write_col(fptr, TDOUBLE, 11, irow, 1, 1,
-                   &targets.targ[irow - 1].pmra, pStatus);
-    fits_write_col(fptr, TDOUBLE, 12, irow, 1, 1,
-                   &targets.targ[irow - 1].pmdec, pStatus);
+    fits_write_col(fptr, TDOUBLE, 11, irow, 1, 1, &targets.targ[irow - 1].pmra,
+                   pStatus);
+    fits_write_col(fptr, TDOUBLE, 12, irow, 1, 1, &targets.targ[irow - 1].pmdec,
+                   pStatus);
     fits_write_col(fptr, TDOUBLE, 13, irow, 1, 1,
                    &targets.targ[irow - 1].pmra_err, pStatus);
     fits_write_col(fptr, TDOUBLE, 14, irow, 1, 1,
@@ -310,9 +317,11 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
   }
 
   /* Write optional columns */
-  if (targets.usecategory) {
+  if (targets.usecategory)
+  {
     fits_insert_col(fptr, 18, "CATEGORY", "3A", pStatus);
-    for (irow = 1; irow <= targets.ntarget; irow++) {
+    for (irow = 1; irow <= targets.ntarget; irow++)
+    {
       str = targets.targ[irow - 1].category;
       fits_write_col(fptr, TSTRING, 18, irow, 1, 1, &str, pStatus);
     }
@@ -320,13 +329,13 @@ STATUS write_oi_target(fitsfile *fptr, oi_target targets, STATUS *pStatus)
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_WAVELENGTH fits binary table
@@ -349,17 +358,19 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
   char extname[] = "OI_WAVELENGTH";
   int revision = OI_REVN_V2_WAVELENGTH;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
-  if (wave.revision != revision) {
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
+  if (wave.revision != revision)
+  {
     printf("WARNING! wave.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
-  fits_write_key(fptr, TSTRING, "INSNAME", wave.insname,
-                 "Detector name", pStatus);
+  fits_write_key(fptr, TSTRING, "INSNAME", wave.insname, "Detector name",
+                 pStatus);
   fits_write_key(fptr, TINT, "EXTVER", &extver,
                  "ID number of this OI_WAVELENGTH", pStatus);
   fits_write_col(fptr, TFLOAT, 1, 1, 1, wave.nwave, wave.eff_wave, pStatus);
@@ -367,13 +378,13 @@ STATUS write_oi_wavelength(fitsfile *fptr, oi_wavelength wave, int extver,
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_CORR fits binary table
@@ -395,28 +406,31 @@ STATUS write_oi_corr(fitsfile *fptr, oi_corr corr, int extver, STATUS *pStatus)
   char extname[] = "OI_CORR";
   int revision = OI_REVN_V2_CORR;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
-  if (corr.revision != revision) {
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
+  if (corr.revision != revision)
+  {
     printf("WARNING! corr.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "CORRNAME", corr.corrname,
                  "Name of correlated data set", pStatus);
-  fits_write_key(fptr, TINT, "NDATA", &corr.ndata,
-                 "Number of correlated data", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_CORR", pStatus);
+  fits_write_key(fptr, TINT, "NDATA", &corr.ndata, "Number of correlated data",
+                 pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_CORR",
+                 pStatus);
   fits_write_col(fptr, TINT, 1, 1, 1, corr.ncorr, corr.iindx, pStatus);
   fits_write_col(fptr, TINT, 2, 1, 1, corr.ncorr, corr.jindx, pStatus);
   fits_write_col(fptr, TDOUBLE, 3, 1, 1, corr.ncorr, corr.corr, pStatus);
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -438,30 +452,30 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
 {
   const char function[] = "write_oi_inspol";
   const int tfields = 9;
-  char *ttype[] = {"TARGET_ID", "INSNAME", "MJD_OBS", "MJD_END",
-                   "JXX", "JYY", "JXY", "JYX", "STA_INDEX"};
+  char *ttype[] = {"TARGET_ID", "INSNAME", "MJD_OBS", "MJD_END",  "JXX",
+                   "JYY",       "JXY",     "JYX",     "STA_INDEX"};
   // TODO: follow standard in choosing repeat count for INSNAME
-  const char *tformTpl[] = {"I", "70A", "D", "D",
-                            "?C", "?C", "?C", "?C", "I"};
+  const char *tformTpl[] = {"I", "70A", "D", "D", "?C", "?C", "?C", "?C", "I"};
   char **tform;
-  char *tunit[] = {"\0", "\0", "day", "day",
-                   "\0", "\0", "\0", "\0", "\0"};
+  char *tunit[] = {"\0", "\0", "day", "day", "\0", "\0", "\0", "\0", "\0"};
   char extname[] = "OI_INSPOL";
   char *str;
   int revision = OI_REVN_V2_INSPOL, irow;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Create table structure */
   tform = make_tform(tformTpl, tfields, inspol.nwave);
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
   free_tform(tform, tfields);
 
   /* Write keywords */
-  if (inspol.revision != revision) {
+  if (inspol.revision != revision)
+  {
     printf("WARNING! inspol.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
@@ -470,17 +484,18 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
   fits_write_key(fptr, TINT, "NPOL", &inspol.npol,
                  "Number of polarization types", pStatus);
   /* note ARRNAME is mandatory */
-  fits_write_key(fptr, TSTRING, "ARRNAME", &inspol.arrname,
-                 "Array name", pStatus);
+  fits_write_key(fptr, TSTRING, "ARRNAME", &inspol.arrname, "Array name",
+                 pStatus);
   fits_write_key(fptr, TSTRING, "ORIENT", &inspol.orient,
                  "Orientation of the Jones matrix L..", pStatus);
   fits_write_key(fptr, TSTRING, "MODEL", &inspol.model,
                  "How Jones matrix L.. was estimated", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_INSPOL", pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_INSPOL",
+                 pStatus);
 
   /* Write columns */
-  for (irow = 1; irow <= inspol.numrec; irow++) {
+  for (irow = 1; irow <= inspol.numrec; irow++)
+  {
     fits_write_col(fptr, TINT, 1, irow, 1, 1,
                    &inspol.record[irow - 1].target_id, pStatus);
     str = inspol.record[irow - 1].insname;
@@ -503,7 +518,8 @@ STATUS write_oi_inspol(fitsfile *fptr, oi_inspol inspol, int extver,
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -532,8 +548,8 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
     fits_write_key(fptr, TSTRING, "AMPTYP", &vis.amptyp,
                    "Class of amplitude data", pStatus);
   if (strlen(vis.phityp) > 0)
-    fits_write_key(fptr, TSTRING, "PHITYP", &vis.phityp,
-                   "Class of phase data", pStatus);
+    fits_write_key(fptr, TSTRING, "PHITYP", &vis.phityp, "Class of phase data",
+                   pStatus);
   if (vis.amporder >= 0)
     fits_write_key(fptr, TINT, "AMPORDER", &vis.amporder,
                    "Polynomial fit order for differential amp", pStatus);
@@ -542,28 +558,33 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
                    "Polynomial fit order for differential phi", pStatus);
 
   /* Write optional columns */
-  if (correlated) {
+  if (correlated)
+  {
     fits_insert_col(fptr, 7, "CORRINDX_VISAMP", "J", pStatus);
     fits_insert_col(fptr, 10, "CORRINDX_VISPHI", "J", pStatus);
-    for (irow = 1; irow <= vis.numrec; irow++) {
+    for (irow = 1; irow <= vis.numrec; irow++)
+    {
       fits_write_col(fptr, TINT, 7, irow, 1, 1,
                      &vis.record[irow - 1].corrindx_visamp, pStatus);
       fits_write_col(fptr, TINT, 10, irow, 1, 1,
                      &vis.record[irow - 1].corrindx_visphi, pStatus);
     }
   }
-  if (vis.usevisrefmap) {
+  if (vis.usevisrefmap)
+  {
     snprintf(keyval, FLEN_VALUE, "%dL", vis.nwave * vis.nwave);
     fits_insert_col(fptr, 11, "VISREFMAP", keyval, pStatus);
     snprintf(keyval, FLEN_VALUE, "(%d,%d)", vis.nwave, vis.nwave);
-    fits_write_key(fptr, TSTRING, "TDIM11", &keyval,
-                   "Dimensions of field  11", pStatus);
-    for (irow = 1; irow <= vis.numrec; irow++) {
+    fits_write_key(fptr, TSTRING, "TDIM11", &keyval, "Dimensions of field  11",
+                   pStatus);
+    for (irow = 1; irow <= vis.numrec; irow++)
+    {
       fits_write_col(fptr, TLOGICAL, 11, irow, 1, vis.nwave * vis.nwave,
                      vis.record[irow - 1].visrefmap, pStatus);
     }
   }
-  if (vis.usecomplex) {
+  if (vis.usecomplex)
+  {
     tform = make_tform(tformTpl, tfields, vis.nwave);
     fits_insert_cols(fptr, 9, tfields, ttype, tform, pStatus);
     free_tform(tform, tfields);
@@ -576,7 +597,8 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
     fits_write_key(fptr, TSTRING, "TUNIT12", &vis.complexunit,
                    "Units of field 12", pStatus);
 
-    for (irow = 1; irow <= vis.numrec; irow++) {
+    for (irow = 1; irow <= vis.numrec; irow++)
+    {
       assert(vis.record[irow - 1].rvis != NULL);
       assert(vis.record[irow - 1].rviserr != NULL);
       assert(vis.record[irow - 1].ivis != NULL);
@@ -590,10 +612,12 @@ static STATUS write_oi_vis_opt(fitsfile *fptr, oi_vis vis, STATUS *pStatus)
       fits_write_col(fptr, TDOUBLE, 12, irow, 1, vis.nwave,
                      vis.record[irow - 1].iviserr, pStatus);
     }
-    if (correlated) {
+    if (correlated)
+    {
       fits_insert_col(fptr, 11, "CORRINDX_RVIS", "J", pStatus);
       fits_insert_col(fptr, 14, "CORRINDX_IVIS", "J", pStatus);
-      for (irow = 1; irow <= vis.numrec; irow++) {
+      for (irow = 1; irow <= vis.numrec; irow++)
+      {
         fits_write_col(fptr, TINT, 11, irow, 1, 1,
                        &vis.record[irow - 1].corrindx_rvis, pStatus);
         fits_write_col(fptr, TINT, 14, irow, 1, 1,
@@ -621,54 +645,56 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
   const char function[] = "write_oi_vis";
   const int tfields = 12;
   double zerotime = 0.0;
-  char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
-                   "VISAMP", "VISAMPERR", "VISPHI", "VISPHIERR",
-                   "UCOORD", "VCOORD", "STA_INDEX", "FLAG"};
-  const char *tformTpl[] = {"I", "D", "D", "D",
-                            "?D", "?D", "?D", "?D",
-                            "1D", "1D", "2I", "?L"};
+  char *ttype[] = {"TARGET_ID", "TIME",      "MJD",       "INT_TIME",
+                   "VISAMP",    "VISAMPERR", "VISPHI",    "VISPHIERR",
+                   "UCOORD",    "VCOORD",    "STA_INDEX", "FLAG"};
+  const char *tformTpl[] = {"I",  "D",  "D",  "D",  "?D", "?D",
+                            "?D", "?D", "1D", "1D", "2I", "?L"};
   char **tform;
-  char *tunit[] = {"\0", "s", "day", "s",
-                   "\0", "\0", "deg", "deg",
-                   "m", "m", "\0", "\0"};
+  char *tunit[] = {"\0",  "s",   "day", "s", "\0", "\0",
+                   "deg", "deg", "m",   "m", "\0", "\0"};
   char extname[] = "OI_VIS";
   int revision = OI_REVN_V2_VIS, irow;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Create table structure */
   tform = make_tform(tformTpl, tfields, vis.nwave);
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
   free_tform(tform, tfields);
-  if (strcmp(vis.amptyp, "correlated flux") == 0) {
-    fits_write_key(fptr, TSTRING, "TUNIT5", &vis.ampunit,
-                   "Units of field  5", pStatus);
-    fits_write_key(fptr, TSTRING, "TUNIT6", &vis.ampunit,
-                   "Units of field  6", pStatus);
+  if (strcmp(vis.amptyp, "correlated flux") == 0)
+  {
+    fits_write_key(fptr, TSTRING, "TUNIT5", &vis.ampunit, "Units of field  5",
+                   pStatus);
+    fits_write_key(fptr, TSTRING, "TUNIT6", &vis.ampunit, "Units of field  6",
+                   pStatus);
   }
 
   /* Write keywords */
-  if (vis.revision != revision) {
+  if (vis.revision != revision)
+  {
     printf("WARNING! vis.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &vis.date_obs,
                  "UTC start date of observations", pStatus);
   if (strlen(vis.arrname) > 0)
-    fits_write_key(fptr, TSTRING, "ARRNAME", &vis.arrname,
-                   "Array name", pStatus);
+    fits_write_key(fptr, TSTRING, "ARRNAME", &vis.arrname, "Array name",
+                   pStatus);
   else
     printf("WARNING! vis.arrname not set\n");
-  fits_write_key(fptr, TSTRING, "INSNAME", &vis.insname,
-                 "Detector name", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_VIS", pStatus);
+  fits_write_key(fptr, TSTRING, "INSNAME", &vis.insname, "Detector name",
+                 pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_VIS",
+                 pStatus);
 
   /* Write columns */
-  for (irow = 1; irow <= vis.numrec; irow++) {
+  for (irow = 1; irow <= vis.numrec; irow++)
+  {
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &vis.record[irow - 1].target_id,
                    pStatus);
     fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &zerotime, pStatus);
@@ -697,13 +723,13 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_VIS2 fits binary table
@@ -720,51 +746,50 @@ STATUS write_oi_vis(fitsfile *fptr, oi_vis vis, int extver, STATUS *pStatus)
 STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_vis2";
-  const int tfields = 10;  /* mandatory columns */
+  const int tfields = 10; /* mandatory columns */
   double zerotime = 0.0;
-  char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
-                   "VIS2DATA", "VIS2ERR", "UCOORD", "VCOORD",
-                   "STA_INDEX", "FLAG"};
-  const char *tformTpl[] = {"I", "D", "D", "D",
-                            "?D", "?D", "1D", "1D",
-                            "2I", "?L"};
+  char *ttype[] = {"TARGET_ID", "TIME",   "MJD",    "INT_TIME",  "VIS2DATA",
+                   "VIS2ERR",   "UCOORD", "VCOORD", "STA_INDEX", "FLAG"};
+  const char *tformTpl[] = {"I",  "D",  "D",  "D",  "?D",
+                            "?D", "1D", "1D", "2I", "?L"};
   char **tform;
-  char *tunit[] = {"\0", "s", "day", "s",
-                   "\0", "\0", "m", "m",
-                   "\0", "\0"};
+  char *tunit[] = {"\0", "s", "day", "s", "\0", "\0", "m", "m", "\0", "\0"};
   char extname[] = "OI_VIS2";
   int revision = OI_REVN_V2_VIS2, irow;
   bool correlated;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Create table structure */
   tform = make_tform(tformTpl, tfields, vis2.nwave);
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
   free_tform(tform, tfields);
 
   /* Write mandatory keywords */
-  if (vis2.revision != revision) {
+  if (vis2.revision != revision)
+  {
     printf("WARNING! vis2.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &vis2.date_obs,
                  "UTC start date of observations", pStatus);
   if (strlen(vis2.arrname) > 0)
-    fits_write_key(fptr, TSTRING, "ARRNAME", &vis2.arrname,
-                   "Array name", pStatus);
+    fits_write_key(fptr, TSTRING, "ARRNAME", &vis2.arrname, "Array name",
+                   pStatus);
   else
     printf("WARNING! vis2.arrname not set\n");
-  fits_write_key(fptr, TSTRING, "INSNAME", &vis2.insname,
-                 "Detector name", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_VIS2", pStatus);
+  fits_write_key(fptr, TSTRING, "INSNAME", &vis2.insname, "Detector name",
+                 pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_VIS2",
+                 pStatus);
 
   /* Write mandatory columns */
-  for (irow = 1; irow <= vis2.numrec; irow++) {
+  for (irow = 1; irow <= vis2.numrec; irow++)
+  {
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &vis2.record[irow - 1].target_id,
                    pStatus);
     fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &zerotime, pStatus);
@@ -793,9 +818,11 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
                    "Correlated data set name", pStatus);
 
   /* Write optional columns */
-  if (correlated) {
+  if (correlated)
+  {
     fits_insert_col(fptr, 7, "CORRINDX_VIS2DATA", "J", pStatus);
-    for (irow = 1; irow <= vis2.numrec; irow++) {
+    for (irow = 1; irow <= vis2.numrec; irow++)
+    {
       fits_write_col(fptr, TINT, 7, irow, 1, 1,
                      &vis2.record[irow - 1].corrindx_vis2data, pStatus);
     }
@@ -803,13 +830,13 @@ STATUS write_oi_vis2(fitsfile *fptr, oi_vis2 vis2, int extver, STATUS *pStatus)
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_T3 fits binary table
@@ -828,52 +855,50 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
   const char function[] = "write_oi_t3";
   const int tfields = 14;
   double zerotime = 0.0;
-  char *ttype[] = {"TARGET_ID", "TIME", "MJD", "INT_TIME",
-                   "T3AMP", "T3AMPERR", "T3PHI", "T3PHIERR",
-                   "U1COORD", "V1COORD", "U2COORD", "V2COORD",
-                   "STA_INDEX", "FLAG"};
-  const char *tformTpl[] = {"I", "D", "D", "D",
-                            "?D", "?D", "?D", "?D",
-                            "1D", "1D", "1D", "1D",
-                            "3I", "?L"};
+  char *ttype[] = {"TARGET_ID", "TIME",    "MJD",       "INT_TIME", "T3AMP",
+                   "T3AMPERR",  "T3PHI",   "T3PHIERR",  "U1COORD",  "V1COORD",
+                   "U2COORD",   "V2COORD", "STA_INDEX", "FLAG"};
+  const char *tformTpl[] = {"I",  "D",  "D",  "D",  "?D", "?D", "?D",
+                            "?D", "1D", "1D", "1D", "1D", "3I", "?L"};
   char **tform;
-  char *tunit[] = {"\0", "s", "day", "s",
-                   "\0", "\0", "deg", "deg",
-                   "m", "m", "m", "m",
-                   "\0", "\0"};
+  char *tunit[] = {"\0",  "s", "day", "s", "\0", "\0", "deg",
+                   "deg", "m", "m",   "m", "m",  "\0", "\0"};
   char extname[] = "OI_T3";
   int revision = OI_REVN_V2_T3, irow;
   bool correlated;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Create table structure */
   tform = make_tform(tformTpl, tfields, t3.nwave);
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
   free_tform(tform, tfields);
 
   /* Write mandatory keywords */
-  if (t3.revision != revision) {
+  if (t3.revision != revision)
+  {
     printf("WARNING! t3.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &t3.date_obs,
                  "UTC start date of observations", pStatus);
   if (strlen(t3.arrname) > 0)
-    fits_write_key(fptr, TSTRING, "ARRNAME", &t3.arrname,
-                   "Array name", pStatus);
+    fits_write_key(fptr, TSTRING, "ARRNAME", &t3.arrname, "Array name",
+                   pStatus);
   else
     printf("WARNING! t3.arrname not set\n");
-  fits_write_key(fptr, TSTRING, "INSNAME", &t3.insname,
-                 "Detector name", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_T3", pStatus);
+  fits_write_key(fptr, TSTRING, "INSNAME", &t3.insname, "Detector name",
+                 pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_T3",
+                 pStatus);
 
   /* Write mandatory columns */
-  for (irow = 1; irow <= t3.numrec; irow++) {
+  for (irow = 1; irow <= t3.numrec; irow++)
+  {
     fits_write_col(fptr, TINT, 1, irow, 1, 1, &t3.record[irow - 1].target_id,
                    pStatus);
     fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &zerotime, pStatus);
@@ -910,10 +935,12 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
                    "Correlated data set name", pStatus);
 
   /* Write optional columns */
-  if (correlated) {
+  if (correlated)
+  {
     fits_insert_col(fptr, 7, "CORRINDX_T3AMP", "J", pStatus);
     fits_insert_col(fptr, 10, "CORRINDX_T3PHI", "J", pStatus);
-    for (irow = 1; irow <= t3.numrec; irow++) {
+    for (irow = 1; irow <= t3.numrec; irow++)
+    {
       fits_write_col(fptr, TINT, 7, irow, 1, 1,
                      &t3.record[irow - 1].corrindx_t3amp, pStatus);
       fits_write_col(fptr, TINT, 10, irow, 1, 1,
@@ -923,13 +950,13 @@ STATUS write_oi_t3(fitsfile *fptr, oi_t3 t3, int extver, STATUS *pStatus)
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Write OI_FLUX fits binary table
@@ -945,57 +972,58 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
 {
   const char function[] = "write_oi_flux";
   const int tfields = 6;
-  char *ttype[] = {"TARGET_ID", "MJD", "INT_TIME",
-                   "FLUXDATA", "FLUXERR", "FLAG"};
-  const char *tformTpl[] = {"I", "D", "D",
-                            "?D", "?D", "?L"};
+  char *ttype[] = {"TARGET_ID", "MJD",     "INT_TIME",
+                   "FLUXDATA",  "FLUXERR", "FLAG"};
+  const char *tformTpl[] = {"I", "D", "D", "?D", "?D", "?L"};
   char **tform;
-  char *tunit[] = {"\0", "day", "s",
-                   "\0", "\0", "\0"};
+  char *tunit[] = {"\0", "day", "s", "\0", "\0", "\0"};
   char extname[] = "OI_FLUX";
   char keyval[FLEN_VALUE];
   int revision = OI_REVN_V2_FLUX, irow;
   bool correlated;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Create table structure */
   tform = make_tform(tformTpl, tfields, flux.nwave);
-  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit,
-                  extname, pStatus);
+  fits_create_tbl(fptr, BINARY_TBL, 0, tfields, ttype, tform, tunit, extname,
+                  pStatus);
   free_tform(tform, tfields);
-  fits_write_key(fptr, TSTRING, "TUNIT4", &flux.fluxunit,
-                 "Units of field  4", pStatus);
-  fits_write_key(fptr, TSTRING, "TUNIT5", &flux.fluxunit,
-                 "Units of field  5", pStatus);
+  fits_write_key(fptr, TSTRING, "TUNIT4", &flux.fluxunit, "Units of field  4",
+                 pStatus);
+  fits_write_key(fptr, TSTRING, "TUNIT5", &flux.fluxunit, "Units of field  5",
+                 pStatus);
 
   /* Write mandatory keywords */
-  if (flux.revision != revision) {
+  if (flux.revision != revision)
+  {
     printf("WARNING! flux.revision != %d on entry to %s. "
-           "Writing revision %d table\n", revision, function, revision);
+           "Writing revision %d table\n",
+           revision, function, revision);
   }
   fits_write_key(fptr, TINT, "OI_REVN", &revision,
                  "Revision number of the table definition", pStatus);
   fits_write_key(fptr, TSTRING, "DATE-OBS", &flux.date_obs,
                  "UTC start date of observations", pStatus);
   if (strlen(flux.arrname) > 0)
-    fits_write_key(fptr, TSTRING, "ARRNAME", &flux.arrname,
-                   "Array name", pStatus);
-  fits_write_key(fptr, TSTRING, "INSNAME", &flux.insname,
-                 "Detector name", pStatus);
+    fits_write_key(fptr, TSTRING, "ARRNAME", &flux.arrname, "Array name",
+                   pStatus);
+  fits_write_key(fptr, TSTRING, "INSNAME", &flux.insname, "Detector name",
+                 pStatus);
   keyval[0] = flux.calstat;
   keyval[1] = '\0';
   fits_write_key(fptr, TSTRING, "CALSTAT", &keyval,
                  "Calibration state (U or C)", pStatus);
-  fits_write_key(fptr, TINT, "EXTVER", &extver,
-                 "ID number of this OI_FLUX", pStatus);
+  fits_write_key(fptr, TINT, "EXTVER", &extver, "ID number of this OI_FLUX",
+                 pStatus);
 
   /* Write mandatory columns */
-  for (irow = 1; irow <= flux.numrec; irow++) {
-    fits_write_col(fptr, TINT, 1, irow, 1, 1,
-                   &flux.record[irow - 1].target_id, pStatus);
-    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1,
-                   &flux.record[irow - 1].mjd, pStatus);
+  for (irow = 1; irow <= flux.numrec; irow++)
+  {
+    fits_write_col(fptr, TINT, 1, irow, 1, 1, &flux.record[irow - 1].target_id,
+                   pStatus);
+    fits_write_col(fptr, TDOUBLE, 2, irow, 1, 1, &flux.record[irow - 1].mjd,
+                   pStatus);
     fits_write_col(fptr, TDOUBLE, 3, irow, 1, 1,
                    &flux.record[irow - 1].int_time, pStatus);
     fits_write_col(fptr, TDOUBLE, 4, irow, 1, flux.nwave,
@@ -1008,12 +1036,13 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
 
   // TODO: maybe only write ARRNAME and STA_INDEX if CALSTAT == 'U'
   /* Write optional keywords */
-  if (strlen(flux.fovtype) > 0) {
+  if (strlen(flux.fovtype) > 0)
+  {
     fits_write_key(fptr, TDOUBLE, "FOV", &flux.fov,
                    "Field Of View on sky for FLUXDATA", pStatus);
     fits_write_key_unit(fptr, "FOV", "arcsec", pStatus);
-    fits_write_key(fptr, TSTRING, "FOVTYPE", &flux.fovtype,
-                   "Model for FOV", pStatus);
+    fits_write_key(fptr, TSTRING, "FOVTYPE", &flux.fovtype, "Model for FOV",
+                   pStatus);
   }
   correlated = (strlen(flux.corrname) > 0);
   if (correlated)
@@ -1021,16 +1050,20 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
                    "Correlated data set name", pStatus);
 
   /* Write optional columns */
-  if (correlated) {
+  if (correlated)
+  {
     fits_insert_col(fptr, 5, "CORRINDX_FLUXDATA", "J", pStatus);
-    for (irow = 1; irow <= flux.numrec; irow++) {
+    for (irow = 1; irow <= flux.numrec; irow++)
+    {
       fits_write_col(fptr, TINT, 5, irow, 1, 1,
                      &flux.record[irow - 1].corrindx_fluxdata, pStatus);
     }
   }
-  if (strlen(flux.arrname) > 0) {
+  if (strlen(flux.arrname) > 0)
+  {
     fits_insert_col(fptr, 6, "STA_INDEX", "I", pStatus);
-    for (irow = 1; irow <= flux.numrec; irow++) {
+    for (irow = 1; irow <= flux.numrec; irow++)
+    {
       fits_write_col(fptr, TINT, 6, irow, 1, 1,
                      &flux.record[irow - 1].sta_index, pStatus);
     }
@@ -1038,7 +1071,8 @@ STATUS write_oi_flux(fitsfile *fptr, oi_flux flux, int extver, STATUS *pStatus)
 
   fits_write_chksum(fptr, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }

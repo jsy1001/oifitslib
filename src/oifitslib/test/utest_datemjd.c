@@ -26,12 +26,11 @@
 #include "datemjd.h"
 #include <glib.h>
 
-
 static void test_convert(void)
 {
   long year, month, day;
 
-  g_assert_cmpint(date2mjd(1901,  1,  1), ==, 15385);
+  g_assert_cmpint(date2mjd(1901, 1, 1), ==, 15385);
   g_assert_cmpint(date2mjd(2014, 11, 13), ==, 56974);
   g_assert_cmpint(date2mjd(2099, 12, 31), ==, 88068);
 
@@ -48,7 +47,6 @@ static void test_convert(void)
   g_assert_cmpint(month, ==, 12);
   g_assert_cmpint(day, ==, 31);
 }
-
 
 int main(int argc, char *argv[])
 {

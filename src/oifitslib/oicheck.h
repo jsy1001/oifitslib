@@ -76,31 +76,33 @@
  * Data structures
  */
 
-
-#define MAX_REPORT 10  /**< Maximum times to report same class of breach */
+#define MAX_REPORT 10 /**< Maximum times to report same class of breach */
 
 /** Severity of a check failure */
-typedef enum {
+typedef enum
+{
   OI_BREACH_NONE,       /**< No problem */
   OI_BREACH_WARNING,    /**< Valid OIFITS, but may cause problems */
   OI_BREACH_NOT_OIFITS, /**< Does not conform to the OIFITS standard */
   OI_BREACH_NOT_FITS,   /**< Does not conform to the FITS standard */
+
 } oi_breach_level;
 
 extern const char *const oi_breach_level_desc[];
 
 /** Result of checking for a particular class of standard breach */
-typedef struct {
+typedef struct
+{
   oi_breach_level level;      /**< Severity of breach */
-  char *description;    /**< Description of breach */
+  char *description;          /**< Description of breach */
   int numBreach;              /**< Number of occurrences found */
   char *location[MAX_REPORT]; /**< Strings identifying locations of breaches */
   GStringChunk *chunk;        /**< Storage for strings */
+
 } oi_check_result;
 
 /** Standard interface to checking function. */
 typedef oi_breach_level (*check_func)(const oi_fits *, oi_check_result *);
-
 
 /*
  * Function prototypes

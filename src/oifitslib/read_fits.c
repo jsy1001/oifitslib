@@ -32,7 +32,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-
 /*
  * Private functions
  */
@@ -45,12 +44,14 @@
 static bool read_key_opt_string(fitsfile *fptr, const char *keyname,
                                 char *keyval, STATUS *pStatus)
 {
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_write_errmark();
-  if (fits_read_key(fptr, TSTRING, keyname, keyval, NULL, pStatus)) {
+  if (fits_read_key(fptr, TSTRING, keyname, keyval, NULL, pStatus))
+  {
     keyval[0] = '\0';
-    if (*pStatus == KEY_NO_EXIST) {
+    if (*pStatus == KEY_NO_EXIST)
+    {
       *pStatus = 0;
       fits_clear_errmark();
     }
@@ -64,15 +65,17 @@ static bool read_key_opt_string(fitsfile *fptr, const char *keyname,
  *
  * @return TRUE if keyword read successfully, FALSE otherwise
  */
-static bool read_key_opt_int(fitsfile *fptr, const char *keyname,
-                             int *keyval, STATUS *pStatus)
+static bool read_key_opt_int(fitsfile *fptr, const char *keyname, int *keyval,
+                             STATUS *pStatus)
 {
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_write_errmark();
-  if (fits_read_key(fptr, TINT, keyname, keyval, NULL, pStatus)) {
+  if (fits_read_key(fptr, TINT, keyname, keyval, NULL, pStatus))
+  {
     *keyval = -1;
-    if (*pStatus == KEY_NO_EXIST) {
+    if (*pStatus == KEY_NO_EXIST)
+    {
       *pStatus = 0;
       fits_clear_errmark();
     }
@@ -91,16 +94,18 @@ static bool read_key_opt_double(fitsfile *fptr, const char *keyname,
 {
   double nan;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Make a NaN */
   nan = 0.0;
   nan /= nan;
 
   fits_write_errmark();
-  if (fits_read_key(fptr, TDOUBLE, keyname, keyval, NULL, pStatus)) {
+  if (fits_read_key(fptr, TDOUBLE, keyname, keyval, NULL, pStatus))
+  {
     *keyval = nan;
-    if (*pStatus == KEY_NO_EXIST) {
+    if (*pStatus == KEY_NO_EXIST)
+    {
       *pStatus = 0;
       fits_clear_errmark();
     }
@@ -119,34 +124,40 @@ static bool read_key_opt_double(fitsfile *fptr, const char *keyname,
  * @return TRUE if column read successfully, FALSE otherwise
  */
 static bool read_col_string(fitsfile *fptr, bool optional, char *colname,
-                            long maxRepeat, long irow,
-                            char *value, STATUS *pStatus)
+                            long maxRepeat, long irow, char *value,
+                            STATUS *pStatus)
 {
   int colnum, typecode, anynull;
   long actualRepeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, colname, &colnum, pStatus);
-  if (*pStatus == COL_NOT_FOUND) {
-    if (optional) {
+  if (*pStatus == COL_NOT_FOUND)
+  {
+    if (optional)
+    {
       *pStatus = 0;
       fits_clear_errmark();
     }
     return FALSE;
-  } else {
+  }
+  else
+  {
     fits_get_coltype(fptr, colnum, &typecode, &actualRepeat, NULL, pStatus);
-    if (typecode != TSTRING) {
+    if (typecode != TSTRING)
+    {
       *pStatus = BAD_BTABLE_FORMAT;
       return FALSE;
     }
-    if (actualRepeat > maxRepeat) {
+    if (actualRepeat > maxRepeat)
+    {
       *pStatus = BAD_BTABLE_FORMAT;
       return FALSE;
     }
-    if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                      &value, &anynull, pStatus))
+    if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL, &value, &anynull,
+                      pStatus))
       return FALSE;
     return TRUE;
   }
@@ -160,44 +171,50 @@ static bool read_col_string(fitsfile *fptr, bool optional, char *colname,
  * Sets the CFITSIO error status to BAD_BTABLE_FORMAT if the first
  * column matching @a colname does not have a string type.
  *
- * If @a warnRepeat is set, prints a warning to stdout if the actual repeat count
- * of the column doesn't match @a maxRepeat.
+ * If @a warnRepeat is set, prints a warning to stdout if the actual repeat
+ * count of the column doesn't match @a maxRepeat.
  *
  * @return TRUE if column read successfully, FALSE otherwise
  */
 static bool read_col_string_truncate(fitsfile *fptr, bool optional,
                                      char *colname, long maxRepeat,
-                                     bool warnRepeat, long irow,
-                                     char *value, STATUS *pStatus)
+                                     bool warnRepeat, long irow, char *value,
+                                     STATUS *pStatus)
 {
   int colnum, typecode, anynull;
   long actualRepeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, colname, &colnum, pStatus);
-  if (*pStatus == COL_NOT_FOUND) {
-    if (optional) {
+  if (*pStatus == COL_NOT_FOUND)
+  {
+    if (optional)
+    {
       *pStatus = 0;
       fits_clear_errmark();
     }
     return FALSE;
-  } else {
+  }
+  else
+  {
     fits_get_coltype(fptr, colnum, &typecode, &actualRepeat, NULL, pStatus);
-    if (typecode != TSTRING) {
+    if (typecode != TSTRING)
+    {
       *pStatus = BAD_BTABLE_FORMAT;
       return FALSE;
     }
     if (warnRepeat && actualRepeat != maxRepeat)
       printf("WARNING! Expecting format %ldA but found %ldA for column '%s'\n",
-        maxRepeat, actualRepeat, colname);
+             maxRepeat, actualRepeat, colname);
     char *longvalue = chkmalloc(actualRepeat + 1);
-    if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL,
-                      &longvalue, &anynull, pStatus))
+    if (fits_read_col(fptr, TSTRING, colnum, irow, 1, 1, NULL, &longvalue,
+                      &anynull, pStatus))
       return FALSE;
     int i;
-    for (i = 0; longvalue[i] != '\0' && i < maxRepeat; i++) {
+    for (i = 0; longvalue[i] != '\0' && i < maxRepeat; i++)
+    {
       value[i] = longvalue[i];
     }
     value[i] = '\0';
@@ -221,14 +238,18 @@ static STATUS verify_chksum(fitsfile *fptr, STATUS *pStatus)
   char extname[FLEN_VALUE];
   int hdunum, extver;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_verify_chksum(fptr, &dataok, &hduok, pStatus);
-  if (dataok == -1 || hduok == -1) {
+  if (dataok == -1 || hduok == -1)
+  {
     fits_get_hdu_num(fptr, &hdunum);
-    if (!read_key_opt_string(fptr, "EXTNAME", extname, pStatus)) {
+    if (!read_key_opt_string(fptr, "EXTNAME", extname, pStatus))
+    {
       extver = 0;
-    } else if (!read_key_opt_int(fptr, "EXTVER", &extver, pStatus)) {
+    }
+    else if (!read_key_opt_int(fptr, "EXTVER", &extver, pStatus))
+    {
       extver = 0;
     }
     if (dataok == -1)
@@ -259,22 +280,29 @@ static STATUS next_named_hdu(fitsfile *fptr, const char *reqName,
   char extname[FLEN_VALUE];
   int hdutype;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Move to correct HDU - don't assume anything about EXTVERs */
-  while (1 == 1) {
+  while (1 == 1)
+  {
     fits_movrel_hdu(fptr, 1, &hdutype, pStatus);
-    if (*pStatus) return *pStatus;  /* no more HDUs */
-    if (hdutype == BINARY_TBL) {
+    if (*pStatus) return *pStatus; /* no more HDUs */
+    if (hdutype == BINARY_TBL)
+    {
       fits_write_errmark();
       fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
-      if (*pStatus == KEY_NO_EXIST) {
+      if (*pStatus == KEY_NO_EXIST)
+      {
         printf("WARNING! Skipping binary table HDU with no EXTNAME\n");
         *pStatus = 0;
         fits_clear_errmark();
-      } else if (*pStatus) {
+      }
+      else if (*pStatus)
+      {
         return *pStatus;
-      } else if (strcmp(extname, reqName) == 0) {
+      }
+      else if (strcmp(extname, reqName) == 0)
+      {
         break; /* current HDU matches */
       }
     }
@@ -301,29 +329,33 @@ static STATUS specific_named_hdu(fitsfile *fptr, const char *reqName,
   char extname[FLEN_VALUE], value[FLEN_VALUE];
   int ihdu, nhdu, hdutype;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Move to correct HDU - don't assume anything about EXTVERs */
   fits_get_num_hdus(fptr, &nhdu, pStatus);
   if (*pStatus) return *pStatus;
-  for (ihdu = 2; ihdu <= nhdu; ihdu++) {
+  for (ihdu = 2; ihdu <= nhdu; ihdu++)
+  {
     fits_movabs_hdu(fptr, ihdu, &hdutype, pStatus);
     if (*pStatus) return *pStatus;
-    if (hdutype == BINARY_TBL) {
+    if (hdutype == BINARY_TBL)
+    {
       fits_write_errmark();
       fits_read_key(fptr, TSTRING, "EXTNAME", extname, NULL, pStatus);
       fits_read_key(fptr, TSTRING, keyword, value, NULL, pStatus);
-      if (*pStatus) {
+      if (*pStatus)
+      {
         *pStatus = 0;
         fits_clear_errmark();
         continue; /* next HDU */
       }
       if (strcmp(extname, reqName) != 0 || strcmp(value, reqVal) != 0)
-        continue;  /* next HDU */
+        continue; /* next HDU */
     }
     break; /* current HDU matches */
   }
-  if (ihdu > nhdu) {
+  if (ihdu > nhdu)
+  {
     /* no matching HDU */
     *pStatus = BAD_HDU_NUM;
   }
@@ -351,7 +383,7 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   int irow, colnum, anynull;
   long nrows;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Make a NaN */
   nan = 0.0;
@@ -359,18 +391,23 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pArray->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_ARRAY table");
     return *pStatus;
   }
-  if (pArray->revision > revision) {
+  if (pArray->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_ARRAY table. Got %d\n",
            revision, pArray->revision);
   }
-  if (arrname == NULL) {
+  if (arrname == NULL)
+  {
     fits_read_key(fptr, TSTRING, "ARRNAME", name, NULL, pStatus);
     strncpy(pArray->arrname, name, FLEN_VALUE);
-  } else {
+  }
+  else
+  {
     strncpy(pArray->arrname, arrname, FLEN_VALUE);
   }
   fits_read_key(fptr, TSTRING, "FRAME", pArray->frame, NULL, pStatus);
@@ -382,7 +419,8 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   if (*pStatus) return *pStatus;
   alloc_oi_array(pArray, nrows);
   /* read rows */
-  for (irow = 1; irow <= pArray->nelement; irow++) {
+  for (irow = 1; irow <= pArray->nelement; irow++)
+  {
     read_col_string(fptr, FALSE, "TEL_NAME", 16, irow,
                     pArray->elem[irow - 1].tel_name, pStatus);
     read_col_string(fptr, FALSE, "STA_NAME", 16, irow,
@@ -396,13 +434,16 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
     fits_get_colnum(fptr, CASEINSEN, "STAXYZ", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 3, NULL,
                   &pArray->elem[irow - 1].staxyz, &anynull, pStatus);
-    if (pArray->revision >= 2) {
+    if (pArray->revision >= 2)
+    {
       fits_get_colnum(fptr, CASEINSEN, "FOV", &colnum, pStatus);
       fits_read_col(fptr, TDOUBLE, colnum, irow, 1, 1, NULL,
                     &pArray->elem[irow - 1].fov, &anynull, pStatus);
       read_col_string(fptr, FALSE, "FOVTYPE", 6, irow,
                       pArray->elem[irow - 1].fovtype, pStatus);
-    } else {
+    }
+    else
+    {
       pArray->elem[irow - 1].fov = nan;
       strncpy(pArray->elem[irow - 1].fovtype, "FWHM", 7);
     }
@@ -414,7 +455,6 @@ static STATUS read_oi_array_chdu(fitsfile *fptr, oi_array *pArray,
   }
   return *pStatus;
 }
-
 
 /**
  * Read OI_WAVELENGTH fits binary table at current HDU.
@@ -435,22 +475,27 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   int colnum, anynull;
   long nrows;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pWave->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_WAVELENGTH table");
     return *pStatus;
   }
-  if (pWave->revision > revision) {
+  if (pWave->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_WAVELENGTH table. Got %d\n",
            revision, pWave->revision);
   }
-  if (insname == NULL) {
+  if (insname == NULL)
+  {
     fits_read_key(fptr, TSTRING, "INSNAME", name, NULL, pStatus);
     strncpy(pWave->insname, name, FLEN_VALUE);
-  } else {
+  }
+  else
+  {
     strncpy(pWave->insname, insname, FLEN_VALUE);
   }
 
@@ -460,14 +505,13 @@ static STATUS read_oi_wavelength_chdu(fitsfile *fptr, oi_wavelength *pWave,
   alloc_oi_wavelength(pWave, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "EFF_WAVE", &colnum, pStatus);
-  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, NULL,
-                pWave->eff_wave, &anynull, pStatus);
+  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, NULL, pWave->eff_wave,
+                &anynull, pStatus);
   fits_get_colnum(fptr, CASEINSEN, "EFF_BAND", &colnum, pStatus);
-  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, NULL,
-                pWave->eff_band, &anynull, pStatus);
+  fits_read_col(fptr, TFLOAT, colnum, 1, 1, pWave->nwave, NULL, pWave->eff_band,
+                &anynull, pStatus);
   return *pStatus;
 }
-
 
 /**
  * Read OI_CORR fits binary table at current HDU.
@@ -488,22 +532,27 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   int colnum, anynull;
   long nrows;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pCorr->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_CORR table");
     return *pStatus;
   }
-  if (pCorr->revision > revision) {
+  if (pCorr->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_CORR table. Got %d\n",
            revision, pCorr->revision);
   }
-  if (corrname == NULL) {
+  if (corrname == NULL)
+  {
     fits_read_key(fptr, TSTRING, "CORRNAME", name, NULL, pStatus);
     strncpy(pCorr->corrname, name, FLEN_VALUE);
-  } else {
+  }
+  else
+  {
     strncpy(pCorr->corrname, corrname, FLEN_VALUE);
   }
   fits_read_key(fptr, TINT, "NDATA", &pCorr->ndata, NULL, pStatus);
@@ -514,17 +563,16 @@ static STATUS read_oi_corr_chdu(fitsfile *fptr, oi_corr *pCorr,
   alloc_oi_corr(pCorr, nrows);
   /* read columns */
   fits_get_colnum(fptr, CASEINSEN, "IINDX", &colnum, pStatus);
-  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, NULL,
-                pCorr->iindx, &anynull, pStatus);
+  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, NULL, pCorr->iindx,
+                &anynull, pStatus);
   fits_get_colnum(fptr, CASEINSEN, "JINDX", &colnum, pStatus);
-  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, NULL,
-                pCorr->jindx, &anynull, pStatus);
+  fits_read_col(fptr, TINT, colnum, 1, 1, pCorr->ncorr, NULL, pCorr->jindx,
+                &anynull, pStatus);
   fits_get_colnum(fptr, CASEINSEN, "CORR", &colnum, pStatus);
-  fits_read_col(fptr, TDOUBLE, colnum, 1, 1, pCorr->ncorr, NULL,
-                pCorr->corr, &anynull, pStatus);
+  fits_read_col(fptr, TDOUBLE, colnum, 1, 1, pCorr->ncorr, NULL, pCorr->corr,
+                &anynull, pStatus);
   return *pStatus;
 }
-
 
 /**
  * Read OI_INSPOL fits binary table at current HDU.
@@ -543,15 +591,17 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
   int irow, colnum, anynull;
   long nrows, repeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pInspol->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_INSPOL table");
     return *pStatus;
   }
-  if (pInspol->revision > revision) {
+  if (pInspol->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_INSPOL table. Got %d\n",
            revision, pInspol->revision);
   }
@@ -569,7 +619,8 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
   if (*pStatus) return *pStatus;
   alloc_oi_inspol(pInspol, nrows, repeat);
   /* read rows */
-  for (irow = 1; irow <= pInspol->numrec; irow++) {
+  for (irow = 1; irow <= pInspol->numrec; irow++)
+  {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pInspol->record[irow - 1].target_id, &anynull, pStatus);
@@ -589,8 +640,8 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
                   pInspol->record[irow - 1].jyy, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "JXY", &colnum, pStatus);
-    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave,
-                  NULL, pInspol->record[irow - 1].jxy, &anynull, pStatus);
+    fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
+                  pInspol->record[irow - 1].jxy, &anynull, pStatus);
     fits_get_colnum(fptr, CASEINSEN, "JYX", &colnum, pStatus);
     fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pInspol->nwave, NULL,
                   pInspol->record[irow - 1].jyx, &anynull, pStatus);
@@ -600,7 +651,6 @@ static STATUS read_oi_inspol_chdu(fitsfile *fptr, oi_inspol *pInspol,
   }
   return *pStatus;
 }
-
 
 /*
  * Public functions
@@ -622,7 +672,7 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
 {
   const char function[] = "read_oi_header";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Move to primary HDU */
   fits_movabs_hdu(fptr, 1, NULL, pStatus);
@@ -645,7 +695,8 @@ STATUS read_oi_header(fitsfile *fptr, oi_header *pHeader, STATUS *pStatus)
   read_key_opt_string(fptr, "PROCSOFT", pHeader->procsoft, pStatus);
   read_key_opt_string(fptr, "OBSTECH", pHeader->obstech, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -669,16 +720,18 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   int irow, colnum, anynull;
   long nrows;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_movnam_hdu(fptr, BINARY_TBL, "OI_TARGET", 0, pStatus);
   verify_chksum(fptr, pStatus);
   fits_read_key(fptr, TINT, "OI_REVN", &pTargets->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_TARGET table");
     goto except;
   }
-  if (pTargets->revision > revision) {
+  if (pTargets->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_TARGET table. Got %d\n",
            revision, pTargets->revision);
   }
@@ -687,7 +740,8 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   if (*pStatus) goto except;
   alloc_oi_target(pTargets, nrows);
   /* read rows */
-  for (irow = 1; irow <= pTargets->ntarget; irow++) {
+  for (irow = 1; irow <= pTargets->ntarget; irow++)
+  {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pTargets->targ[irow - 1].target_id, &anynull, pStatus);
@@ -744,28 +798,31 @@ STATUS read_oi_target(fitsfile *fptr, oi_target *pTargets, STATUS *pStatus)
   }
 
   /* Read optional column */
-  if (pTargets->revision >= 2) {
-    pTargets->usecategory = read_col_string(fptr, TRUE, "CATEGORY", 3, 1,
-                                            pTargets->targ[0].category,
-                                            pStatus);
-    if (pTargets->usecategory) {
+  if (pTargets->revision >= 2)
+  {
+    pTargets->usecategory = read_col_string(
+        fptr, TRUE, "CATEGORY", 3, 1, pTargets->targ[0].category, pStatus);
+    if (pTargets->usecategory)
+    {
       for (irow = 2; irow <= pTargets->ntarget; irow++)
         read_col_string(fptr, FALSE, "CATEGORY", 3, irow,
                         pTargets->targ[irow - 1].category, pStatus);
     }
-  } else {
+  }
+  else
+  {
     /* ignore CATEGORY column in revision 1 table */
     pTargets->usecategory = FALSE;
   }
 
 except:
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read OI_ARRAY fits binary table with specified ARRNAME
@@ -783,13 +840,14 @@ STATUS read_oi_array(fitsfile *fptr, char *arrname, oi_array *pArray,
 {
   const char function[] = "read_oi_array";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   specific_named_hdu(fptr, "OI_ARRAY", "ARRNAME", arrname, pStatus);
   verify_chksum(fptr, pStatus);
   read_oi_array_chdu(fptr, pArray, arrname, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -810,21 +868,20 @@ STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_array";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_ARRAY", pStatus);
-  if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+  if (*pStatus == END_OF_FILE) return *pStatus; /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_array_chdu(fptr, pArray, NULL, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read OI_WAVELENGTH fits binary table with specified INSNAME
@@ -833,7 +890,7 @@ STATUS read_next_oi_array(fitsfile *fptr, oi_array *pArray, STATUS *pStatus)
  * @param insname  read table with this value for INSNAME
  * @param pWave    pointer to wavelength data struct, see exchange.h
  * @param pStatus  pointer to status variable
-*
+ *
  * @return On error, returns non-zero cfitsio error code (also assigned to
  *         *pStatus). Contents of wavelength data struct are undefined
  */
@@ -842,13 +899,14 @@ STATUS read_oi_wavelength(fitsfile *fptr, char *insname, oi_wavelength *pWave,
 {
   const char function[] = "read_oi_wavelength";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   specific_named_hdu(fptr, "OI_WAVELENGTH", "INSNAME", insname, pStatus);
   verify_chksum(fptr, pStatus);
   read_oi_wavelength_chdu(fptr, pWave, insname, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -870,21 +928,20 @@ STATUS read_next_oi_wavelength(fitsfile *fptr, oi_wavelength *pWave,
 {
   const char function[] = "read_next_oi_wavelength";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_WAVELENGTH", pStatus);
-  if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+  if (*pStatus == END_OF_FILE) return *pStatus; /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_wavelength_chdu(fptr, pWave, NULL, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read OI_CORR fits binary table with specified CORRNAME
@@ -902,13 +959,14 @@ STATUS read_oi_corr(fitsfile *fptr, char *corrname, oi_corr *pCorr,
 {
   const char function[] = "read_oi_corr";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   specific_named_hdu(fptr, "OI_CORR", "CORRNAME", corrname, pStatus);
   verify_chksum(fptr, pStatus);
   read_oi_corr_chdu(fptr, pCorr, corrname, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
@@ -929,21 +987,20 @@ STATUS read_next_oi_corr(fitsfile *fptr, oi_corr *pCorr, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_corr";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_CORR", pStatus);
-  if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+  if (*pStatus == END_OF_FILE) return *pStatus; /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_corr_chdu(fptr, pCorr, NULL, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read next OI_INSPOL fits binary table
@@ -959,39 +1016,40 @@ STATUS read_next_oi_inspol(fitsfile *fptr, oi_inspol *pInspol, STATUS *pStatus)
 {
   const char function[] = "read_next_oi_inspol";
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_INSPOL", pStatus);
-  if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+  if (*pStatus == END_OF_FILE) return *pStatus; /* don't report EOF to stderr */
   verify_chksum(fptr, pStatus);
   read_oi_inspol_chdu(fptr, pInspol, pStatus);
 
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
 
-
 /**
  * Read OI_VIS optional columns for complex visibility representation
  */
-static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
-                                  bool correlated, STATUS *pStatus)
+static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis, bool correlated,
+                                  STATUS *pStatus)
 {
   char keyword[FLEN_VALUE];
   int irow, colnum, anynull;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
-  if (*pStatus == COL_NOT_FOUND) {
+  if (*pStatus == COL_NOT_FOUND)
+  {
     pVis->usecomplex = FALSE;
     pVis->complexunit[0] = '\0';
-    for (irow = 1; irow <= pVis->numrec; irow++) {
+    for (irow = 1; irow <= pVis->numrec; irow++)
+    {
       pVis->record[irow - 1].rvis = NULL;
       pVis->record[irow - 1].rviserr = NULL;
       pVis->record[irow - 1].ivis = NULL;
@@ -999,30 +1057,25 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
     }
     *pStatus = 0;
     fits_clear_errmark();
-  } else {
+  }
+  else
+  {
     pVis->usecomplex = TRUE;
     /* read unit (mandatory if RVIS present) */
     fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
     snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
     fits_read_key(fptr, TSTRING, keyword, pVis->complexunit, NULL, pStatus);
 
-    for (irow = 1; irow <= pVis->numrec; irow++) {
-      pVis->record[irow - 1].rvis = chkmalloc
-        (
-          pVis->nwave * sizeof(pVis->record[0].rvis[0])
-        );
-      pVis->record[irow - 1].rviserr = chkmalloc
-        (
-          pVis->nwave * sizeof(pVis->record[0].rviserr[0])
-        );
-      pVis->record[irow - 1].ivis = chkmalloc
-        (
-          pVis->nwave * sizeof(pVis->record[0].ivis[0])
-        );
-      pVis->record[irow - 1].iviserr = chkmalloc
-        (
-          pVis->nwave * sizeof(pVis->record[0].iviserr[0])
-        );
+    for (irow = 1; irow <= pVis->numrec; irow++)
+    {
+      pVis->record[irow - 1].rvis =
+          chkmalloc(pVis->nwave * sizeof(pVis->record[0].rvis[0]));
+      pVis->record[irow - 1].rviserr =
+          chkmalloc(pVis->nwave * sizeof(pVis->record[0].rviserr[0]));
+      pVis->record[irow - 1].ivis =
+          chkmalloc(pVis->nwave * sizeof(pVis->record[0].ivis[0]));
+      pVis->record[irow - 1].iviserr =
+          chkmalloc(pVis->nwave * sizeof(pVis->record[0].iviserr[0]));
       fits_get_colnum(fptr, CASEINSEN, "RVIS", &colnum, pStatus);
       fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
                     pVis->record[irow - 1].rvis, &anynull, pStatus);
@@ -1035,7 +1088,8 @@ static STATUS read_oi_vis_complex(fitsfile *fptr, oi_vis *pVis,
       fits_get_colnum(fptr, CASEINSEN, "IVISERR", &colnum, pStatus);
       fits_read_col(fptr, TDOUBLE, colnum, irow, 1, pVis->nwave, NULL,
                     pVis->record[irow - 1].iviserr, &anynull, pStatus);
-      if (correlated) {
+      if (correlated)
+      {
         fits_get_colnum(fptr, CASEINSEN, "CORRINDX_RVIS", &colnum, pStatus);
         fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                       &pVis->record[irow - 1].corrindx_rvis, &anynull, pStatus);
@@ -1056,9 +1110,10 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   int irow, colnum, anynull;
   bool correlated;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
-  if (pVis->revision == OI_REVN_V1_VIS) {
+  if (pVis->revision == OI_REVN_V1_VIS)
+  {
     pVis->corrname[0] = '\0';
     pVis->amptyp[0] = '\0';
     pVis->phityp[0] = '\0';
@@ -1077,8 +1132,10 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   read_key_opt_int(fptr, "PHIORDER", &pVis->phiorder, pStatus);
 
   /* Read optional columns */
-  if (correlated) {
-    for (irow = 1; irow <= pVis->numrec; irow++) {
+  if (correlated)
+  {
+    for (irow = 1; irow <= pVis->numrec; irow++)
+    {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VISAMP", &colnum, pStatus);
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pVis->record[irow - 1].corrindx_visamp, &anynull, pStatus);
@@ -1089,20 +1146,23 @@ static STATUS read_oi_vis_opt(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   }
   fits_write_errmark();
   fits_get_colnum(fptr, CASEINSEN, "VISREFMAP", &colnum, pStatus);
-  if (*pStatus == COL_NOT_FOUND) {
+  if (*pStatus == COL_NOT_FOUND)
+  {
     pVis->usevisrefmap = FALSE;
-    for (irow = 1; irow <= pVis->numrec; irow++) {
+    for (irow = 1; irow <= pVis->numrec; irow++)
+    {
       pVis->record[irow - 1].visrefmap = NULL;
     }
     *pStatus = 0;
     fits_clear_errmark();
-  } else {
+  }
+  else
+  {
     pVis->usevisrefmap = TRUE;
-    for (irow = 1; irow <= pVis->numrec; irow++) {
-      pVis->record[irow - 1].visrefmap = chkmalloc
-        (
-          pVis->nwave * pVis->nwave * sizeof(pVis->record[0].visrefmap[0])
-        );
+    for (irow = 1; irow <= pVis->numrec; irow++)
+    {
+      pVis->record[irow - 1].visrefmap = chkmalloc(
+          pVis->nwave * pVis->nwave * sizeof(pVis->record[0].visrefmap[0]));
       fits_read_col(fptr, TLOGICAL, colnum, irow, 1, pVis->nwave * pVis->nwave,
                     NULL, pVis->record[irow - 1].visrefmap, &anynull, pStatus);
     }
@@ -1130,22 +1190,24 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   int irow, colnum, anynull;
   long nrows, repeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_VIS", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+    return *pStatus; /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_VIS table");
     goto except;
   }
-  if (pVis->revision > revision) {
+  if (pVis->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS table. Got %d\n",
            revision, pVis->revision);
   }
@@ -1163,7 +1225,8 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
   read_key_opt_string(fptr, keyword, pVis->ampunit, pStatus);
   /* read rows */
-  for (irow = 1; irow <= pVis->numrec; irow++) {
+  for (irow = 1; irow <= pVis->numrec; irow++)
+  {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pVis->record[irow - 1].target_id, &anynull, pStatus);
@@ -1204,13 +1267,13 @@ STATUS read_next_oi_vis(fitsfile *fptr, oi_vis *pVis, STATUS *pStatus)
   read_oi_vis_opt(fptr, pVis, pStatus);
 
 except:
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read next OI_VIS2 fits binary table
@@ -1230,22 +1293,24 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   int irow, colnum, anynull;
   long nrows, repeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_VIS2", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+    return *pStatus; /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pVis2->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_VIS2 table");
     goto except;
   }
-  if (pVis2->revision > revision) {
+  if (pVis2->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_VIS2 table. Got %d\n",
            revision, pVis2->revision);
   }
@@ -1254,9 +1319,12 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   fits_read_key(fptr, TSTRING, "INSNAME", pVis2->insname, NULL, pStatus);
 
   if (pVis2->revision >= 2 &&
-      read_key_opt_string(fptr, "CORRNAME", pVis2->corrname, pStatus)) {
+      read_key_opt_string(fptr, "CORRNAME", pVis2->corrname, pStatus))
+  {
     correlated = TRUE;
-  } else {
+  }
+  else
+  {
     correlated = FALSE;
     pVis2->corrname[0] = '\0';
   }
@@ -1269,7 +1337,8 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
   if (*pStatus) goto except;
   alloc_oi_vis2(pVis2, nrows, repeat);
   /* read rows */
-  for (irow = 1; irow <= pVis2->numrec; irow++) {
+  for (irow = 1; irow <= pVis2->numrec; irow++)
+  {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pVis2->record[irow - 1].target_id, &anynull, pStatus);
@@ -1302,22 +1371,23 @@ STATUS read_next_oi_vis2(fitsfile *fptr, oi_vis2 *pVis2, STATUS *pStatus)
                   pVis2->record[irow - 1].flag, &anynull, pStatus);
 
     /* read optional columns */
-    if (correlated) {
+    if (correlated)
+    {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_VIS2DATA", &colnum, pStatus);
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-                    &pVis2->record[irow - 1].corrindx_vis2data,
-                    &anynull, pStatus);
+                    &pVis2->record[irow - 1].corrindx_vis2data, &anynull,
+                    pStatus);
     }
   }
 
 except:
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "FITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read next OI_T3 fits binary table
@@ -1337,22 +1407,24 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   int irow, colnum, anynull;
   long nrows, repeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_T3", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+    return *pStatus; /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pT3->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_T3 table");
     goto except;
   }
-  if (pT3->revision > revision) {
+  if (pT3->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_T3 table. Got %d\n",
            revision, pT3->revision);
   }
@@ -1362,9 +1434,12 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   fits_read_key(fptr, TSTRING, "INSNAME", pT3->insname, NULL, pStatus);
 
   if (pT3->revision >= 2 &&
-      read_key_opt_string(fptr, "CORRNAME", pT3->corrname, pStatus)) {
+      read_key_opt_string(fptr, "CORRNAME", pT3->corrname, pStatus))
+  {
     correlated = TRUE;
-  } else {
+  }
+  else
+  {
     correlated = FALSE;
     pT3->corrname[0] = '\0';
   }
@@ -1378,7 +1453,8 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   if (*pStatus) goto except;
   alloc_oi_t3(pT3, nrows, repeat);
   /* read rows */
-  for (irow = 1; irow <= pT3->numrec; irow++) {
+  for (irow = 1; irow <= pT3->numrec; irow++)
+  {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pT3->record[irow - 1].target_id, &anynull, pStatus);
@@ -1423,7 +1499,8 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
                   pT3->record[irow - 1].flag, &anynull, pStatus);
 
     /* read optional columns */
-    if (correlated) {
+    if (correlated)
+    {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_T3AMP", &colnum, pStatus);
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pT3->record[irow - 1].corrindx_t3amp, &anynull, pStatus);
@@ -1434,13 +1511,13 @@ STATUS read_next_oi_t3(fitsfile *fptr, oi_t3 *pT3, STATUS *pStatus)
   }
 
 except:
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }
   return *pStatus;
 }
-
 
 /**
  * Read next OI_FLUX fits binary table
@@ -1461,31 +1538,36 @@ STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus)
   int irow, colnum, anynull;
   long nrows, repeat;
 
-  if (*pStatus) return *pStatus;  /* error flag set - do nothing */
+  if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   next_named_hdu(fptr, "OI_FLUX", pStatus);
   if (*pStatus == END_OF_FILE)
-    return *pStatus;  /* don't report EOF to stderr */
+    return *pStatus; /* don't report EOF to stderr */
   else if (*pStatus)
     goto except;
   verify_chksum(fptr, pStatus);
 
   /* Read table */
   fits_read_key(fptr, TINT, "OI_REVN", &pFlux->revision, NULL, pStatus);
-  if (*pStatus) {
+  if (*pStatus)
+  {
     fits_write_errmsg("Failed to read OI_REVN kw in OI_FLUX table");
     goto except;
   }
-  if (pFlux->revision > revision) {
+  if (pFlux->revision > revision)
+  {
     printf("WARNING! Expecting OI_REVN <= %d in OI_FLUX table. Got %d\n",
            revision, pFlux->revision);
   }
   fits_read_key(fptr, TSTRING, "DATE-OBS", pFlux->date_obs, NULL, pStatus);
   read_key_opt_string(fptr, "ARRNAME", pFlux->arrname, pStatus);
   fits_read_key(fptr, TSTRING, "INSNAME", pFlux->insname, NULL, pStatus);
-  if (read_key_opt_string(fptr, "CORRNAME", pFlux->corrname, pStatus)) {
+  if (read_key_opt_string(fptr, "CORRNAME", pFlux->corrname, pStatus))
+  {
     correlated = TRUE;
-  } else {
+  }
+  else
+  {
     pFlux->corrname[0] = '\0';
     correlated = FALSE;
   }
@@ -1504,7 +1586,8 @@ STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus)
   snprintf(keyword, FLEN_KEYWORD, "TUNIT%d", colnum);
   fits_read_key(fptr, TSTRING, keyword, pFlux->fluxunit, NULL, pStatus);
   /* read rows */
-  for (irow = 1; irow <= pFlux->numrec; irow++) {
+  for (irow = 1; irow <= pFlux->numrec; irow++)
+  {
     fits_get_colnum(fptr, CASEINSEN, "TARGET_ID", &colnum, pStatus);
     fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                   &pFlux->record[irow - 1].target_id, &anynull, pStatus);
@@ -1527,24 +1610,29 @@ STATUS read_next_oi_flux(fitsfile *fptr, oi_flux *pFlux, STATUS *pStatus)
     /* read optional columns */
     fits_write_errmark();
     fits_get_colnum(fptr, CASEINSEN, "STA_INDEX", &colnum, pStatus);
-    if (*pStatus == COL_NOT_FOUND) {
+    if (*pStatus == COL_NOT_FOUND)
+    {
       pFlux->record[irow - 1].sta_index = -1;
       *pStatus = 0;
       fits_clear_errmark();
-    } else {
+    }
+    else
+    {
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
                     &pFlux->record[irow - 1].sta_index, &anynull, pStatus);
     }
-    if (correlated) {
+    if (correlated)
+    {
       fits_get_colnum(fptr, CASEINSEN, "CORRINDX_FLUXDATA", &colnum, pStatus);
       fits_read_col(fptr, TINT, colnum, irow, 1, 1, NULL,
-                    &pFlux->record[irow - 1].corrindx_fluxdata,
-                    &anynull, pStatus);
+                    &pFlux->record[irow - 1].corrindx_fluxdata, &anynull,
+                    pStatus);
     }
   }
 
 except:
-  if (*pStatus && !oi_hush_errors) {
+  if (*pStatus && !oi_hush_errors)
+  {
     fprintf(stderr, "CFITSIO error in %s:\n", function);
     fits_report_error(stderr, *pStatus);
   }

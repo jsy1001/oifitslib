@@ -54,14 +54,12 @@ static bool oi_vis_iter_accept_channel(oi_vis_iter *pIter)
   if (snrPhi < pIter->filter.snr_range[0] ||
       snrPhi > pIter->filter.snr_range[1])
     return false;
-  uvrad = (pow(pRec->ucoord * pRec->ucoord +
-               pRec->vcoord * pRec->vcoord, 0.5) /
+  uvrad = (pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5) /
            pIter->pWave->eff_wave[pIter->iwave]);
   if (uvrad < pIter->filter.uvrad_range[0] ||
       uvrad > pIter->filter.uvrad_range[1])
     return false;
-  if (pRec->flag[pIter->iwave] && !pIter->filter.accept_flagged)
-    return false;
+  if (pRec->flag[pIter->iwave] && !pIter->filter.accept_flagged) return false;
 
   return true;
 }
@@ -80,17 +78,14 @@ static bool oi_vis2_iter_accept_channel(oi_vis2_iter *pIter)
       pIter->pWave->eff_wave[pIter->iwave] > pIter->filter.wave_range[1])
     return false;
   snr = pRec->vis2data[pIter->iwave] / pRec->vis2err[pIter->iwave];
-  if (snr < pIter->filter.snr_range[0] ||
-      snr > pIter->filter.snr_range[1])
+  if (snr < pIter->filter.snr_range[0] || snr > pIter->filter.snr_range[1])
     return false;
-  uvrad = (pow(pRec->ucoord * pRec->ucoord +
-               pRec->vcoord * pRec->vcoord, 0.5) /
+  uvrad = (pow(pRec->ucoord * pRec->ucoord + pRec->vcoord * pRec->vcoord, 0.5) /
            pIter->pWave->eff_wave[pIter->iwave]);
   if (uvrad < pIter->filter.uvrad_range[0] ||
       uvrad > pIter->filter.uvrad_range[1])
     return false;
-  if (pRec->flag[pIter->iwave] && !pIter->filter.accept_flagged)
-    return false;
+  if (pRec->flag[pIter->iwave] && !pIter->filter.accept_flagged) return false;
 
   return true;
 }
@@ -108,13 +103,15 @@ static bool oi_t3_iter_accept_channel(oi_t3_iter *pIter)
   if (pIter->pWave->eff_wave[pIter->iwave] < pIter->filter.wave_range[0] ||
       pIter->pWave->eff_wave[pIter->iwave] > pIter->filter.wave_range[1])
     return false;
-  if (pIter->filter.accept_t3amp) {
+  if (pIter->filter.accept_t3amp)
+  {
     snrAmp = pRec->t3amp[pIter->iwave] / pRec->t3amperr[pIter->iwave];
     if (snrAmp < pIter->filter.snr_range[0] ||
         snrAmp > pIter->filter.snr_range[1])
       return false;
   }
-  if (pIter->filter.accept_t3phi) {
+  if (pIter->filter.accept_t3phi)
+  {
     snrPhi = RAD2DEG / pRec->t3phierr[pIter->iwave];
     if (snrPhi < pIter->filter.snr_range[0] ||
         snrPhi > pIter->filter.snr_range[1])
@@ -135,8 +132,7 @@ static bool oi_t3_iter_accept_channel(oi_t3_iter *pIter)
       acRad < pIter->filter.uvrad_range[0] ||
       acRad > pIter->filter.uvrad_range[1])
     return false;
-  if (pRec->flag[pIter->iwave] && !pIter->filter.accept_flagged)
-    return false;
+  if (pRec->flag[pIter->iwave] && !pIter->filter.accept_flagged) return false;
 
   return true;
 }
@@ -217,17 +213,17 @@ static bool oi_t3_iter_accept_record(oi_t3_iter *pIter)
   return true;
 }
 
-#define ACCEPT_ARRNAME(pTable, pFilter)                                 \
-  ( (pFilter)->arrname_pttn == NULL ||                                  \
-    g_pattern_match_string((pFilter)->arrname_pttn, (pTable)->arrname) )
+#define ACCEPT_ARRNAME(pTable, pFilter)                                        \
+  ((pFilter)->arrname_pttn == NULL ||                                          \
+   g_pattern_match_string((pFilter)->arrname_pttn, (pTable)->arrname))
 
-#define ACCEPT_INSNAME(pTable, pFilter)                                 \
-  ( (pFilter)->insname_pttn == NULL ||                                  \
-    g_pattern_match_string((pFilter)->insname_pttn, (pTable)->insname) )
+#define ACCEPT_INSNAME(pTable, pFilter)                                        \
+  ((pFilter)->insname_pttn == NULL ||                                          \
+   g_pattern_match_string((pFilter)->insname_pttn, (pTable)->insname))
 
-#define ACCEPT_CORRNAME(pTable, pFilter)                                \
-  ( (pFilter)->corrname_pttn == NULL ||                                 \
-    g_pattern_match_string((pFilter)->corrname_pttn, (pTable)->corrname) )
+#define ACCEPT_CORRNAME(pTable, pFilter)                                       \
+  ((pFilter)->corrname_pttn == NULL ||                                         \
+   g_pattern_match_string((pFilter)->corrname_pttn, (pTable)->corrname))
 
 /**
  * Does current OI_VIS table pass filter?
@@ -262,7 +258,6 @@ static bool oi_t3_iter_accept_table(oi_t3_iter *pIter)
           ACCEPT_CORRNAME(pTable, &pIter->filter));
 }
 
-
 /*
  * Public functions
  */
@@ -286,10 +281,13 @@ void oi_vis_iter_init(oi_vis_iter *pIter, const oi_fits *pData,
   else
     init_oi_filter(&pIter->filter);
   pIter->link = pData->visList;
-  if (pIter->link != NULL) {
+  if (pIter->link != NULL)
+  {
     oi_vis *pTable = (oi_vis *)pIter->link->data;
     pIter->pWave = oi_fits_lookup_wavelength(pIter->pData, pTable->insname);
-  } else {
+  }
+  else
+  {
     pIter->pWave = NULL;
   }
   pIter->extver = 1;
@@ -316,10 +314,13 @@ void oi_vis2_iter_init(oi_vis2_iter *pIter, const oi_fits *pData,
   else
     init_oi_filter(&pIter->filter);
   pIter->link = pData->vis2List;
-  if (pIter->link != NULL) {
+  if (pIter->link != NULL)
+  {
     oi_vis2 *pTable = (oi_vis2 *)pIter->link->data;
     pIter->pWave = oi_fits_lookup_wavelength(pIter->pData, pTable->insname);
-  } else {
+  }
+  else
+  {
     pIter->pWave = NULL;
   }
   pIter->extver = 1;
@@ -346,10 +347,13 @@ void oi_t3_iter_init(oi_t3_iter *pIter, const oi_fits *pData,
   else
     init_oi_filter(&pIter->filter);
   pIter->link = pData->t3List;
-  if (pIter->link != NULL) {
+  if (pIter->link != NULL)
+  {
     oi_t3 *pTable = (oi_t3 *)pIter->link->data;
     pIter->pWave = oi_fits_lookup_wavelength(pIter->pData, pTable->insname);
-  } else {
+  }
+  else
+  {
     pIter->pWave = NULL;
   }
   pIter->extver = 1;
@@ -357,26 +361,22 @@ void oi_t3_iter_init(oi_t3_iter *pIter, const oi_fits *pData,
   pIter->iwave = -1;
 }
 
-#define NEXT_CHANNEL(pIter, tabType)                                    \
-  ( (pIter)->link != NULL &&                                            \
-    (pIter)->iwave < ((tabType *)((pIter)->link->data))->nwave - 1 &&   \
-    (++(pIter)->iwave, true) )
+#define NEXT_CHANNEL(pIter, tabType)                                           \
+  ((pIter)->link != NULL &&                                                    \
+   (pIter)->iwave < ((tabType *)((pIter)->link->data))->nwave - 1 &&           \
+   (++(pIter)->iwave, true))
 
-#define NEXT_RECORD(pIter, tabType)                                     \
-  ( (pIter)->link != NULL &&                                            \
-    (pIter)->irec < ((tabType *)((pIter)->link->data))->numrec - 1 &&   \
-    (++(pIter)->irec, (pIter)->iwave = 0, true) )
+#define NEXT_RECORD(pIter, tabType)                                            \
+  ((pIter)->link != NULL &&                                                    \
+   (pIter)->irec < ((tabType *)((pIter)->link->data))->numrec - 1 &&           \
+   (++(pIter)->irec, (pIter)->iwave = 0, true))
 
-#define NEXT_TABLE(pIter, tabType)                                      \
-  ( (pIter)->link != NULL && (pIter)->link->next != NULL &&             \
-    ((pIter)->link = (pIter)->link->next,                               \
-     ((pIter)->pWave =                                                  \
-      oi_fits_lookup_wavelength((pIter)->pData,                         \
-                                ((tabType *)((pIter)->link->data))->insname)), \
-     ++(pIter)->extver,                                                 \
-     (pIter)->irec = 0,                                                 \
-     (pIter)->iwave = 0,                                                \
-     true) )
+#define NEXT_TABLE(pIter, tabType)                                             \
+  ((pIter)->link != NULL && (pIter)->link->next != NULL &&                     \
+   ((pIter)->link = (pIter)->link->next,                                       \
+    ((pIter)->pWave = oi_fits_lookup_wavelength(                               \
+         (pIter)->pData, ((tabType *)((pIter)->link->data))->insname)),        \
+    ++(pIter)->extver, (pIter)->irec = 0, (pIter)->iwave = 0, true))
 
 /**
  * Get next complex visibility datum that passes filter.
@@ -389,13 +389,12 @@ void oi_t3_iter_init(oi_t3_iter *pIter, const oi_fits *pData,
  * @param pIwave   Return location for channel index, or NULL.
  * @return bool  true if succesful, false if end of data reached.
  */
-bool oi_vis_iter_next(oi_vis_iter *pIter,
-                     int *const pExtver, oi_vis **ppTable,
-                     long *const pIrec, oi_vis_record **ppRec,
-                     int *const pIwave)
+bool oi_vis_iter_next(oi_vis_iter *pIter, int *const pExtver, oi_vis **ppTable,
+                      long *const pIrec, oi_vis_record **ppRec,
+                      int *const pIwave)
 {
   bool ret = false;
-  
+
   g_assert(pIter != NULL);
   g_assert(pIter->pData != NULL);
 
@@ -410,9 +409,9 @@ bool oi_vis_iter_next(oi_vis_iter *pIter,
     pIter->filter.corrname_pttn = g_pattern_spec_new(pIter->filter.corrname);
 
   /* Advance to next data point */
-  do {
-    if (!(NEXT_CHANNEL(pIter, oi_vis) ||
-          NEXT_RECORD(pIter, oi_vis) ||
+  do
+  {
+    if (!(NEXT_CHANNEL(pIter, oi_vis) || NEXT_RECORD(pIter, oi_vis) ||
           NEXT_TABLE(pIter, oi_vis)))
       goto finally;
   } while (!(oi_vis_iter_accept_table(pIter) &&
@@ -423,16 +422,11 @@ bool oi_vis_iter_next(oi_vis_iter *pIter,
   // TODO: provide access to wavelength or u/lambda, v/lambda
   ret = true;
   oi_vis *pTable = (oi_vis *)pIter->link->data;
-  if (pExtver != NULL)
-    *pExtver = pIter->extver;
-  if (ppTable != NULL)
-    *ppTable = pTable;
-  if (pIrec != NULL)
-    *pIrec = pIter->irec;
-  if (ppRec != NULL)
-    *ppRec = &pTable->record[pIter->irec];
-  if (pIwave != NULL)
-    *pIwave = pIter->iwave;
+  if (pExtver != NULL) *pExtver = pIter->extver;
+  if (ppTable != NULL) *ppTable = pTable;
+  if (pIrec != NULL) *pIrec = pIter->irec;
+  if (ppRec != NULL) *ppRec = &pTable->record[pIter->irec];
+  if (pIwave != NULL) *pIwave = pIter->iwave;
 
 finally:
   /* Free compiled patterns */
@@ -457,13 +451,12 @@ finally:
  * @param pIwave   Return location for channel index, or NULL.
  * @return bool  true if succesful, false if end of data reached.
  */
-bool oi_vis2_iter_next(oi_vis2_iter *pIter,
-                       int *const pExtver, oi_vis2 **ppTable,
-                       long *const pIrec, oi_vis2_record **ppRec,
-                       int *const pIwave)
+bool oi_vis2_iter_next(oi_vis2_iter *pIter, int *const pExtver,
+                       oi_vis2 **ppTable, long *const pIrec,
+                       oi_vis2_record **ppRec, int *const pIwave)
 {
   bool ret = false;
-  
+
   g_assert(pIter != NULL);
   g_assert(pIter->pData != NULL);
 
@@ -478,9 +471,9 @@ bool oi_vis2_iter_next(oi_vis2_iter *pIter,
     pIter->filter.corrname_pttn = g_pattern_spec_new(pIter->filter.corrname);
 
   /* Advance to next data point */
-  do {
-    if (!(NEXT_CHANNEL(pIter, oi_vis2) ||
-          NEXT_RECORD(pIter, oi_vis2) ||
+  do
+  {
+    if (!(NEXT_CHANNEL(pIter, oi_vis2) || NEXT_RECORD(pIter, oi_vis2) ||
           NEXT_TABLE(pIter, oi_vis2)))
       goto finally;
   } while (!(oi_vis2_iter_accept_table(pIter) &&
@@ -491,16 +484,11 @@ bool oi_vis2_iter_next(oi_vis2_iter *pIter,
   // TODO: provide access to wavelength or u/lambda, v/lambda
   ret = true;
   oi_vis2 *pTable = (oi_vis2 *)pIter->link->data;
-  if (pExtver != NULL)
-    *pExtver = pIter->extver;
-  if (ppTable != NULL)
-    *ppTable = pTable;
-  if (pIrec != NULL)
-    *pIrec = pIter->irec;
-  if (ppRec != NULL)
-    *ppRec = &pTable->record[pIter->irec];
-  if (pIwave != NULL)
-    *pIwave = pIter->iwave;
+  if (pExtver != NULL) *pExtver = pIter->extver;
+  if (ppTable != NULL) *ppTable = pTable;
+  if (pIrec != NULL) *pIrec = pIter->irec;
+  if (ppRec != NULL) *ppRec = &pTable->record[pIter->irec];
+  if (pIwave != NULL) *pIwave = pIter->iwave;
 
 finally:
   /* Free compiled patterns */
@@ -525,13 +513,11 @@ finally:
  * @param pIwave   Return location for channel index, or NULL.
  * @return bool  true if succesful, false if end of data reached.
  */
-bool oi_t3_iter_next(oi_t3_iter *pIter,
-                     int *const pExtver, oi_t3 **ppTable,
-                     long *const pIrec, oi_t3_record **ppRec,
-                     int *const pIwave)
+bool oi_t3_iter_next(oi_t3_iter *pIter, int *const pExtver, oi_t3 **ppTable,
+                     long *const pIrec, oi_t3_record **ppRec, int *const pIwave)
 {
   bool ret = false;
-  
+
   g_assert(pIter != NULL);
   g_assert(pIter->pData != NULL);
 
@@ -546,9 +532,9 @@ bool oi_t3_iter_next(oi_t3_iter *pIter,
     pIter->filter.corrname_pttn = g_pattern_spec_new(pIter->filter.corrname);
 
   /* Advance to next data point */
-  do {
-    if (!(NEXT_CHANNEL(pIter, oi_t3) ||
-          NEXT_RECORD(pIter, oi_t3) ||
+  do
+  {
+    if (!(NEXT_CHANNEL(pIter, oi_t3) || NEXT_RECORD(pIter, oi_t3) ||
           NEXT_TABLE(pIter, oi_t3)))
       goto finally;
   } while (!(oi_t3_iter_accept_table(pIter) &&
@@ -559,16 +545,11 @@ bool oi_t3_iter_next(oi_t3_iter *pIter,
   // TODO: provide access to wavelength or u/lambda, v/lambda
   ret = true;
   oi_t3 *pTable = (oi_t3 *)pIter->link->data;
-  if (pExtver != NULL)
-    *pExtver = pIter->extver;
-  if (ppTable != NULL)
-    *ppTable = pTable;
-  if (pIrec != NULL)
-    *pIrec = pIter->irec;
-  if (ppRec != NULL)
-    *ppRec = &pTable->record[pIter->irec];
-  if (pIwave != NULL)
-    *pIwave = pIter->iwave;
+  if (pExtver != NULL) *pExtver = pIter->extver;
+  if (ppTable != NULL) *ppTable = pTable;
+  if (pIrec != NULL) *pIrec = pIter->irec;
+  if (ppRec != NULL) *ppRec = &pTable->record[pIter->irec];
+  if (pIwave != NULL) *pIwave = pIter->iwave;
 
 finally:
   /* Free compiled patterns */
@@ -598,14 +579,10 @@ void oi_vis_iter_get_uv(const oi_vis_iter *pIter, double *const pEffWave,
   oi_vis *pTable = (oi_vis *)pIter->link->data;
   oi_vis_record *pRec = &pTable->record[pIter->irec];
   double effWave = pIter->pWave->eff_wave[pIter->iwave];
-  if (pEffWave != NULL)
-    *pEffWave = effWave;
-  if (pEffWave != NULL)
-    *pEffWave = effWave;
-  if (pU != NULL)
-    *pU = pRec->ucoord / effWave;
-  if (pV != NULL)
-    *pV = pRec->vcoord / effWave;
+  if (pEffWave != NULL) *pEffWave = effWave;
+  if (pEffWave != NULL) *pEffWave = effWave;
+  if (pU != NULL) *pU = pRec->ucoord / effWave;
+  if (pV != NULL) *pV = pRec->vcoord / effWave;
 }
 
 /**
@@ -624,12 +601,9 @@ void oi_vis2_iter_get_uv(const oi_vis2_iter *pIter, double *const pEffWave,
   oi_vis2 *pTable = (oi_vis2 *)pIter->link->data;
   oi_vis2_record *pRec = &pTable->record[pIter->irec];
   double effWave = pIter->pWave->eff_wave[pIter->iwave];
-  if (pEffWave != NULL)
-    *pEffWave = effWave;
-  if (pU != NULL)
-    *pU = pRec->ucoord / effWave;
-  if (pV != NULL)
-    *pV = pRec->vcoord / effWave;
+  if (pEffWave != NULL) *pEffWave = effWave;
+  if (pU != NULL) *pU = pRec->ucoord / effWave;
+  if (pV != NULL) *pV = pRec->vcoord / effWave;
 }
 
 /**
@@ -647,22 +621,17 @@ void oi_vis2_iter_get_uv(const oi_vis2_iter *pIter, double *const pEffWave,
  *                  or NULL.
  */
 void oi_t3_iter_get_uv(const oi_t3_iter *pIter, double *const pEffWave,
-                       double *const pU1, double *const pV1,
-                       double *const pU2, double *const pV2)
+                       double *const pU1, double *const pV1, double *const pU2,
+                       double *const pV2)
 {
   g_assert(pIter != NULL);
 
   oi_t3 *pTable = (oi_t3 *)pIter->link->data;
   oi_t3_record *pRec = &pTable->record[pIter->irec];
   double effWave = pIter->pWave->eff_wave[pIter->iwave];
-  if (pEffWave != NULL)
-    *pEffWave = effWave;
-  if (pU1 != NULL)
-    *pU1 = pRec->u1coord / effWave;
-  if (pV1 != NULL)
-    *pV1 = pRec->v1coord / effWave;
-  if (pU2 != NULL)
-    *pU2 = pRec->u2coord / effWave;
-  if (pV2 != NULL)
-    *pV2 = pRec->v2coord / effWave;
+  if (pEffWave != NULL) *pEffWave = effWave;
+  if (pU1 != NULL) *pU1 = pRec->u1coord / effWave;
+  if (pV1 != NULL) *pV1 = pRec->v1coord / effWave;
+  if (pU2 != NULL) *pU2 = pRec->u2coord / effWave;
+  if (pV2 != NULL) *pV2 = pRec->v2coord / effWave;
 }

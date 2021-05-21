@@ -69,32 +69,32 @@
 
 #include "oifile.h"
 
-
 /** Filter specification for OIFITS data */
-typedef struct {
+typedef struct
+{
   /** @publicsection */
   char arrname[FLEN_VALUE];  /**< Accept ARRNAMEs matching this pattern */
   char insname[FLEN_VALUE];  /**< Accept INSNAMEs matching this pattern */
   char corrname[FLEN_VALUE]; /**< Accept CORRNAMEs matching this pattern */
-  int target_id;       /**< If >= 0, accept this TARGET_ID only */
-  double mjd_range[2]; /**< Minimum and maximum MJD to accept */
-  float wave_range[2]; /**< Minimum and maximum central wavelength /m */
-  double bas_range[2]; /**< Minimum and maximum projected baseline /m */
-  double uvrad_range[2];  /**< Minimum and maximum UV radius /wavelength */
-  float snr_range[2];  /**< Minimum and maximum SNR to accept */
-  int accept_vis;      /**< If non-zero, accept OI_VIS data */
-  int accept_vis2;     /**< If non-zero, accept OI_VIS2 data */
-  int accept_t3amp;    /**< If non-zero, accept OI_T3 amplitude data */
-  int accept_t3phi;    /**< If non-zero, accept OI_T3 phase data */
-  int accept_flux;     /**< If non-zero, accept OI_FLUX data */
-  int accept_flagged;  /**< If non-zero, accept records with all data flagged */
+  int target_id;             /**< If >= 0, accept this TARGET_ID only */
+  double mjd_range[2];       /**< Minimum and maximum MJD to accept */
+  float wave_range[2];       /**< Minimum and maximum central wavelength /m */
+  double bas_range[2];       /**< Minimum and maximum projected baseline /m */
+  double uvrad_range[2];     /**< Minimum and maximum UV radius /wavelength */
+  float snr_range[2];        /**< Minimum and maximum SNR to accept */
+  int accept_vis;            /**< If non-zero, accept OI_VIS data */
+  int accept_vis2;           /**< If non-zero, accept OI_VIS2 data */
+  int accept_t3amp;          /**< If non-zero, accept OI_T3 amplitude data */
+  int accept_t3phi;          /**< If non-zero, accept OI_T3 phase data */
+  int accept_flux;           /**< If non-zero, accept OI_FLUX data */
+  int accept_flagged; /**< If non-zero, accept records with all data flagged */
 
   /** @privatesection */
-  GPatternSpec *arrname_pttn;  /**< Compiled pattern to match ARRNAME against */
-  GPatternSpec *insname_pttn;  /**< Compiled pattern to match INSNAME against */
-  GPatternSpec *corrname_pttn; /**< Compiled pattern to match CORRNAME against */
+  GPatternSpec *arrname_pttn; /**< Compiled pattern to match ARRNAME against */
+  GPatternSpec *insname_pttn; /**< Compiled pattern to match INSNAME against */
+  GPatternSpec
+      *corrname_pttn; /**< Compiled pattern to match CORRNAME against */
 } oi_filter_spec;
-
 
 /*
  * Function prototypes
@@ -128,12 +128,12 @@ void filter_oi_vis2(const oi_vis2 *, const oi_filter_spec *,
                     const oi_wavelength *, const char *, oi_vis2 *);
 void filter_all_oi_t3(const oi_fits *, const oi_filter_spec *, GHashTable *,
                       oi_fits *);
-void filter_oi_t3(const oi_t3 *, const oi_filter_spec *,
-                  const oi_wavelength *, const char *, oi_t3 *);
-void filter_all_oi_flux(const oi_fits *, const oi_filter_spec *,
-                        GHashTable *, oi_fits *);
-void filter_oi_flux(const oi_flux *, const oi_filter_spec *,
-                    const char *, oi_flux *);
+void filter_oi_t3(const oi_t3 *, const oi_filter_spec *, const oi_wavelength *,
+                  const char *, oi_t3 *);
+void filter_all_oi_flux(const oi_fits *, const oi_filter_spec *, GHashTable *,
+                        oi_fits *);
+void filter_oi_flux(const oi_flux *, const oi_filter_spec *, const char *,
+                    oi_flux *);
 
 #endif /* #ifndef OIFILTER_H */
 

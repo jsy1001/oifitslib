@@ -50,45 +50,48 @@
 #include <glib.h>
 #include "exchange.h"
 
-
 /*
  * Macros
  */
 
-#define MEMDUP(dest, src, size) \
-  do { (dest) = malloc(size); memcpy(dest, src, size); } while (0)
-
+#define MEMDUP(dest, src, size)                                                \
+  do                                                                           \
+  {                                                                            \
+    (dest) = malloc(size);                                                     \
+    memcpy(dest, src, size);                                                   \
+  } while (0)
 
 /*
  * Data structures
  */
 
 /** Data for OIFITS file */
-typedef struct {
-  int numArray;              /**< Length of arrayList */
-  int numWavelength;         /**< Length of wavelengthList */
-  int numCorr;               /**< Length of corrList */
-  int numInspol;             /**< Length of inspolList */
-  int numVis;                /**< Length of visList */
-  int numVis2;               /**< Length of vis2List */
-  int numT3;                 /**< Length of t3List */
-  int numFlux;               /**< Length of fluxList */
-  oi_header header;          /**< oi_header struct */
-  oi_target targets;         /**< oi_target struct */
-  GList *arrayList;          /**< Linked list of oi_array structs */
-  GList *wavelengthList;     /**< Linked list of oi_wavelength structs */
-  GList *corrList;           /**< Linked list of oi_corr structs */
-  GList *inspolList;         /**< Linked list of oi_inspol structs */
-  GList *visList;            /**< Linked list of oi_vis structs */
-  GList *vis2List;           /**< Linked list of oi_vis2 structs */
-  GList *t3List;             /**< Linked list of oi_t3 structs */
-  GList *fluxList;           /**< Linked list of oi_flux structs */
-  GHashTable *arrayHash;     /**< Hash table of oi_array, indexed by ARRNAME */
+typedef struct
+{
+  int numArray;               /**< Length of arrayList */
+  int numWavelength;          /**< Length of wavelengthList */
+  int numCorr;                /**< Length of corrList */
+  int numInspol;              /**< Length of inspolList */
+  int numVis;                 /**< Length of visList */
+  int numVis2;                /**< Length of vis2List */
+  int numT3;                  /**< Length of t3List */
+  int numFlux;                /**< Length of fluxList */
+  oi_header header;           /**< oi_header struct */
+  oi_target targets;          /**< oi_target struct */
+  GList *arrayList;           /**< Linked list of oi_array structs */
+  GList *wavelengthList;      /**< Linked list of oi_wavelength structs */
+  GList *corrList;            /**< Linked list of oi_corr structs */
+  GList *inspolList;          /**< Linked list of oi_inspol structs */
+  GList *visList;             /**< Linked list of oi_vis structs */
+  GList *vis2List;            /**< Linked list of oi_vis2 structs */
+  GList *t3List;              /**< Linked list of oi_t3 structs */
+  GList *fluxList;            /**< Linked list of oi_flux structs */
+  GHashTable *arrayHash;      /**< Hash table of oi_array, indexed by ARRNAME */
   GHashTable *wavelengthHash; /**< Hash table of oi_wavelength,
                                    indexed by INSNAME */
-  GHashTable *corrHash;      /**< Hash table of oi_corr, indexed by CORRNAME */
-} oi_fits;
+  GHashTable *corrHash;       /**< Hash table of oi_corr, indexed by CORRNAME */
 
+} oi_fits;
 
 /*
  * Function prototypes, for functions from oifile.c

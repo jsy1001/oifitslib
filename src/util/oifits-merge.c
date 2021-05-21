@@ -24,7 +24,6 @@
 
 #include "oimerge.h"
 
-
 /**
  * Main function for command-line check utility
  */
@@ -37,14 +36,16 @@ int main(int argc, char *argv[])
   int status, i, num;
 
   /* Parse command-line */
-  if (argc < 4) {
+  if (argc < 4)
+  {
     printf("Usage:\n%s OUTFILE INFILE1 INFILE2...\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }
   outFilename = argv[1];
   filenameList = NULL;
   num = argc - 2;
-  for (i = 0; i < num; i++) {
+  for (i = 0; i < num; i++)
+  {
     filenameList = g_list_append(filenameList, argv[2 + i]);
   }
 
@@ -52,7 +53,8 @@ int main(int argc, char *argv[])
   status = 0;
   inOiList = NULL;
   link = filenameList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     filename = (char *)link->data;
     pOi = malloc(sizeof(oi_fits));
     read_oi_fits(filename, pOi, &status);
@@ -75,7 +77,8 @@ int main(int argc, char *argv[])
   /* Free storage */
   g_list_free(filenameList);
   link = inOiList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pOi = (oi_fits *)link->data;
     free_oi_fits(pOi);
     free(pOi);

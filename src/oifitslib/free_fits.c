@@ -26,7 +26,6 @@
 
 #include "exchange.h"
 
-
 /**
  * Free dynamically-allocated storage within oi_array struct
  *
@@ -79,7 +78,8 @@ void free_oi_inspol(oi_inspol *pInspol)
 {
   int i;
 
-  for (i = 0; i < pInspol->numrec; i++) {
+  for (i = 0; i < pInspol->numrec; i++)
+  {
     free(pInspol->record[i].jxx);
     free(pInspol->record[i].jyy);
     free(pInspol->record[i].jxy);
@@ -97,17 +97,18 @@ void free_oi_vis(oi_vis *pVis)
 {
   int i;
 
-  for (i = 0; i < pVis->numrec; i++) {
+  for (i = 0; i < pVis->numrec; i++)
+  {
     free(pVis->record[i].visamp);
     free(pVis->record[i].visamperr);
     free(pVis->record[i].visphi);
     free(pVis->record[i].visphierr);
     free(pVis->record[i].flag);
 
-    if (pVis->usevisrefmap)
-      free(pVis->record[i].visrefmap);
+    if (pVis->usevisrefmap) free(pVis->record[i].visrefmap);
 
-    if (pVis->usecomplex) {
+    if (pVis->usecomplex)
+    {
       free(pVis->record[i].rvis);
       free(pVis->record[i].rviserr);
       free(pVis->record[i].ivis);
@@ -126,7 +127,8 @@ void free_oi_vis2(oi_vis2 *pVis2)
 {
   int i;
 
-  for (i = 0; i < pVis2->numrec; i++) {
+  for (i = 0; i < pVis2->numrec; i++)
+  {
     free(pVis2->record[i].vis2data);
     free(pVis2->record[i].vis2err);
     free(pVis2->record[i].flag);
@@ -143,7 +145,8 @@ void free_oi_t3(oi_t3 *pT3)
 {
   int i;
 
-  for (i = 0; i < pT3->numrec; i++) {
+  for (i = 0; i < pT3->numrec; i++)
+  {
     free(pT3->record[i].t3amp);
     free(pT3->record[i].t3amperr);
     free(pT3->record[i].t3phi);
@@ -162,7 +165,8 @@ void free_oi_flux(oi_flux *pFlux)
 {
   int i;
 
-  for (i = 0; i < pFlux->numrec; i++) {
+  for (i = 0; i < pFlux->numrec; i++)
+  {
     free(pFlux->record[i].fluxdata);
     free(pFlux->record[i].fluxerr);
     free(pFlux->record[i].flag);

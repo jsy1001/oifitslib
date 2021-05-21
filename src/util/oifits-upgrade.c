@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 
-
 /**
  * Main function for command-line upgrade utility
  */
@@ -37,7 +36,8 @@ int main(int argc, char *argv[])
   int status;
 
   /* Parse command-line */
-  if (argc < 5) {
+  if (argc < 5)
+  {
     printf("Usage:\n%s INFILE OUTFILE ORIGIN OBSERVER INSMODE\n", argv[0]);
     exit(2); /* standard unix behaviour */
   }

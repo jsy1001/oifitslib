@@ -27,17 +27,18 @@
 #include "oifile.h"
 #include "oicheck.h"
 #include <math.h>
-#include <unistd.h>  /* unlink() */
+#include <unistd.h> /* unlink() */
 
 #define FILENAME "OIFITS2/bigtest2.fits"
 #define RAD2DEG (180.0 / 3.14159)
 
-typedef struct {
+typedef struct
+{
   oi_fits inData;
   oi_fits outData;
   oi_filter_spec filter;
-} TestFixture;
 
+} TestFixture;
 
 static gboolean ignoreRemoved(const char *logDomain, GLogLevelFlags logLevel,
                               const char *message, gpointer userData)
@@ -47,22 +48,20 @@ static gboolean ignoreRemoved(const char *logDomain, GLogLevelFlags logLevel,
 
 static void check(oi_fits *pData)
 {
-  check_func checks[] = {
-    check_tables,
-    check_header,
-    check_keywords,
-    check_visrefmap,
-    check_unique_targets,
-    check_targets_present,
-    check_elements_present,
-    check_corr_present,
-    check_flagging,
-    check_t3amp,
-    check_waveorder,
-    check_time,
-    check_flux,
-    NULL
-  };
+  check_func checks[] = {check_tables,
+                         check_header,
+                         check_keywords,
+                         check_visrefmap,
+                         check_unique_targets,
+                         check_targets_present,
+                         check_elements_present,
+                         check_corr_present,
+                         check_flagging,
+                         check_t3amp,
+                         check_waveorder,
+                         check_time,
+                         check_flux,
+                         NULL};
   oi_check_result result;
   oi_breach_level worst;
   int i;
@@ -70,8 +69,10 @@ static void check(oi_fits *pData)
   /* Run checks */
   worst = OI_BREACH_NONE;
   i = 0;
-  while (checks[i] != NULL) {
-    if ((*checks[i++])(pData, &result) != OI_BREACH_NONE) {
+  while (checks[i] != NULL)
+  {
+    if ((*checks[i++])(pData, &result) != OI_BREACH_NONE)
+    {
       print_check_result(&result);
       g_warning("Check failed");
       if (result.level > worst) worst = result.level;
@@ -79,12 +80,11 @@ static void check(oi_fits *pData)
     free_check_result(&result);
   }
 
-  if (worst == OI_BREACH_NONE)
-    g_debug("All checks passed");
+  if (worst == OI_BREACH_NONE) g_debug("All checks passed");
 
   g_assert_cmpint(pData->numArray, ==, g_list_length(pData->arrayList));
-  g_assert_cmpint(pData->numWavelength,
-                  ==, g_list_length(pData->wavelengthList));
+  g_assert_cmpint(pData->numWavelength, ==,
+                  g_list_length(pData->wavelengthList));
   g_assert_cmpint(pData->numCorr, ==, g_list_length(pData->corrList));
   g_assert_cmpint(pData->numInspol, ==, g_list_length(pData->inspolList));
   g_assert_cmpint(pData->numVis, ==, g_list_length(pData->visList));
@@ -93,8 +93,8 @@ static void check(oi_fits *pData)
   g_assert_cmpint(pData->numFlux, ==, g_list_length(pData->fluxList));
 
   g_assert_cmpint(pData->numArray, ==, g_hash_table_size(pData->arrayHash));
-  g_assert_cmpint(pData->numWavelength,
-                  ==, g_hash_table_size(pData->wavelengthHash));
+  g_assert_cmpint(pData->numWavelength, ==,
+                  g_hash_table_size(pData->wavelengthHash));
   g_assert_cmpint(pData->numCorr, ==, g_hash_table_size(pData->corrHash));
 }
 
@@ -123,9 +123,9 @@ static void teardown_fixture(TestFixture *fix, gconstpointer userData)
 static void test_parse(TestFixture *fix, gconstpointer userData)
 {
   char *args[] = {
-    "utest_oifilter",
-    "--insname=IOTA_IONIC_PICNIC",
-    "--accept-vis2=0",
+      "utest_oifilter",
+      "--insname=IOTA_IONIC_PICNIC",
+      "--accept-vis2=0",
   };
   const int nargs = sizeof(args) / sizeof(args[0]);
   int argc;
@@ -143,8 +143,7 @@ static void test_parse(TestFixture *fix, gconstpointer userData)
    * strings are not freed by GLib, because that shouldn't be done
    * with arguments to main() */
   g_option_context_parse(context, &argc, &argv, &error);
-  if (error != NULL)
-    g_error("Error parsing test options: %s", error->message);
+  if (error != NULL) g_error("Error parsing test options: %s", error->message);
   g_assert_cmpint(argc, ==, 1);
   g_option_context_free(context);
 
@@ -199,8 +198,8 @@ static void test_insname(TestFixture *fix, gconstpointer userData)
   g_test_log_set_fatal_handler(ignoreRemoved, NULL);
   apply_oi_filter(&fix->inData, &fix->filter, &fix->outData);
   check(&fix->outData);
-  g_assert(oi_fits_lookup_wavelength(&fix->outData, "IOTA_IONIC_PICNIC")
-           != NULL);
+  g_assert(oi_fits_lookup_wavelength(&fix->outData, "IOTA_IONIC_PICNIC") !=
+           NULL);
   g_assert(oi_fits_lookup_wavelength(&fix->outData, "CHARA_MIRC") == NULL);
 }
 
@@ -238,7 +237,8 @@ static void test_wave(TestFixture *fix, gconstpointer userData)
   while (link != NULL)
   {
     pWave = (oi_wavelength *)link->data;
-    for (i = 0; i < pWave->nwave; i++) {
+    for (i = 0; i < pWave->nwave; i++)
+    {
       g_assert_cmpfloat(pWave->eff_wave[i], >=, range[0]);
       g_assert_cmpfloat(pWave->eff_wave[i], <=, range[1]);
     }
@@ -246,19 +246,22 @@ static void test_wave(TestFixture *fix, gconstpointer userData)
   }
 }
 
-#define ASSERT_MJD_IN_RANGE(tabList, tabType, range)           \
-  do {                                                         \
-    tabType *tab;                                              \
-    int i;                                                     \
-    GList *link = (tabList);                                   \
-    while (link != NULL) {                                     \
-      tab = (tabType *)link->data;                             \
-      for (i = 0; i < tab->numrec; i++) {                      \
-        g_assert_cmpfloat(tab->record[i].mjd, >=, (range)[0]); \
-        g_assert_cmpfloat(tab->record[i].mjd, <=, (range)[1]); \
-      }                                                        \
-      link = link->next;                                       \
-    }                                                          \
+#define ASSERT_MJD_IN_RANGE(tabList, tabType, range)                           \
+  do                                                                           \
+  {                                                                            \
+    tabType *tab;                                                              \
+    int i;                                                                     \
+    GList *link = (tabList);                                                   \
+    while (link != NULL)                                                       \
+    {                                                                          \
+      tab = (tabType *)link->data;                                             \
+      for (i = 0; i < tab->numrec; i++)                                        \
+      {                                                                        \
+        g_assert_cmpfloat(tab->record[i].mjd, >=, (range)[0]);                 \
+        g_assert_cmpfloat(tab->record[i].mjd, <=, (range)[1]);                 \
+      }                                                                        \
+      link = link->next;                                                       \
+    }                                                                          \
   } while (0)
 
 static void test_mjd(TestFixture *fix, gconstpointer userData)
@@ -294,24 +297,26 @@ static void test_prune(TestFixture *fix, gconstpointer userData)
   ASSERT_MJD_IN_RANGE(fix->outData.fluxList, oi_flux, range);
 }
 
-
-#define ASSERT_BAS_IN_RANGE(tabList, tabType, range) \
-  do {                                               \
-    tabType *tab;                                    \
-    int i;                                           \
-    double u, v, bas;                                \
-    GList *link = (tabList);                         \
-    while (link != NULL) {                           \
-      tab = (tabType *)link->data;                   \
-      for (i = 0; i < tab->numrec; i++) {            \
-        u = tab->record[i].ucoord;                   \
-        v = tab->record[i].vcoord;                   \
-        bas = pow(u * u + v * v, 0.5);               \
-        g_assert_cmpfloat(bas, >=, (range)[0]);      \
-        g_assert_cmpfloat(bas, <=, (range)[1]);      \
-      }                                              \
-      link = link->next;                             \
-    }                                                \
+#define ASSERT_BAS_IN_RANGE(tabList, tabType, range)                           \
+  do                                                                           \
+  {                                                                            \
+    tabType *tab;                                                              \
+    int i;                                                                     \
+    double u, v, bas;                                                          \
+    GList *link = (tabList);                                                   \
+    while (link != NULL)                                                       \
+    {                                                                          \
+      tab = (tabType *)link->data;                                             \
+      for (i = 0; i < tab->numrec; i++)                                        \
+      {                                                                        \
+        u = tab->record[i].ucoord;                                             \
+        v = tab->record[i].vcoord;                                             \
+        bas = pow(u * u + v * v, 0.5);                                         \
+        g_assert_cmpfloat(bas, >=, (range)[0]);                                \
+        g_assert_cmpfloat(bas, <=, (range)[1]);                                \
+      }                                                                        \
+      link = link->next;                                                       \
+    }                                                                          \
   } while (0)
 
 static void test_bas(TestFixture *fix, gconstpointer userData)
@@ -331,9 +336,11 @@ static void test_bas(TestFixture *fix, gconstpointer userData)
   ASSERT_BAS_IN_RANGE(fix->outData.vis2List, oi_vis2, range);
 
   link = fix->outData.t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pT3 = (oi_t3 *)link->data;
-    for (i = 0; i < pT3->numrec; i++) {
+    for (i = 0; i < pT3->numrec; i++)
+    {
       u1 = pT3->record[i].u1coord;
       v1 = pT3->record[i].v1coord;
       u2 = pT3->record[i].u2coord;
@@ -352,31 +359,36 @@ static void test_bas(TestFixture *fix, gconstpointer userData)
   }
 }
 
-#define ASSERT_UVRAD_IN_RANGE(pData, tabList, tabType, range)           \
-  do {                                                                  \
-    oi_wavelength *pWave;                                               \
-    tabType *tab;                                                       \
-    int i, j;                                                           \
-    double u, v, bas, uvrad;                                            \
-    GList *link = (tabList);                                            \
-    while (link != NULL) {                                              \
-      tab = (tabType *)link->data;                                      \
-      pWave = oi_fits_lookup_wavelength((pData), tab->insname);         \
-      g_assert(pWave != NULL);                                          \
-      for (i = 0; i < tab->numrec; i++) {                               \
-        u = tab->record[i].ucoord;                                      \
-        v = tab->record[i].vcoord;                                      \
-        bas = pow(u * u + v * v, 0.5);                                  \
-        for (j = 0; j < tab->nwave; j++) {                              \
-          if (!tab->record[i].flag[j]) {                                \
-            uvrad = bas / pWave->eff_wave[j];                           \
-            g_assert_cmpfloat(uvrad, >=, (range)[0]);                   \
-            g_assert_cmpfloat(uvrad, <=, (range)[1]);                   \
-          }                                                             \
-        }                                                               \
-      }                                                                 \
-      link = link->next;                                                \
-    }                                                                   \
+#define ASSERT_UVRAD_IN_RANGE(pData, tabList, tabType, range)                  \
+  do                                                                           \
+  {                                                                            \
+    oi_wavelength *pWave;                                                      \
+    tabType *tab;                                                              \
+    int i, j;                                                                  \
+    double u, v, bas, uvrad;                                                   \
+    GList *link = (tabList);                                                   \
+    while (link != NULL)                                                       \
+    {                                                                          \
+      tab = (tabType *)link->data;                                             \
+      pWave = oi_fits_lookup_wavelength((pData), tab->insname);                \
+      g_assert(pWave != NULL);                                                 \
+      for (i = 0; i < tab->numrec; i++)                                        \
+      {                                                                        \
+        u = tab->record[i].ucoord;                                             \
+        v = tab->record[i].vcoord;                                             \
+        bas = pow(u * u + v * v, 0.5);                                         \
+        for (j = 0; j < tab->nwave; j++)                                       \
+        {                                                                      \
+          if (!tab->record[i].flag[j])                                         \
+          {                                                                    \
+            uvrad = bas / pWave->eff_wave[j];                                  \
+            g_assert_cmpfloat(uvrad, >=, (range)[0]);                          \
+            g_assert_cmpfloat(uvrad, <=, (range)[1]);                          \
+          }                                                                    \
+        }                                                                      \
+      }                                                                        \
+      link = link->next;                                                       \
+    }                                                                          \
   } while (0)
 
 static void test_uvrad(TestFixture *fix, gconstpointer userData)
@@ -397,17 +409,21 @@ static void test_uvrad(TestFixture *fix, gconstpointer userData)
   ASSERT_UVRAD_IN_RANGE(&fix->outData, fix->outData.vis2List, oi_vis2, range);
 
   link = fix->outData.t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pT3 = (oi_t3 *)link->data;
     pWave = oi_fits_lookup_wavelength(&fix->outData, pT3->insname);
     g_assert(pWave != NULL);
-    for (i = 0; i < pT3->numrec; i++) {
+    for (i = 0; i < pT3->numrec; i++)
+    {
       u1 = pT3->record[i].u1coord;
       v1 = pT3->record[i].v1coord;
       u2 = pT3->record[i].u2coord;
       v2 = pT3->record[i].v2coord;
-      for (j = 0; j < pT3->nwave; j++) { 
-        if (!pT3->record[i].flag[j]) {
+      for (j = 0; j < pT3->nwave; j++)
+      {
+        if (!pT3->record[i].flag[j])
+        {
           abRad = pow(u1 * u1 + v1 * v1, 0.5) / pWave->eff_wave[j];
           bcRad = pow(u2 * u2 + v2 * v2, 0.5) / pWave->eff_wave[j];
           acRad = (pow((u1 + u2) * (u1 + u2) + (v1 + v2) * (v1 + v2), 0.5) /
@@ -445,8 +461,10 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
   while (link != NULL)
   {
     pVis = (oi_vis *)link->data;
-    for (i = 0; i < pVis->numrec; i++) {
-      for (j = 0; j < pVis->nwave; j++) {
+    for (i = 0; i < pVis->numrec; i++)
+    {
+      for (j = 0; j < pVis->nwave; j++)
+      {
         if (!pVis->record[i].flag[j])
         {
           snrAmp = pVis->record[i].visamp[j] / pVis->record[i].visamperr[j];
@@ -464,8 +482,10 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
   while (link != NULL)
   {
     pVis2 = (oi_vis2 *)link->data;
-    for (i = 0; i < pVis2->numrec; i++) {
-      for (j = 0; j < pVis->nwave; j++) {
+    for (i = 0; i < pVis2->numrec; i++)
+    {
+      for (j = 0; j < pVis->nwave; j++)
+      {
         if (!pVis2->record[i].flag[j])
         {
           snr = pVis2->record[i].vis2data[j] / pVis2->record[i].vis2err[j];
@@ -480,8 +500,10 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
   while (link != NULL)
   {
     pT3 = (oi_t3 *)link->data;
-    for (i = 0; i < pT3->numrec; i++) {
-      for (j = 0; j < pVis->nwave; j++) {
+    for (i = 0; i < pT3->numrec; i++)
+    {
+      for (j = 0; j < pVis->nwave; j++)
+      {
         if (!pT3->record[i].flag[j])
         {
           snrAmp = pT3->record[i].t3amp[j] / pT3->record[i].t3amperr[j];
@@ -499,8 +521,10 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
   while (link != NULL)
   {
     pFlux = (oi_flux *)link->data;
-    for (i = 0; i < pFlux->numrec; i++) {
-      for (j = 0; j < pFlux->nwave; j++) {
+    for (i = 0; i < pFlux->numrec; i++)
+    {
+      for (j = 0; j < pFlux->nwave; j++)
+      {
         snr = pFlux->record[i].fluxdata[j] / pFlux->record[i].fluxerr[j];
         g_assert_cmpfloat(snr, >=, range[0]);
         g_assert_cmpfloat(snr, <=, range[1]);
@@ -509,7 +533,6 @@ static void test_snr(TestFixture *fix, gconstpointer userData)
     link = link->next;
   }
 }
-
 
 static void test_vis(TestFixture *fix, gconstpointer userData)
 {
@@ -554,7 +577,6 @@ static void test_t3(TestFixture *fix, gconstpointer userData)
   g_assert_cmpint(fix->outData.numT3, ==, fix->inData.numT3);
 }
 
-
 static void test_flux(TestFixture *fix, gconstpointer userData)
 {
   fix->filter.accept_flux = FALSE;
@@ -564,13 +586,12 @@ static void test_flux(TestFixture *fix, gconstpointer userData)
   g_assert_cmpint(fix->outData.numFlux, ==, 0);
 }
 
-
 int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add("/oifitslib/oifilter/parse", TestFixture, FILENAME,
-             setup_fixture, test_parse, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/parse", TestFixture, FILENAME, setup_fixture,
+             test_parse, teardown_fixture);
   g_test_add("/oifitslib/oifilter/default", TestFixture, FILENAME,
              setup_fixture, test_default, teardown_fixture);
   g_test_add("/oifitslib/oifilter/arrname", TestFixture, FILENAME,
@@ -579,30 +600,30 @@ int main(int argc, char *argv[])
              setup_fixture, test_insname, teardown_fixture);
   g_test_add("/oifitslib/oifilter/corrname", TestFixture, FILENAME,
              setup_fixture, test_corrname, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/target", TestFixture, FILENAME,
-             setup_fixture, test_target, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/target", TestFixture, FILENAME, setup_fixture,
+             test_target, teardown_fixture);
 
-  g_test_add("/oifitslib/oifilter/wave", TestFixture, FILENAME,
-             setup_fixture, test_wave, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/mjd", TestFixture, FILENAME,
-             setup_fixture, test_mjd, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/prune", TestFixture, FILENAME,
-             setup_fixture, test_prune, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/bas", TestFixture, FILENAME,
-             setup_fixture, test_bas, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/uvrad", TestFixture, FILENAME,
-             setup_fixture, test_uvrad, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/snr", TestFixture, FILENAME,
-             setup_fixture, test_snr, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/wave", TestFixture, FILENAME, setup_fixture,
+             test_wave, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/mjd", TestFixture, FILENAME, setup_fixture,
+             test_mjd, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/prune", TestFixture, FILENAME, setup_fixture,
+             test_prune, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/bas", TestFixture, FILENAME, setup_fixture,
+             test_bas, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/uvrad", TestFixture, FILENAME, setup_fixture,
+             test_uvrad, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/snr", TestFixture, FILENAME, setup_fixture,
+             test_snr, teardown_fixture);
 
-  g_test_add("/oifitslib/oifilter/vis", TestFixture, FILENAME,
-             setup_fixture, test_vis, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/vis2", TestFixture, FILENAME,
-             setup_fixture, test_vis2, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/t3", TestFixture, FILENAME,
-             setup_fixture, test_t3, teardown_fixture);
-  g_test_add("/oifitslib/oifilter/flux", TestFixture, FILENAME,
-             setup_fixture, test_flux, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/vis", TestFixture, FILENAME, setup_fixture,
+             test_vis, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/vis2", TestFixture, FILENAME, setup_fixture,
+             test_vis2, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/t3", TestFixture, FILENAME, setup_fixture,
+             test_t3, teardown_fixture);
+  g_test_add("/oifitslib/oifilter/flux", TestFixture, FILENAME, setup_fixture,
+             test_flux, teardown_fixture);
 
   return g_test_run();
 }

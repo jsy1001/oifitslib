@@ -30,95 +30,87 @@
 #define DIR1 "OIFITS1/"
 #define DIR2 "OIFITS2/"
 
-typedef struct {
+typedef struct
+{
   const char *filename1;
   const char *filename2;
   const char *filename3;
-  int numArray;       /**< number of OI_ARRAY expected in output */
-  int numWavelength;  /**< number of OI_WAVELENGTH expected in output */
+  int numArray;      /**< number of OI_ARRAY expected in output */
+  int numWavelength; /**< number of OI_WAVELENGTH expected in output */
+
 } TestCase;
 
-typedef struct {
+typedef struct
+{
   int numCases;
   const TestCase *cases;
+
 } TestSet;
 
-typedef struct {
+typedef struct
+{
   int numVis;
   int numVis2;
   int numT3;
+
 } DataCount;
 
-
 static const TestCase v1Cases[] = {
-  {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "alp_aur--COAST_NICMOS.fits",
-   NULL, 2, 2},
-  {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "alp_aur--COAST_NICMOS.fits",
-   DIR1 "Bin_Ary--MIRC_H.fits", 3, 3},
-  {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "Mystery--AMBER--MedH.fits",
-   NULL, 1, 2},
-  {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
-  {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Bin_Ary--MIRC_H.fits", NULL, 1, 1},
+    {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "alp_aur--COAST_NICMOS.fits", NULL,
+     2, 2},
+    {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "alp_aur--COAST_NICMOS.fits",
+     DIR1 "Bin_Ary--MIRC_H.fits", 3, 3},
+    {DIR1 "Mystery--AMBER--LowH.fits", DIR1 "Mystery--AMBER--MedH.fits", NULL,
+     1, 2},
+    {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+    {DIR1 "Alp_Vic--MIRC_H.fits", DIR1 "Bin_Ary--MIRC_H.fits", NULL, 1, 1},
 };
 
 static const TestCase v2Cases[] = {
-  {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
-   NULL, 2, 2},
-  {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
-   DIR2 "Bin_Ary--MIRC_H.fits", 3, 3},
-  {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits",
-   NULL, 1, 2},
-  {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
-  {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1},
-  {"testdata.fits", DIR2 "bigtest2.fits", NULL, 3, 3}
-};
+    {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits", NULL,
+     2, 2},
+    {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
+     DIR2 "Bin_Ary--MIRC_H.fits", 3, 3},
+    {DIR2 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits", NULL,
+     1, 2},
+    {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+    {DIR2 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1},
+    {"testdata.fits", DIR2 "bigtest2.fits", NULL, 3, 3}};
 
 static const TestCase v12Cases[] = {
-  {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
-   NULL, 2, 2},
-  {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
-   DIR2 "Bin_Ary--MIRC_H.fits", 3, 3},
-  {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits",
-   NULL, 1, 2},
-  {DIR1 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
-  {DIR1 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}
-};
+    {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits", NULL,
+     2, 2},
+    {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "alp_aur--COAST_NICMOS.fits",
+     DIR2 "Bin_Ary--MIRC_H.fits", 3, 3},
+    {DIR1 "Mystery--AMBER--LowH.fits", DIR2 "Mystery--AMBER--MedH.fits", NULL,
+     1, 2},
+    {DIR1 "Alp_Vic--MIRC_H.fits", DIR2 "Alp_Vic--MIRC_K.fits", NULL, 1, 2},
+    {DIR1 "Alp_Vic--MIRC_H.fits", DIR2 "Bin_Ary--MIRC_H.fits", NULL, 1, 1}};
 
-static const TestSet v1Set = {
-  sizeof(v1Cases) / sizeof(v1Cases[0]),
-  v1Cases
-};
+static const TestSet v1Set = {sizeof(v1Cases) / sizeof(v1Cases[0]), v1Cases};
 
-static const TestSet v2Set = {
-  sizeof(v2Cases) / sizeof(v2Cases[0]),
-  v2Cases
-};
+static const TestSet v2Set = {sizeof(v2Cases) / sizeof(v2Cases[0]), v2Cases};
 
-static const TestSet v12Set = {
-  sizeof(v12Cases) / sizeof(v12Cases[0]),
-  v12Cases
-};
-
+static const TestSet v12Set = {sizeof(v12Cases) / sizeof(v12Cases[0]),
+                               v12Cases};
 
 static void check(const oi_fits *pData)
 {
-  check_func checks[] = {
-    check_tables,
-    check_header,
-    check_keywords,
-    check_visrefmap,
-    check_unique_targets,
-    check_targets_present,
-    check_arrname,
-    check_elements_present,
-    check_corr_present,
-    check_flagging,
-    check_t3amp,
-    check_waveorder,
-    check_time,
-    check_flux,
-    NULL
-  };
+  check_func checks[] = {check_tables,
+                         check_header,
+                         check_keywords,
+                         check_visrefmap,
+                         check_unique_targets,
+                         check_targets_present,
+                         check_arrname,
+                         check_elements_present,
+                         check_corr_present,
+                         check_flagging,
+                         check_t3amp,
+                         check_waveorder,
+                         check_time,
+                         check_flux,
+                         NULL};
   oi_check_result result;
   oi_breach_level worst;
   int i;
@@ -126,8 +118,10 @@ static void check(const oi_fits *pData)
   /* Run checks */
   worst = OI_BREACH_NONE;
   i = 0;
-  while (checks[i] != NULL) {
-    if ((*checks[i++])(pData, &result) != OI_BREACH_NONE) {
+  while (checks[i] != NULL)
+  {
+    if ((*checks[i++])(pData, &result) != OI_BREACH_NONE)
+    {
       print_check_result(&result);
       g_warning("Check failed");
       if (result.level > worst) worst = result.level;
@@ -135,19 +129,18 @@ static void check(const oi_fits *pData)
     free_check_result(&result);
   }
 
-  if (worst == OI_BREACH_NONE)
-    g_debug("All checks passed");
+  if (worst == OI_BREACH_NONE) g_debug("All checks passed");
 
   g_assert_cmpint(pData->numArray, ==, g_list_length(pData->arrayList));
-  g_assert_cmpint(pData->numWavelength,
-                  ==, g_list_length(pData->wavelengthList));
+  g_assert_cmpint(pData->numWavelength, ==,
+                  g_list_length(pData->wavelengthList));
   g_assert_cmpint(pData->numVis, ==, g_list_length(pData->visList));
   g_assert_cmpint(pData->numVis2, ==, g_list_length(pData->vis2List));
   g_assert_cmpint(pData->numT3, ==, g_list_length(pData->t3List));
 
   g_assert_cmpint(pData->numArray, ==, g_hash_table_size(pData->arrayHash));
-  g_assert_cmpint(pData->numWavelength,
-                  ==, g_hash_table_size(pData->wavelengthHash));
+  g_assert_cmpint(pData->numWavelength, ==,
+                  g_hash_table_size(pData->wavelengthHash));
 }
 
 static void zero_count(DataCount *pCount)
@@ -166,7 +159,8 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
   /* Count VISAMP/VISPHI in OI_VIS tables */
   link = pData->visList;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis = link->data;
     pCount->numVis += pVis->numrec * pVis->nwave;
     link = link->next;
@@ -174,7 +168,8 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
   /* Count VIS2DATA in OI_VIS2 tables */
   link = pData->vis2List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pVis2 = link->data;
     pCount->numVis2 += pVis2->numrec * pVis2->nwave;
     link = link->next;
@@ -182,7 +177,8 @@ static void add_count(DataCount *pCount, const oi_fits *pData)
 
   /* Count T3AMP/T3PHI in OI_T3 tables */
   link = pData->t3List;
-  while (link != NULL) {
+  while (link != NULL)
+  {
     pT3 = link->data;
     pCount->numT3 += pT3->numrec * pT3->nwave;
     link = link->next;
@@ -199,7 +195,8 @@ static void test_merge(gconstpointer userData)
 
   const TestSet *pSet = userData;
 
-  for (i = 0; i < pSet->numCases; i++) {
+  for (i = 0; i < pSet->numCases; i++)
+  {
     g_message("\nMerging [%s\n         %s\n         %s]",
               pSet->cases[i].filename1, pSet->cases[i].filename2,
               pSet->cases[i].filename3);
@@ -218,7 +215,8 @@ static void test_merge(gconstpointer userData)
     check(&inData2);
     numCorr += inData2.numCorr;
     numInspol += inData2.numInspol;
-    if (pSet->cases[i].filename3 != NULL) {
+    if (pSet->cases[i].filename3 != NULL)
+    {
       read_oi_fits(pSet->cases[i].filename3, &inData3, &status);
       g_assert(!status);
       check(&inData3);
@@ -247,8 +245,7 @@ static void test_merge(gconstpointer userData)
     zero_count(&inCount);
     add_count(&inCount, &inData1);
     add_count(&inCount, &inData2);
-    if (pSet->cases[i].filename3 != NULL)
-      add_count(&inCount, &inData3);
+    if (pSet->cases[i].filename3 != NULL) add_count(&inCount, &inData3);
     zero_count(&outCount);
     add_count(&outCount, &outData);
     g_assert_cmpint(outCount.numVis, ==, inCount.numVis);
@@ -259,18 +256,16 @@ static void test_merge(gconstpointer userData)
     free_oi_fits(&outData);
     free_oi_fits(&inData1);
     free_oi_fits(&inData2);
-    if (pSet->cases[i].filename3 != NULL)
-      free_oi_fits(&inData3);
+    if (pSet->cases[i].filename3 != NULL) free_oi_fits(&inData3);
   }
 }
-
 
 int main(int argc, char *argv[])
 {
   g_test_init(&argc, &argv, NULL);
 
-  g_test_add_data_func("/oifitslib/oimerge/ver1",  &v1Set,  test_merge);
-  g_test_add_data_func("/oifitslib/oimerge/ver2",  &v2Set,  test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver1", &v1Set, test_merge);
+  g_test_add_data_func("/oifitslib/oimerge/ver2", &v2Set, test_merge);
   g_test_add_data_func("/oifitslib/oimerge/ver12", &v12Set, test_merge);
 
   return g_test_run();
