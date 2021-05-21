@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 3.12)
 project(oifitslib C)
 
 find_package(PkgConfig)
-pkg_check_modules(GLIB2 glib-2.0>=2.16.0)
+pkg_check_modules(GLIB2 glib-2.0>=2.56.0)
 pkg_check_modules(CFITSIO cfitsio)
 
 set(INCFILES chkmalloc.h datemjd.h exchange.h oifile.h oicheck.h oifilter.h oimerge.h oiiter.h)

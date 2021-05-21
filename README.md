@@ -1,6 +1,8 @@
 OIFITSlib
 =========
 
+[![CMake](https://github.com/jsy1001/oifitslib/actions/workflows/cmake.yml/badge.svg)](https://github.com/jsy1001/oifitslib/actions/workflows/cmake.yml)
+
 OIFITSlib is a C library for input/output, merging, filtering and checking of
 optical/IR interferometry datasets in the OIFITS exchange format. The published
 specification for OIFITS version 2 is available at
@@ -28,7 +30,7 @@ The following libraries are required - please install them first:
 
 - CFITSIO (version 3.x recommended):
   <http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html>
-- GLib (version 2.16 or later required): <http://www.gtk.org/>
+- GLib (version 2.56 or later required): <http://www.gtk.org/>
 
 CMake is now used for building - this should be more portable than the previous
 Makefile. For those not familiar with CMake, instructions can be found at
