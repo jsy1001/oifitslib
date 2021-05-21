@@ -16,7 +16,7 @@
 # License along with OIFITSlib.  If not, see
 # http://www.gnu.org/licenses/
 
-cmake_minimum_required(VERSION 3.8.2)
+cmake_minimum_required(VERSION 3.12)
 project(oifitslib-test C)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../../testdata)
