@@ -2,7 +2,7 @@
  * @file
  * Command-line OIFITS merge utility.
  *
- * Copyright (C) 2007 John Young
+ * Copyright (C) 2007, 2021 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -23,6 +23,7 @@
  */
 
 #include "oimerge.h"
+#include "chkmalloc.h"
 
 /**
  * Main function for command-line check utility
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
   while (link != NULL)
   {
     filename = (char *)link->data;
-    pOi = malloc(sizeof(oi_fits));
+    pOi = chkmalloc(sizeof(oi_fits));
     read_oi_fits(filename, pOi, &status);
     if (status) goto except;
     inOiList = g_list_append(inOiList, pOi);

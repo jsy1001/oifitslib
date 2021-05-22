@@ -4,7 +4,7 @@
  * Data structure definitions and function prototypes for file-level
  * operations on OIFITS data.
  *
- * Copyright (C) 2007, 2015, 2016, 2018 John Young
+ * Copyright (C) 2007, 2015, 2016, 2018, 2021 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -49,6 +49,7 @@
 
 #include <glib.h>
 #include "exchange.h"
+#include "chkmalloc.h"
 
 /*
  * Macros
@@ -57,7 +58,7 @@
 #define MEMDUP(dest, src, size)                                                \
   do                                                                           \
   {                                                                            \
-    (dest) = malloc(size);                                                     \
+    (dest) = _chkmalloc(size, __FILE__, __LINE__, __func__);                   \
     memcpy(dest, src, size);                                                   \
   } while (0)
 
