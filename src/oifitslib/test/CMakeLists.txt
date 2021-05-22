@@ -39,6 +39,7 @@ if(GLIB2_FOUND)
 
   link_directories(${GLIB2_LIBRARY_DIRS})
 
+  add_unit_test(chkmalloc)
   add_unit_test(datemjd)
   add_unit_test(oifile)
   add_unit_test(oicheck)
