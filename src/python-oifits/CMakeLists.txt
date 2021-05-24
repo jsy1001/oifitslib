@@ -17,6 +17,8 @@
 # http://www.gnu.org/licenses/
 
 cmake_minimum_required(VERSION 3.12)
+cmake_policy(SET CMP0078 OLD)
+cmake_policy(SET CMP0086 OLD)
 project(python-oifits)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../testdata)
@@ -39,7 +41,7 @@ if(GLIB2_FOUND)
     endfunction()
 
     function(install_swig module)
-      install(TARGETS _${module} DESTINATION ${Python2_SITELIB})
+      install(TARGETS ${SWIG_MODULE_${module}_REAL_NAME} DESTINATION ${Python2_SITELIB})
       install(FILES ${PROJECT_BINARY_DIR}/${module}.py DESTINATION ${Python2_SITELIB})
     endfunction()
 
