@@ -30,7 +30,7 @@ set(oifits_SOURCES ${oitable_SOURCES} datemjd.c oifile.c oifilter.c oicheck.c oi
 
 add_library(oitable SHARED ${oitable_SOURCES})
 target_include_directories(oitable
-  PUBLIC ${CFITSIO_INCLUDE_DIRS})
+  PUBLIC . ${CFITSIO_INCLUDE_DIRS})
 target_link_libraries(oitable
   PUBLIC ${CFITSIO_LIBRARIES}
   PRIVATE m)
@@ -46,7 +46,7 @@ install(TARGETS oitable-demo DESTINATION bin)
 if(GLIB2_FOUND)
   add_library(oifits SHARED ${oifits_SOURCES})
   target_include_directories(oifits
-    PUBLIC ${CFITSIO_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
+    PUBLIC . ${CFITSIO_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
   target_link_libraries(oifits
     PUBLIC ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}
     PRIVATE m)
