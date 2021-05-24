@@ -29,15 +29,10 @@ if(GLIB2_FOUND)
 
   function(add_unit_test name)
     add_executable(utest_${name} utest_${name}.c)
-    target_link_libraries(utest_${name} oifits m)
+    target_link_libraries(utest_${name}
+      PRIVATE oifits m)
     add_test(NAME ${name} WORKING_DIRECTORY ${TESTDATA_DIR} COMMAND utest_${name})
   endfunction()
-
-  include_directories(..)
-  include_directories(${CFITSIO_INCLUDE_DIRS})
-  include_directories(${GLIB2_INCLUDE_DIRS})
-
-  link_directories(${GLIB2_LIBRARY_DIRS})
 
   add_unit_test(chkmalloc)
   add_unit_test(datemjd)

@@ -50,16 +50,21 @@ if(GLIB2_FOUND)
     include_directories(${GLIB2_INCLUDE_DIRS})
     include_directories(${Python2_INCLUDE_DIRS})
 
+    link_directories(${CFITSIO_LIBRARY_DIRS})
     link_directories(${GLIB2_LIBRARY_DIRS})
 
     swig_add_library(oifits LANGUAGE python SOURCES oifits.i)
     swig_add_library(oifilter LANGUAGE python SOURCES oifilter.i)
     swig_add_library(oicheck LANGUAGE python SOURCES oicheck.i)
     swig_add_library(oimerge LANGUAGE python SOURCES oimerge.i)
-    swig_link_libraries(oifits oifits ${Python2_LIBRARIES})
-    swig_link_libraries(oifilter oifits ${Python2_LIBRARIES})
-    swig_link_libraries(oicheck oifits ${Python2_LIBRARIES})
-    swig_link_libraries(oimerge oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oifits
+      PRIVATE oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oifilter
+      PRIVATE oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oicheck
+      PRIVATE oifits ${Python2_LIBRARIES})
+    swig_link_libraries(oimerge
+      PRIVATE oifits ${Python2_LIBRARIES})
     install_swig(oifits)
     install_swig(oifilter)
     install_swig(oicheck)

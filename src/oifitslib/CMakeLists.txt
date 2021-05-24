@@ -28,17 +28,16 @@ set(INCFILES chkmalloc.h datemjd.h exchange.h oifile.h oicheck.h oifilter.h oime
 set(oitable_SOURCES read_fits.c write_fits.c alloc_fits.c free_fits.c chkmalloc.c)
 set(oifits_SOURCES ${oitable_SOURCES} datemjd.c oifile.c oifilter.c oicheck.c oimerge.c oiiter.c)
 
-include_directories(${CFITSIO_INCLUDE_DIRS})
-include_directories(${GLIB2_INCLUDE_DIRS})
-
-link_directories(${GLIB2_LIBRARY_DIRS})
-
 add_library(oitable SHARED ${oitable_SOURCES})
-target_link_libraries(oitable ${CFITSIO_LIBRARIES}) # PUBLIC
-target_link_libraries(oitable m) # PRIVATE
+target_include_directories(oitable
+  PUBLIC ${CFITSIO_INCLUDE_DIRS})
+target_link_libraries(oitable
+  PUBLIC ${CFITSIO_LIBRARIES}
+  PRIVATE m)
 
 add_executable(oitable-demo oitable-demo.c)
-target_link_libraries(oitable-demo oitable)
+target_link_libraries(oitable-demo
+  PRIVATE oitable)
 
 install(FILES ${INCFILES} DESTINATION include)
 install(TARGETS oitable DESTINATION lib)
@@ -46,8 +45,11 @@ install(TARGETS oitable-demo DESTINATION bin)
 
 if(GLIB2_FOUND)
   add_library(oifits SHARED ${oifits_SOURCES})
-  target_link_libraries(oifits ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}) # PUBLIC
-  target_link_libraries(oifits m) # PRIVATE
+  target_include_directories(oifits
+    PUBLIC ${CFITSIO_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
+  target_link_libraries(oifits
+    PUBLIC ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}
+    PRIVATE m)
   install(TARGETS oifits DESTINATION lib)
 
   configure_file(oitable.pc.in oitable.pc @ONLY)
