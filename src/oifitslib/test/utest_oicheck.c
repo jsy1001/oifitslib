@@ -3,7 +3,7 @@
  * @ingroup oicheck
  * Unit tests of OIFITS conformity checker.
  *
- * Copyright (C) 2015 John Young
+ * Copyright (C) 2015, 2021 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -34,12 +34,14 @@ typedef struct
   char filename[FLEN_VALUE];
   check_func check;
   oi_breach_level expected;
+
 } TestCase;
 
 typedef struct
 {
   int numCases;
   const TestCase *cases;
+
 } TestSet;
 
 static const TestCase passCases[] = {
@@ -114,6 +116,7 @@ static void test_check(gconstpointer userData)
   oi_fits inData;
   int status;
   oi_check_result result;
+  oi_breach_level level;
   char msg[FLEN_ERRMSG];
 
   const TestSet *pSet = userData;
@@ -127,7 +130,10 @@ static void test_check(gconstpointer userData)
     g_assert_false(status);
     if (fits_read_errmsg(msg))
       g_error("Uncleared CFITSIO error message: %s", msg);
-    if ((*pSet->cases[i].check)(&inData, &result) != pSet->cases[i].expected)
+    level = (*pSet->cases[i].check)(&inData, &result);
+    g_assert_cmpint(level, ==, result.level);
+    print_check_result(&result);
+    if (level != pSet->cases[i].expected)
     {
       g_error("Bad result for %s:\n  expected '%s'\n  got '%s'",
               pSet->cases[i].filename,

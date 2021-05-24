@@ -3,7 +3,7 @@
  * @ingroup oifile
  * Unit tests of OIFITS file-level API.
  *
- * Copyright (C) 2015, 2018-2020 John Young
+ * Copyright (C) 2015, 2018-2021 John Young
  *
  *
  * This file is part of OIFITSlib.
@@ -63,12 +63,14 @@ static void test_version(void)
   g_assert_false(status);
   g_assert_true(is_oi_fits_one(&data));
   g_assert_false(is_oi_fits_two(&data));
+  print_oi_fits_summary(&data);
 
   /* Test writing v1 yields v2 with mandatory primary header keywords */
   write_oi_fits(FILENAME_OUT, data, &status);
   g_assert_false(status);
   free_oi_fits(&data);
   read_oi_fits(FILENAME_OUT, &data2, &status);
+  print_oi_fits_summary(&data2);
   g_assert_false(status);
   g_assert_false(is_oi_fits_one(&data2));
   g_assert_true(is_oi_fits_two(&data2));
