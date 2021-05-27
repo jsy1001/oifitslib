@@ -40,4 +40,4 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Upload to Codecov
-        uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v1
