@@ -32,10 +32,11 @@ The following libraries are required - please install them first:
   <http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html>
 - GLib (version 2.56 or later required): <http://www.gtk.org/>
 
-CMake is now used for building - this should be more portable than the previous
-Makefile. For those not familiar with CMake, instructions can be found at
-<https://cmake.org/runningcmake/>. If you are using a Unix-like operating system
-the following commands should build and install OIFITSlib:
+CMake (version 3.13 or later required) is now used for building - this should be
+more portable than the previous Makefile. For those not familiar with CMake,
+instructions can be found at <https://cmake.org/runningcmake/>. If you are using
+a Unix-like operating system the following commands should build and install
+OIFITSlib:
 
     cd build
     cmake ..

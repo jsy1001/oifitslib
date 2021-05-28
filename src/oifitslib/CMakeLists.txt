@@ -16,7 +16,7 @@
 # License along with OIFITSlib.  If not, see
 # http://www.gnu.org/licenses/
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 project(oifitslib C)
 
 find_package(PkgConfig)
@@ -50,6 +50,17 @@ if(GLIB2_FOUND)
   target_link_libraries(oifits
     PUBLIC ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}
     PRIVATE m)
+
+  if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Add required flags (GCC & LLVM/Clang)
+    target_compile_options(oifits PRIVATE
+      -O0        # no optimization
+      -g         # generate debug info
+      --coverage # sets all required flags
+      )
+    target_link_options(oifits PRIVATE --coverage)
+  endif()
+
   install(TARGETS oifits DESTINATION lib)
 
   configure_file(oitable.pc.in oitable.pc @ONLY)

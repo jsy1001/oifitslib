@@ -16,7 +16,7 @@
 # License along with OIFITSlib.  If not, see
 # http://www.gnu.org/licenses/
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0078 OLD)
 cmake_policy(SET CMP0086 OLD)
 project(python-oifits)
