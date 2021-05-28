@@ -35,19 +35,18 @@ The following libraries are required - please install them first:
 
 CMake (version 3.13 or later required) is now used for building - this should be
 more portable than the previous Makefile. For those not familiar with CMake,
-instructions can be found at <https://cmake.org/runningcmake/>. If you are using
-a Unix-like operating system the following commands should build and install
-OIFITSlib:
+instructions can be found at <https://cmake.org/runningcmake/>. The following
+recipe to build and install OIFITSlib should work on any platform:
 
     cd build
-    cmake ..
-    make
-    sudo make install
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake --build . --config Release
+    cmake --install .
 
-Optionally, run `make doc` to generate the API reference documentation.  Note
-that the "oitable" library can be built without GLib. If GLib is not detected or
-the `pkg-config` utility is not installed, only liboitable and its demonstration
-program `oitable-demo` will be built.
+Optionally, run `cmake --build . --target doc` to generate the API reference
+documentation. Note that the "oitable" library can be built without GLib. If
+GLib is not detected or the `pkg-config` utility is not installed, only
+liboitable and its demonstration program `oitable-demo` will be built.
 
 OIFITSlib has been tested under Linux (Ubuntu and CentOS) and MacOS X. The
 author is interested in hearing about successes or failures under other
