@@ -2,7 +2,7 @@ OIFITSlib
 =========
 
 [![CMake](https://github.com/jsy1001/oifitslib/actions/workflows/cmake.yml/badge.svg)](https://github.com/jsy1001/oifitslib/actions/workflows/cmake.yml)
-[![codecov](https://codecov.io/gh/jsy1001/oifitslib/branch/master/graph/badge.svg?token=J43UX3RVB8)](https://codecov.io/gh/jsy1001/oifitslib)
+[![codecov](https://codecov.io/gh/jsy1001/oifitslib/branch/main/graph/badge.svg?token=J43UX3RVB8)](https://codecov.io/gh/jsy1001/oifitslib)
 
 OIFITSlib is a C library for input/output, merging, filtering and checking of
 optical/IR interferometry datasets in the OIFITS exchange format. The published
