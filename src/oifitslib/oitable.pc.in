@@ -6,7 +6,7 @@ libdir=${exec_prefix}/lib
 Name: oitable
 Description: OIFITSlib oitable module
 URL: https://github.com/jsy1001/oifitslib
-Version: 2.6.0
+Version: 2.6.1
 Requires.private: cfitsio
 Cflags: -I${includedir}
 Libs: -L${libdir} -loitable
