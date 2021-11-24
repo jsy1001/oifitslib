@@ -51,7 +51,7 @@ if(GLIB2_FOUND)
     PUBLIC ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}
     PRIVATE m)
 
-  if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  if(CODE_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     # Add required flags (GCC & LLVM/Clang)
     target_compile_options(oifits PRIVATE
       -O0        # no optimization
