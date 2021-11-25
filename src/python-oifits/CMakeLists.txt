@@ -19,7 +19,7 @@
 cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0078 OLD)
 cmake_policy(SET CMP0086 OLD)
-project(python-oifits)
+project(python-oifits C)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../testdata)
 

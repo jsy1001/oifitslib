@@ -17,7 +17,7 @@
 # http://www.gnu.org/licenses/
 
 cmake_minimum_required(VERSION 3.13)
-project(oifitslib-dist)
+project(oifitslib-dist C)
 
 option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
