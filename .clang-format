@@ -11,6 +11,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 PointerAlignment: Right
 SortIncludes: false
 SpaceAfterCStyleCast: false
+ColumnLimit: 80
 
 # Local Variables:
 # mode: yaml
