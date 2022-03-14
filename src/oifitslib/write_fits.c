@@ -105,7 +105,8 @@ STATUS write_oi_header(fitsfile *fptr, oi_header header, STATUS *pStatus)
   if (*pStatus) return *pStatus; /* error flag set - do nothing */
 
   /* Move to primary HDU */
-  if (fits_get_num_hdus(fptr, &nhdu, pStatus) == 0)
+  fits_get_num_hdus(fptr, &nhdu, pStatus);
+  if (nhdu == 0)
   {
     /* primary HDU doesn't exist, so create it */
     fits_create_img(fptr, 16, 0, NULL, pStatus);
