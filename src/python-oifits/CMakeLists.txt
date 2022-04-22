@@ -23,9 +23,8 @@ project(python-oifits C)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../testdata)
 
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIB2 glib-2.0>=2.56.0)
-pkg_check_modules(CFITSIO cfitsio)
 
 if(GLIB2_FOUND)
 
@@ -34,7 +33,7 @@ if(GLIB2_FOUND)
 
     include(${SWIG_USE_FILE})
 
-    find_package(Python2 COMPONENTS Interpreter Development)
+    find_package(Python2 REQUIRED COMPONENTS Interpreter Development)
 
     function(add_swig_test module)
       add_test(NAME python-${module} WORKING_DIRECTORY ${TESTDATA_DIR} COMMAND ${Python2_EXECUTABLE} ${PROJECT_BINARY_DIR}/${module}.py)

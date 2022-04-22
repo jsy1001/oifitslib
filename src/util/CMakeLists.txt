@@ -19,18 +19,12 @@
 cmake_minimum_required(VERSION 3.13)
 project(util C)
 
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIB2 glib-2.0>=2.56.0)
-pkg_check_modules(CFITSIO cfitsio)
 
 if(GLIB2_FOUND)
 
   include_directories(../oifitslib)
-  include_directories(${CFITSIO_INCLUDE_DIRS})
-  include_directories(${GLIB2_INCLUDE_DIRS})
-
-  link_directories(${CFITSIO_LIBRARY_DIRS})
-  link_directories(${GLIB2_LIBRARY_DIRS})
 
   add_executable(oifits-check oifits-check.c)
   add_executable(oifits-merge oifits-merge.c)

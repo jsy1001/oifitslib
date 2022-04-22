@@ -19,9 +19,9 @@
 cmake_minimum_required(VERSION 3.13)
 project(oifitslib C)
 
-find_package(PkgConfig)
-pkg_check_modules(GLIB2 glib-2.0>=2.56.0)
-pkg_check_modules(CFITSIO cfitsio)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
+pkg_check_modules(GLIB2 IMPORTED_TARGET glib-2.0>=2.56.0)
 
 set(INCFILES chkmalloc.h datemjd.h exchange.h oifile.h oicheck.h oifilter.h oimerge.h oiiter.h)
 
@@ -29,10 +29,9 @@ set(oitable_SOURCES read_fits.c write_fits.c alloc_fits.c free_fits.c chkmalloc.
 set(oifits_SOURCES ${oitable_SOURCES} datemjd.c oifile.c oifilter.c oicheck.c oimerge.c oiiter.c)
 
 add_library(oitable SHARED ${oitable_SOURCES})
-target_include_directories(oitable
-  PUBLIC . ${CFITSIO_INCLUDE_DIRS})
+target_include_directories(oitable PUBLIC .)
 target_link_libraries(oitable
-  PUBLIC ${CFITSIO_LIBRARIES}
+  PUBLIC PkgConfig::CFITSIO
   PRIVATE m)
 
 add_executable(oitable-demo oitable-demo.c)
@@ -45,10 +44,9 @@ install(TARGETS oitable-demo DESTINATION bin)
 
 if(GLIB2_FOUND)
   add_library(oifits SHARED ${oifits_SOURCES})
-  target_include_directories(oifits
-    PUBLIC . ${CFITSIO_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
+  target_include_directories(oifits PUBLIC .)
   target_link_libraries(oifits
-    PUBLIC ${CFITSIO_LIBRARIES} ${GLIB2_LIBRARIES}
+    PUBLIC PkgConfig::CFITSIO PkgConfig::GLIB2
     PRIVATE m)
 
   if(CODE_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
