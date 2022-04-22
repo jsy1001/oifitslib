@@ -19,9 +19,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(util C)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLIB2 glib-2.0>=2.56.0)
-
 if(GLIB2_FOUND)
 
   include_directories(../oifitslib)

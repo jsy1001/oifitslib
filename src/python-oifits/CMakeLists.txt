@@ -1,4 +1,4 @@
-# CMakeLists.txt for unit tests of OIFITSlib python interface
+# CMakeLists.txt for OIFITSlib python interface
 #
 # This file is part of OIFITSlib.
 #
@@ -22,9 +22,6 @@ cmake_policy(SET CMP0086 OLD)
 project(python-oifits C)
 
 set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../testdata)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLIB2 glib-2.0>=2.56.0)
 
 if(GLIB2_FOUND)
 
