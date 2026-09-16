@@ -23,6 +23,12 @@ jobs:
       - name: Install Doxygen
         run: sudo apt-get install -y doxygen
 
+      - name: Download Doxygen Awesome theme
+        run: |
+          curl -sL \
+            https://raw.githubusercontent.com/jothepro/doxygen-awesome-css/v2.3.4/doxygen-awesome.css \
+            -o doc/doxygen-awesome.css
+
       - name: Generate Doxyfile
         run: |
           sed "s|@CMAKE_CURRENT_SOURCE_DIR@|$GITHUB_WORKSPACE/doc|g" \
