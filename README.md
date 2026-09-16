@@ -23,7 +23,8 @@ and `oifits-check` are also provided - these provide simple user interfaces to
 OIFITSlib routines.
 
 A Python 2.7 interface to OIFITSlib is also included (created using SWIG). To
-build this you will need SWIG 1.3 or later.
+build this you will need SWIG 1.3 or later. This will be updated to Python 3
+when time permits.
 
 Installation
 ------------
@@ -56,10 +57,10 @@ operating systems.
 Usage
 -----
 
-API reference documentation for OIFITSlib is automatically generated from
-comments in the C code using doxygen (refer to the build instructions
-above). After building the documentation, point your web browser to the file
-[doc/oifitslib/html/index.html](doc/oifitslib/html/index.html).
+The API reference documentation for OIFITSlib is available at
+[jsy1001.github.io/oifitslib/](https://jsy1001.github.io/oifitslib/).
+This content is automatically generated from comments in the C code using
+doxygen.
 
 The command-line utilities `oifits-merge`, `oifits-filter`, `oifits-check`, and
 `oifits-upgrade` will output brief usage information if invoked with the
