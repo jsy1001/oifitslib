@@ -1,6 +1,5 @@
-
-# Created by https://www.gitignore.io/api/c,cmake
-# Edit at https://www.gitignore.io/?templates=c,cmake
+# Created by https://www.toptal.com/developers/gitignore/api/c,cmake
+# Edit at https://www.toptal.com/developers/gitignore?templates=c,cmake
 
 ### C ###
 # Prerequisites
@@ -70,10 +69,12 @@ CTestTestfile.cmake
 _deps
 
 ### CMake Patch ###
+CMakeUserPresets.json
+
 # External projects
 *-prefix/
 
-# End of https://www.gitignore.io/api/c,cmake
+# End of https://www.toptal.com/developers/gitignore/api/c,cmake
 
 ### CMake Doxygen ###
 CMakeDoxyfile.in
