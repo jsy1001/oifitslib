@@ -2,32 +2,25 @@
 
 @mainpage
 
-OIFITSlib is a C library for input/output, merging, filtering and
-checking of optical/IR interferometry datasets in the OIFITS
-exchange format. The latest version of OIFITSlib is available at
-https://github.com/jsy1001/oifitslib
+OIFITSlib is a C library for input/output, merging, filtering and checking of
+optical/IR interferometry datasets in the OIFITS exchange format. The latest
+version of OIFITSlib is available at https://github.com/jsy1001/oifitslib.
 
-OIFITS is a standard for exchanging calibrated, time-averaged data
-from astronomical optical interferometers, based on the FITS
-Standard. OIFITS may be used to combine data from multiple
-interferometer arrays for joint analysis and/or image
-reconstruction.
+OIFITS is a standard for exchanging calibrated, time-averaged data from
+astronomical optical interferometers, based on the FITS Standard. OIFITS may be
+used to combine data from multiple interferometer arrays for joint analysis
+and/or image reconstruction. Further information about OIFITS is available at
+https://oifits.org/.
 
-The original version of the OIFITS standard is described in Pauls
-et al. (2005) PASP 117, 1255. A PDF reprint of this paper and other
-OIFITS resources are available from the OIFITS website
-http://www.mrao.cam.ac.uk/research/optical-interferometry/oifits/
+The latest OIFITS standard is version 2, as defined by Duvert, Young and Hummel,
+A&A 597, A8 (2017), https://doi.org/10.1051/0004-6361/201526405. Minor updates
+to the standard are published at https://arxiv.org/abs/1510.04556.
 
-Version 2 of the OIFITS standard has now been drafted by a working
-group of IAU Commission 54. A preprint of the specification is
-available at http://arxiv.org/abs/1510.04556
-
-Version 2.x of OIFITSlib supports the draft OIFITS v2 standard: the
-library can read either v1 or v2 OIFITS files, and writes v2
-files. The OIFITS standard has been designed such that v2 files are
-backwards-compatible with reading software intended for v1; hence a
-capability to write v1 files should not be needed. However, version
-1.x of OIFITSlib is available for writing v1 OIFITS files if
+Version 2.x of OIFITSlib supports the OIFITS v2 standard: the library can read
+either v1 or v2 OIFITS files, and writes v2 files. The OIFITS standard has been
+designed such that v2 files are backwards-compatible with reading software
+intended for v1; hence a capability to write v1 files should not be needed.
+However, version 1.x of OIFITSlib is available for writing v1 OIFITS files if
 required.
 
 OIFITSlib incorporates the following modules:
