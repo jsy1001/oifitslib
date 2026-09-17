@@ -26,11 +26,10 @@ set(TESTDATA_DIR ${PROJECT_SOURCE_DIR}/../../testdata)
 if(GLIB2_FOUND)
 
   find_package(SWIG)
-  if(SWIG_FOUND)
+  find_package(Python2 COMPONENTS Interpreter Development)
+  if(SWIG_FOUND AND Python2_FOUND)
 
     include(${SWIG_USE_FILE})
-
-    find_package(Python2 REQUIRED COMPONENTS Interpreter Development)
 
     function(add_swig_test module)
       add_test(NAME python-${module} WORKING_DIRECTORY ${TESTDATA_DIR} COMMAND ${Python2_EXECUTABLE} ${PROJECT_BINARY_DIR}/${module}.py)
